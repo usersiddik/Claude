@@ -1,0 +1,170 @@
+.discovery {
+  display: grid;
+  gap: 14px;
+  margin-top: 32px;
+}
+
+.form {
+  margin: 0;
+}
+
+.field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-m);
+  background: var(--card);
+  box-shadow: var(--shadow-rest);
+}
+
+.field:focus-within {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.icon {
+  position: absolute;
+  left: 14px;
+  color: var(--ink-soft);
+  pointer-events: none;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  padding: 0 48px 0 44px;
+  border: 0;
+  background: transparent;
+  font-size: var(--step-0);
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--ink-muted);
+}
+
+.input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
+.kbd {
+  position: absolute;
+  right: 12px;
+  display: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  font-size: var(--step--2);
+  color: var(--ink-soft);
+  background: var(--paper);
+}
+
+@media (hover: hover) and (min-width: 640px) {
+  .kbd {
+    display: grid;
+  }
+}
+
+.input:focus ~ .kbd,
+.input:not(:placeholder-shown) ~ .kbd {
+  opacity: 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--card);
+  font-size: var(--step--1);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.chip:hover {
+  border-color: var(--ink);
+}
+
+.chip:active {
+  transform: translateY(1px);
+}
+
+.chip:has(.radio:checked) {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--cream);
+}
+
+.chip:has(.radio:focus-visible) {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.radio {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.count {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--paper-deep);
+  color: var(--ink-soft);
+  font-family: var(--font-code);
+  font-size: var(--step--2);
+  text-align: center;
+}
+
+.chip:has(.radio:checked) .count {
+  background: var(--butter);
+  color: var(--ink);
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 32px;
+}
+
+.summary {
+  font-family: var(--font-code);
+  font-size: var(--step--1);
+  color: var(--ink-soft);
+}
+
+.clear {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  background: none;
+  font-size: var(--step--1);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

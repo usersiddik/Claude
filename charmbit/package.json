@@ -1,0 +1,32 @@
+{
+  "name": "charmbit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Charmbit — original SVG characters, icons, and Duos with SVG, React, and Flutter exports.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-strip-types \"tests/**/*.test.ts\"",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {
+    "next": "16.4.5",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.5",
+    "typescript": "^5.9"
+  },
+  "engines": {
+    "node": ">=22.6"
+  },
+  "type": "module"
+}

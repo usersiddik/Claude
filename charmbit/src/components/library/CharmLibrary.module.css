@@ -1,0 +1,115 @@
+.subhead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-bottom: 18px;
+}
+
+.subtitle {
+  font-size: var(--step-2);
+}
+
+.subnote {
+  color: var(--ink-muted);
+  font-size: var(--step--1);
+}
+
+.featured {
+  margin-top: 48px;
+}
+
+/* The shelf: cards stand on a printed ledge. Scrolls sideways on small screens. */
+.shelfWrap {
+  position: relative;
+}
+
+.shelf {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(156px, 1fr);
+  gap: 16px;
+  margin: 0 calc(var(--gutter) * -1);
+  padding: 8px var(--gutter) 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gutter);
+  scrollbar-width: none;
+}
+
+.shelf::-webkit-scrollbar {
+  display: none;
+}
+
+.shelfItem {
+  scroll-snap-align: start;
+}
+
+.ledge {
+  position: relative;
+  height: 14px;
+  margin-top: -20px;
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+  background: linear-gradient(var(--card) 0 5px, var(--stone) 5px);
+  box-shadow: 0 14px 20px -12px rgb(78 54 28 / 0.5);
+}
+
+@media (min-width: 900px) {
+  .shelf {
+    margin: 0;
+    padding-inline: 0;
+    overflow: visible;
+  }
+
+  .ledge {
+    margin-inline: -14px;
+  }
+}
+
+.all {
+  margin-top: 56px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 124px), 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
+    gap: 20px;
+  }
+}
+
+.empty {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 32px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-m);
+  background: var(--card);
+  color: var(--ink-soft);
+}
+
+.emptyTitle {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  color: var(--ink);
+}
+
+.emptyButton {
+  margin-top: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-s);
+  background: var(--card);
+  font-weight: 600;
+}

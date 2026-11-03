@@ -1,0 +1,157 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
+  border-bottom: 1px solid var(--line);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 64px;
+}
+
+.brand {
+  display: inline-flex;
+  margin-right: auto;
+  text-decoration: none;
+  border-radius: var(--radius-s);
+}
+
+.nav {
+  display: none;
+}
+
+.links {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius-s);
+  font-size: var(--step--1);
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--ink-soft);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.link:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--butter);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 6px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search,
+.menuButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-s);
+  background: var(--card);
+  font-size: var(--step--1);
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.search:active,
+.menuButton:active {
+  transform: translateY(1px);
+}
+
+.searchLabel {
+  display: none;
+}
+
+.kbd {
+  display: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  font-size: var(--step--2);
+  color: var(--ink-soft);
+}
+
+@media (min-width: 480px) {
+  .searchLabel {
+    display: inline;
+  }
+}
+
+.mobile {
+  position: relative;
+}
+
+.panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  min-width: 220px;
+  padding: 8px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-m);
+  background: var(--card);
+  box-shadow: var(--shadow-panel);
+  animation: menu-in 200ms var(--ease-out);
+}
+
+.panel ul {
+  margin: 0;
+}
+
+.panelLink {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: var(--radius-s);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.panelLink:hover {
+  background: var(--paper);
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@media (min-width: 900px) {
+  .nav {
+    display: block;
+  }
+
+  .mobile {
+    display: none;
+  }
+
+  .kbd {
+    display: grid;
+  }
+}

@@ -1,0 +1,222 @@
+/* Charmbit design tokens + base styles. Component styles live in CSS Modules. */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces */
+  --paper: #f7f3ec;
+  --paper-deep: #efe8dc;
+  --card: #fffdf9;
+  --line: #e2d9ca;
+  --line-strong: #cfc3b0;
+
+  /* Ink */
+  --ink: #1c1b22;
+  --ink-soft: #4a4752;
+  --ink-muted: #625e69;
+
+  /* Artwork palette (mirrors src/lib/assets/palette.ts) */
+  --cream: #fbf4e6;
+  --stone: #e6dccb;
+  --butter: #f6d673;
+  --lilac: #bdb0e3;
+  --mint: #bfe6d2;
+  --coral: #f4a28c;
+
+  /* Type */
+  --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
+  --font-ui: var(--font-instrument), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-code: var(--font-jetbrains), ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --step--2: 0.6875rem;
+  --step--1: 0.8125rem;
+  --step-0: 1rem;
+  --step-1: 1.1875rem;
+  --step-2: clamp(1.4rem, 1.2rem + 0.9vw, 1.85rem);
+  --step-3: clamp(1.9rem, 1.5rem + 2vw, 2.9rem);
+  --step-4: clamp(2.6rem, 1.6rem + 5.2vw, 5.4rem);
+
+  /* Space + shape */
+  --gutter: 16px;
+  --container: 1200px;
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 14px;
+
+  /* Paper + sticker shadows */
+  --shadow-rest: 0 1px 0 rgb(28 27 34 / 0.05), 0 2px 6px -3px rgb(78 54 28 / 0.18);
+  --shadow-lift: 0 2px 0 rgb(28 27 34 / 0.04), 0 18px 28px -14px rgb(78 54 28 / 0.38);
+  --shadow-panel: 0 1px 0 rgb(28 27 34 / 0.05), 0 24px 48px -28px rgb(78 54 28 / 0.45);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.45, 0, 0.25, 1);
+  --dur-fast: 160ms;
+  --dur-med: 260ms;
+
+  --dot-grid: radial-gradient(circle at 1px 1px, rgb(28 27 34 / 0.13) 1px, transparent 1.4px) 0 0 / 14px 14px;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --gutter: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 40px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scrollbar-gutter: stable;
+  scroll-padding-top: 84px;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--step-0);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+
+ul[role="list"],
+ol[role="list"] {
+  list-style: none;
+  padding: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 560;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-variation-settings: "opsz" 96;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+code,
+kbd,
+pre {
+  font-family: var(--font-code);
+}
+
+svg {
+  display: block;
+}
+
+::selection {
+  background: var(--butter);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Inline asset artwork rendered from sourceSvg. */
+[data-art] {
+  display: block;
+}
+
+[data-art] > svg {
+  width: 100%;
+  height: 100%;
+}
+
+.container {
+  width: 100%;
+  max-width: calc(var(--container) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--gutter);
+  top: 8px;
+  z-index: 100;
+  padding: 8px 14px;
+  background: var(--ink);
+  color: var(--cream);
+  border-radius: var(--radius-s);
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
