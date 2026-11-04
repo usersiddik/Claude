@@ -5,7 +5,7 @@
 import { darken, hash, lighten } from "./color.ts";
 import { characterDefs, type Face, type Look } from "./face.ts";
 import { classicHeart, limb, local, namespace, place, sceneDefs, sparkle, svgDocument, type Id, type Point, type ScenePaint } from "./kit.ts";
-import { angerMark, diya, icePack, lights, marigold, mug, nightcap, questionMark, sparkler, sunglasses, sweat, thermometer, waveLines, zz } from "./props.ts";
+import { angerMark, daisyBouquet, diya, icePack, lights, marigold, mug, nightcap, questionMark, sparkler, sunglasses, sweat, thermometer, waveLines, zz } from "./props.ts";
 import { character, paletteFor, rigOf, type CharacterOptions, type Pose, type Species, type Stance } from "./species.ts";
 
 export type { Species, Stance } from "./species.ts";
@@ -33,6 +33,7 @@ export type ReactionId =
   | "kiss"
   | "missyou"
   | "smitten"
+  | "flowers"
   | "hug"
   | "shoulder"
   | "cheek"
@@ -84,6 +85,7 @@ export const REACTIONS: readonly Reaction[] = [
   { id: "kiss", name: "Kiss", caption: "Mwah", group: "love", species: ALL, stands: true },
   { id: "missyou", name: "Miss you", caption: "Miss you…", group: "love", species: ALL },
   { id: "smitten", name: "Heart eyes", caption: "Smitten", group: "love", species: ALL, stands: true },
+  { id: "flowers", name: "Flowers for you", caption: "For you", group: "love", species: ALL, stands: true },
   { id: "hug", name: "Hug", caption: "Hugs", group: "together", pair: true, species: CAT },
   { id: "shoulder", name: "Head on shoulder", caption: "My person", group: "together", pair: true, species: CAT },
   { id: "cheek", name: "Cheek to cheek", caption: "Us", group: "together", pair: true, species: CAT },
@@ -162,6 +164,7 @@ const FACES: Partial<Record<ReactionId, Face>> = {
   kiss: { eyes: "wink", mouth: "kiss", blush: 2 },
   missyou: { eyes: "teary", mouth: "pout", brows: "sad", blush: 1, tears: "single" },
   smitten: { eyes: "hearts", mouth: "grin", blush: 2 },
+  flowers: { eyes: "plead", mouth: "smile", blush: 1 },
 };
 
 type Base = Omit<CharacterOptions, "look" | "face" | "pose">;
@@ -239,6 +242,9 @@ function single(id: Id, sid: Id, spec: CreatureSpec, base: Base): string {
       return with_("kiss", { front: classicHeart(sid, add(rig.kiss, 82, -62), 22, 14) });
     case "missyou":
       return with_("hold", { held: classicHeart(sid, add(rig.holdAt, 0, -6), 44, -8) });
+    case "flowers":
+      // Paws together at the chest, holding a bunch of daisies up like a gift.
+      return with_("together", { headTilt: 3, held: daisyBouquet([rig.holdAt[0], rig.holdAt[1] - 26], 1.3), front: sparkle(add(corner, 0, -6), 12) + sparkle([96, 150], 9, "#FFB8CC") });
     case "smitten":
       return with_("together", { front: classicHeart(sid, add(corner, -8, -4), 24, 12) + classicHeart(sid, [92, 150], 18, -14) + classicHeart(sid, add(corner, 20, 70), 14, 20) });
     case "fever":

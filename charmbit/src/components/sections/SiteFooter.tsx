@@ -18,7 +18,7 @@ export function SiteFooter() {
     <footer id="formats" className={styles.footer}>
       <div className="container">
         <p className={`eyebrow ${styles.eyebrow}`}>
-          <span>Chapter 05 — Formats</span>
+          <span>Chapter 04 — Formats</span>
           <span>Free to use in chats and products</span>
         </p>
         <h2 className={`display ${styles.title}`} data-reveal="">

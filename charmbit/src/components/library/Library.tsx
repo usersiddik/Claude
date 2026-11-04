@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { CloseIcon, SearchIcon } from "@/components/ui/icons";
 import { defaultValues, findItem, GENERATED, renderItem, stickerTitle, type IconAsset, type LiveCollection, type StickerItem, type Value, type Values } from "@/lib/universe";
 import { iconsCollection } from "@/lib/universe/collections/icons";
 import { stickerPath, svgDataUri } from "@/lib/universe/paths";
+import { buildSearchIndex, POPULAR_SEARCHES, search } from "@/lib/universe/search";
 import { CopyIsland } from "@/components/ui/CopyIsland";
 import { Editor } from "./Editor";
+import { SEARCH_EVENT } from "./search-events";
 import styles from "./Library.module.css";
 
 export interface Selection {
@@ -17,12 +20,19 @@ interface LibraryProps {
   icons: readonly IconAsset[];
   selection: Selection;
   onSelect: (next: { collection: string; sticker: string }) => void;
+  /** Search to start with (from `?q=`). */
+  initialQuery?: string;
+}
+
+interface Entry {
+  collection: LiveCollection;
+  item: StickerItem;
 }
 
 const isPhone = () => window.matchMedia("(max-width: 1023px)").matches;
 
 /** Browse a collection, pick a sticker, make it yours, copy it. */
-export function Library({ icons, selection, onSelect }: LibraryProps) {
+export function Library({ icons, selection, onSelect, initialQuery = "" }: LibraryProps) {
   const universe: LiveCollection[] = useMemo(() => [...GENERATED, iconsCollection(icons)], [icons]);
   const collection = universe.find((candidate) => candidate.id === selection.collection) ?? universe[0]!;
   const item = findItem(collection, selection.sticker);
@@ -33,17 +43,48 @@ export function Library({ icons, selection, onSelect }: LibraryProps) {
   const values: Values = useMemo(() => ({ ...defaults, ...edits[collection.id] }), [defaults, edits, collection.id]);
   const changed = Object.keys(edits[collection.id] ?? {}).some((key) => edits[collection.id]?.[key] !== defaults[key]);
 
+  // Search across every collection. The hero (or ?q=) can start one.
+  const [query, setQuery] = useState(initialQuery);
+  const index = useMemo(() => buildSearchIndex(universe), [universe]);
+  const results = useMemo(() => (query.trim() ? search(index, query) : null), [index, query]);
+  useEffect(() => {
+    const onSearch = (event: Event) => {
+      const text = (event as CustomEvent<string>).detail;
+      if (typeof text === "string") setQuery(text);
+    };
+    window.addEventListener(SEARCH_EVENT, onSearch);
+    return () => window.removeEventListener(SEARCH_EVENT, onSearch);
+  }, []);
+
+  // A new search shows its best match in the editor.
+  const first = results?.[0];
+  const showingResult = results?.some((entry) => entry.collection.id === collection.id && entry.item.id === item.id);
+  useEffect(() => {
+    if (first && !showingResult) onSelect({ collection: first.collection.id, sticker: first.item.id });
+    // Only when the results change, not on every selection.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results]);
+
   // Group filter resets when the collection changes.
   const [groupFor, setGroupFor] = useState({ collection: collection.id, group: "all" });
   const group = groupFor.collection === collection.id ? groupFor.group : "all";
-  const visible = collection.items.filter((candidate) => group === "all" || candidate.group === group);
-  const index = Math.max(0, visible.findIndex((candidate) => candidate.id === item.id));
+  const visible: Entry[] = useMemo(
+    () => results ?? collection.items.filter((candidate) => group === "all" || candidate.group === group).map((candidate) => ({ collection, item: candidate })),
+    [results, collection, group],
+  );
+  const position = Math.max(0, visible.findIndex((entry) => entry.collection.id === collection.id && entry.item.id === item.id));
 
   // Tiles use the prerendered files until a colour changes, then render live.
   const tiles = useMemo(() => {
-    const custom = (candidate: StickerItem) => candidate.uses.some((use) => values[use] !== defaults[use]);
-    return new Map(collection.items.map((candidate) => [candidate.id, custom(candidate) ? svgDataUri(renderItem(collection, candidate, values, true)) : stickerPath(collection.id, candidate.id)]));
-  }, [collection, values, defaults]);
+    const map = new Map<string, string>();
+    for (const entry of visible) {
+      const base = defaultValues(entry.collection);
+      const current = { ...base, ...edits[entry.collection.id] };
+      const custom = entry.item.uses.some((use) => current[use] !== base[use]);
+      map.set(`${entry.collection.id}/${entry.item.id}`, custom ? svgDataUri(renderItem(entry.collection, entry.item, current, true)) : stickerPath(entry.collection.id, entry.item.id));
+    }
+    return map;
+  }, [visible, edits]);
 
   const sheet = useRef<HTMLDialogElement>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -59,15 +100,19 @@ export function Library({ icons, selection, onSelect }: LibraryProps) {
   }, [collection.id]);
 
   const select = (next: LiveCollection, sticker?: StickerItem) => onSelect({ collection: next.id, sticker: (sticker ?? next.items[0]!).id });
+  const browse = (next: LiveCollection) => {
+    setQuery("");
+    select(next);
+  };
   const change = (property: string, value: Value) => setEdits((previous) => ({ ...previous, [collection.id]: { ...previous[collection.id], [property]: value } }));
   const reset = () => setEdits((previous) => ({ ...previous, [collection.id]: {} }));
   const step = (direction: 1 | -1) => {
-    const next = visible[(index + direction + visible.length) % visible.length];
-    if (next) select(collection, next);
+    const next = visible[(position + direction + visible.length) % visible.length];
+    if (next) select(next.collection, next.item);
   };
 
-  function openTile(candidate: StickerItem) {
-    select(collection, candidate);
+  function openTile(entry: Entry) {
+    select(entry.collection, entry.item);
     if (isPhone()) {
       sheet.current?.showModal();
       setSheetOpen(true);
@@ -82,7 +127,7 @@ export function Library({ icons, selection, onSelect }: LibraryProps) {
     collection,
     item,
     values,
-    position: { index, total: visible.length },
+    position: { index: position, total: Math.max(visible.length, 1) },
     onChange: change,
     onReset: reset,
     onStep: step,
@@ -91,9 +136,32 @@ export function Library({ icons, selection, onSelect }: LibraryProps) {
 
   return (
     <div className={styles.library} style={{ "--accent": collection.accent } as CSSProperties}>
+      <form className={styles.search} role="search" onSubmit={(event) => event.preventDefault()}>
+        <SearchIcon size={18} className={styles.searchIcon} />
+        <label htmlFor="library-search" className="sr-only">
+          Search all stickers
+        </label>
+        <input
+          id="library-search"
+          type="search"
+          className={styles.searchField}
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={`Search all ${universe.reduce((total, entry) => total + entry.items.length, 0)} stickers: kiss, hug, diwali…`}
+          maxLength={60}
+          autoComplete="off"
+          enterKeyHint="search"
+        />
+        {query ? (
+          <button type="button" className={styles.searchClear} aria-label="Clear search" onClick={() => setQuery("")}>
+            <CloseIcon size={16} />
+          </button>
+        ) : null}
+      </form>
+
       <div ref={rail} className={styles.rail} role="group" aria-label="Collections">
         {universe.map((candidate) => (
-          <button key={candidate.id} type="button" className={styles.pill} aria-pressed={candidate.id === collection.id} onClick={() => select(candidate)}>
+          <button key={candidate.id} type="button" className={styles.pill} aria-pressed={!results && candidate.id === collection.id} onClick={() => browse(candidate)}>
             {/* eslint-disable-next-line @next/next/no-img-element -- static SVG sticker */}
             <img src={stickerPath(candidate.id, candidate.cover[0] ?? candidate.items[0]!.id)} alt="" width={28} height={28} loading="lazy" decoding="async" />
             {candidate.title}
@@ -104,37 +172,61 @@ export function Library({ icons, selection, onSelect }: LibraryProps) {
 
       <div className={styles.body}>
         <div className={styles.browser}>
-          <div className={styles.browserHead}>
-            <div>
-              <h3 className={styles.collectionTitle}>{collection.title}</h3>
-              <p className={styles.collectionText}>{collection.description}</p>
+          {results ? (
+            <div className={styles.browserHead} aria-live="polite">
+              <div>
+                <h3 className={styles.collectionTitle}>“{query.trim()}”</h3>
+                <p className={styles.collectionText}>
+                  {results.length === 0
+                    ? "No stickers match that yet. Try one of these:"
+                    : `${results.length} sticker${results.length === 1 ? "" : "s"} across ${new Set(results.map((entry) => entry.collection.id)).size} collection${new Set(results.map((entry) => entry.collection.id)).size === 1 ? "" : "s"}.`}
+                </p>
+              </div>
+              <div className={styles.groups} role="group" aria-label="Popular searches">
+                {POPULAR_SEARCHES.map((suggestion) => (
+                  <button key={suggestion} type="button" className={styles.group} aria-pressed={query.trim().toLowerCase() === suggestion} onClick={() => setQuery(suggestion)}>
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className={styles.groups} role="group" aria-label={`${collection.title} groups`}>
-              {[{ id: "all", name: "All" }, ...collection.groups].map((candidate) => (
-                <button
-                  key={candidate.id}
-                  type="button"
-                  className={styles.group}
-                  aria-pressed={group === candidate.id}
-                  onClick={() => setGroupFor({ collection: collection.id, group: candidate.id })}
-                >
-                  {candidate.name}
-                  <span>{candidate.id === "all" ? collection.items.length : collection.items.filter((entry) => entry.group === candidate.id).length}</span>
-                </button>
-              ))}
+          ) : (
+            <div className={styles.browserHead}>
+              <div>
+                <h3 className={styles.collectionTitle}>{collection.title}</h3>
+                <p className={styles.collectionText}>{collection.description}</p>
+              </div>
+              <div className={styles.groups} role="group" aria-label={`${collection.title} groups`}>
+                {[{ id: "all", name: "All" }, ...collection.groups].map((candidate) => (
+                  <button
+                    key={candidate.id}
+                    type="button"
+                    className={styles.group}
+                    aria-pressed={group === candidate.id}
+                    onClick={() => setGroupFor({ collection: collection.id, group: candidate.id })}
+                  >
+                    {candidate.name}
+                    <span>{candidate.id === "all" ? collection.items.length : collection.items.filter((entry) => entry.group === candidate.id).length}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          <ul role="list" className={styles.grid} key={`${collection.id}-${group}`} aria-label={`${collection.title} stickers`}>
-            {visible.map((candidate, position) => (
-              <li key={candidate.id} style={{ "--i": Math.min(position, 24) } as CSSProperties} className={styles.cell}>
-                <button type="button" className={styles.tile} aria-pressed={candidate.id === item.id} aria-label={stickerTitle(collection, candidate)} onClick={() => openTile(candidate)}>
-                  {/* eslint-disable-next-line @next/next/no-img-element -- static or generated SVG */}
-                  <img src={tiles.get(candidate.id)} alt="" width={160} height={160} loading="lazy" decoding="async" draggable={false} />
-                  <span className={styles.tileName}>{candidate.name}</span>
-                </button>
-              </li>
-            ))}
+          <ul role="list" className={styles.grid} key={results ? `search-${query}` : `${collection.id}-${group}`} aria-label={results ? "Search results" : `${collection.title} stickers`}>
+            {visible.map((entry, order) => {
+              const selected = entry.collection.id === collection.id && entry.item.id === item.id;
+              const title = stickerTitle(entry.collection, entry.item);
+              return (
+                <li key={`${entry.collection.id}/${entry.item.id}`} style={{ "--i": Math.min(order, 24) } as CSSProperties} className={styles.cell}>
+                  <button type="button" className={styles.tile} aria-pressed={selected} aria-label={title} onClick={() => openTile(entry)}>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- static or generated SVG */}
+                    <img src={tiles.get(`${entry.collection.id}/${entry.item.id}`)} alt="" width={160} height={160} loading="lazy" decoding="async" draggable={false} />
+                    <span className={styles.tileName}>{results ? title : entry.item.name}</span>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
 

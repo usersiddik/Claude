@@ -38,7 +38,7 @@ export function Collections({ universe }: { universe: readonly Collection[] }) {
     <section id="collections" className={styles.section} aria-labelledby="collections-title">
       <div className="container">
         <p className="eyebrow">
-          <span>Chapter 03 — Collections</span>
+          <span>Chapter 02 — Collections</span>
           <span>
             {live} live · {cards.length - live} on the way
           </span>

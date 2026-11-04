@@ -16,7 +16,7 @@ const PICKS = [
   ["frogs", "yay", 160, 46, 430, -8],
   ["diwali", "diya-girl", 150, 250, 470, 8],
   ["rabbits", "love", 130, 820, 488, -6],
-  ["cats", "smitten-standing", 190, 1000, 400, 4],
+  ["love", "cat-flowers", 200, 990, 392, 4],
 ] as const;
 
 export default function OpenGraphImage() {

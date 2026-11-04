@@ -173,3 +173,52 @@ export function marigold([x, y]: Point, s: number): string {
   }).join("");
   return petals + `<circle cx="${x}" cy="${y}" r="${n(8 * s)}" fill="#F07C0B"/><circle cx="${x}" cy="${y}" r="${n(3.4 * s)}" fill="#C25700"/>`;
 }
+
+/** One daisy: white petals around a golden centre. */
+function daisyHead([x, y]: Point, r: number, rotate: number, petals: string): string {
+  const ring = Array.from({ length: 12 }, (_, index) => {
+    const angle = (index / 12) * 360 + rotate;
+    return `<ellipse cx="${x}" cy="${n(y - r * 0.6)}" rx="${n(r * 0.26)}" ry="${n(r * 0.5)}" transform="rotate(${n(angle)} ${x} ${y})"/>`;
+  }).join("");
+  return (
+    `<g fill="${petals}" stroke="#CFC8BB" stroke-width="${n(r * 0.06)}">${ring}</g>` +
+    `<circle cx="${x}" cy="${y}" r="${n(r * 0.36)}" fill="#F6C232" stroke="#D18F12" stroke-width="${n(r * 0.08)}"/>` +
+    `<circle cx="${n(x - r * 0.1)}" cy="${n(y - r * 0.12)}" r="${n(r * 0.12)}" fill="#FFE9A3"/>`
+  );
+}
+
+/**
+ * A hand-tied bunch of daisies held at `grip`: stems gathered under the paws,
+ * flower heads leaning up and to the right, like a shy gift.
+ */
+export function daisyBouquet([gx, gy]: Point, s = 1, petals = "#FFFFFF"): string {
+  const cx = gx + 70 * s;
+  const cy = gy - 44 * s;
+  const heads: [number, number, number, number][] = [
+    [0, 0, 22, 0],
+    [-36, 14, 20, 12],
+    [32, -18, 21, 24],
+    [4, -44, 20, 6],
+    [-28, -26, 19, 30],
+    [40, 20, 19, 18],
+    [-10, 30, 18, 4],
+  ];
+  const stem = (hx: number, hy: number) => `M${n(gx + 2 * s)} ${n(gy)}Q${n((gx + hx) / 2 - 6 * s)} ${n((gy + hy) / 2 + 4 * s)} ${n(hx)} ${n(hy)}`;
+  const stems = heads.map(([dx, dy]) => stem(cx + dx * s, cy + dy * s)).join("");
+  const bundle = [-6, -2, 2, 6, 10].map((dx) => `M${n(gx + dx * s * 0.6)} ${n(gy - 4 * s)}L${n(gx - 28 * s + dx * s)} ${n(gy + 70 * s)}`).join("");
+  const leaf = (lx: number, ly: number, rotate: number) =>
+    `<path d="M0 0C10 -10 26 -10 34 -2C26 8 10 8 0 0Z" fill="#5DBB63" stroke="#2F7A3A" stroke-width="2" transform="translate(${n(lx)} ${n(ly)}) rotate(${rotate}) scale(${s})"/>`;
+  return (
+    `<path d="${bundle}" stroke="#2F7A3A" stroke-width="${n(5.4 * s)}" stroke-linecap="round" fill="none"/>` +
+    `<path d="${bundle}" stroke="#4FA85A" stroke-width="${n(3 * s)}" stroke-linecap="round" fill="none"/>` +
+    `<path d="${stems}" stroke="#2F7A3A" stroke-width="${n(4.6 * s)}" stroke-linecap="round" fill="none"/>` +
+    `<path d="${stems}" stroke="#4FA85A" stroke-width="${n(2.4 * s)}" stroke-linecap="round" fill="none"/>` +
+    leaf(gx + 26 * s, gy - 30 * s, -40) +
+    leaf(gx - 20 * s, gy + 44 * s, 150) +
+    heads
+      .slice()
+      .sort((a, b) => a[1] - b[1])
+      .map(([dx, dy, r, rotate]) => daisyHead([n(cx + dx * s), n(cy + dy * s)], r * s, rotate, petals))
+      .join("")
+  );
+}

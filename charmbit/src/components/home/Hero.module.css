@@ -303,8 +303,17 @@
 }
 
 @media (max-width: 767px) {
+  /* Room above and below the copy so the floating stickers frame it instead of covering it. */
   .hero {
-    padding-block: 120px 132px;
+    padding-block: 168px 200px;
+  }
+
+  .actions {
+    display: none;
+  }
+
+  .chip:nth-child(n + 7) {
+    display: none;
   }
 
   .meta {
@@ -312,14 +321,22 @@
   }
 }
 
-/* AI prompt ----------------------------------------------------------------------- */
+/* Search ---------------------------------------------------------------------------- */
 
-.prompt {
+.searchBlock {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: min(600px, 100%);
+  margin-top: 8px;
+  animation: fade 900ms var(--ease) 800ms both;
+}
+
+.search {
   display: flex;
   align-items: center;
   gap: 10px;
-  width: min(600px, 100%);
-  margin-top: 8px;
+  width: 100%;
   padding: 6px 6px 6px 18px;
   border-radius: 980px;
   background: var(--surface);
@@ -327,30 +344,22 @@
     inset 0 0 0 1px var(--hairline-strong),
     0 18px 40px -22px rgb(20 19 18 / 0.45);
   pointer-events: auto;
-  animation: fade 900ms var(--ease) 800ms both;
   transition: box-shadow 300ms var(--ease);
 }
 
-.prompt:focus-within {
+.search:focus-within {
   box-shadow:
     inset 0 0 0 1px var(--ink),
     0 0 0 5px rgb(255 182 39 / 0.22),
     0 18px 40px -22px rgb(20 19 18 / 0.45);
 }
 
-.promptIcon {
+.searchIcon {
   flex: none;
-  color: #e8890c;
-  animation: twinkle 2.4s ease-in-out infinite;
+  color: var(--text-2);
 }
 
-@keyframes twinkle {
-  50% {
-    transform: rotate(18deg) scale(1.15);
-  }
-}
-
-.promptField {
+.searchField {
   flex: 1;
   width: 0;
   min-width: 0;
@@ -358,23 +367,24 @@
   border: 0;
   background: transparent;
   font-size: 1rem;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.promptField::placeholder {
+.searchField::placeholder {
   color: var(--text-2);
 }
 
-.promptField:focus {
+.searchField:focus {
   outline: none;
 }
 
-.promptButton {
+.searchButton {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
   flex: none;
   min-height: 44px;
-  padding: 0 18px;
+  padding: 0 20px;
   border: 0;
   border-radius: 980px;
   background: var(--ink);
@@ -383,12 +393,41 @@
   transition: transform 300ms var(--ease-spring);
 }
 
-.promptButton:hover {
+.searchButton:hover {
   transform: translateX(2px);
 }
 
-.promptButton:active {
+.searchButton:active {
   transform: scale(0.97);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.chip {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 980px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  animation: fade 700ms var(--ease) both;
+  animation-delay: calc(950ms + var(--i) * 50ms);
+  transition:
+    background-color var(--fast) var(--ease),
+    transform 300ms var(--ease-spring);
+}
+
+.chip:hover {
+  background: var(--fill-hover);
+  transform: translateY(-2px);
 }
 
 .textLink {
@@ -417,7 +456,7 @@
 }
 
 @media (max-width: 480px) {
-  .promptButton {
-    padding: 0 14px;
+  .searchButton {
+    padding: 0 16px;
   }
 }

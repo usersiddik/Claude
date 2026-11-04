@@ -9,7 +9,7 @@ export function LibraryChapter({ icons, total }: { icons: readonly IconAsset[]; 
       <div className={styles.sheet}>
         <div className="container">
           <p className="eyebrow">
-            <span>Chapter 04 — Library</span>
+            <span>Chapter 03 — Library</span>
             <span>{total} stickers</span>
           </p>
           <div className={styles.head}>
@@ -20,7 +20,7 @@ export function LibraryChapter({ icons, total }: { icons: readonly IconAsset[]; 
             </h2>
             <ol className={styles.steps}>
               <li>
-                <span>01</span>Pick a collection
+                <span>01</span>Search, or pick a collection
               </li>
               <li>
                 <span>02</span>Tap a sticker, change its colours

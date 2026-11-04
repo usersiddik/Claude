@@ -65,7 +65,7 @@ export function characterDefs(id: Id, p: Palette, portable: boolean): string {
 
 /* Faces ------------------------------------------------------------------- */
 
-export type Eyes = "open" | "happy" | "wink" | "closed" | "teary" | "wide" | "angry" | "droopy" | "up" | "laugh" | "side" | "squeeze" | "hearts";
+export type Eyes = "open" | "happy" | "wink" | "closed" | "teary" | "wide" | "angry" | "droopy" | "up" | "laugh" | "side" | "squeeze" | "hearts" | "plead";
 export type Mouth = "smile" | "grin" | "open" | "o" | "frown" | "wobble" | "kiss" | "tongue" | "smirk" | "pout" | "wail";
 export type Brows = "sad" | "angry" | "raised";
 
@@ -102,7 +102,7 @@ export function lashes(p: Palette, [x, y]: Point, r: number, dir: 1 | -1, count 
   return `<path d="${lines.slice(0, count).join("")}" ${stroke}/>`;
 }
 
-export function openEye(id: Id, p: Palette, [x, y]: Point, r: number, opts: { look?: Point; pupil?: number; wet?: boolean; tiny?: boolean } = {}): string {
+export function openEye(id: Id, p: Palette, [x, y]: Point, r: number, opts: { look?: Point; pupil?: number; wet?: boolean; tiny?: boolean; shine?: boolean } = {}): string {
   const [lx, ly] = opts.look ?? [0, 0];
   const pr = opts.tiny ? r * 0.28 : (opts.pupil ?? 0.5) * r;
   return [
@@ -115,6 +115,11 @@ export function openEye(id: Id, p: Palette, [x, y]: Point, r: number, opts: { lo
     `<circle cx="${n(x + r * 0.34 + lx * 0.4)}" cy="${n(y - r * 0.38 + ly * 0.4)}" r="${n(r * (opts.wet ? 0.36 : 0.3))}" fill="#FFFFFF"/>`,
     `<circle cx="${n(x - r * 0.32)}" cy="${n(y + r * 0.36)}" r="${n(r * 0.13)}" fill="#FFFFFF" opacity="0.9"/>`,
     opts.wet ? `<circle cx="${n(x + r * 0.05)}" cy="${n(y + r * 0.1)}" r="${n(r * 0.12)}" fill="#FFFFFF" opacity="0.8"/>` : "",
+    // Big glossy "please?" eyes: a second catchlight and a soft rim of light.
+    opts.shine
+      ? `<circle cx="${n(x - r * 0.2 + lx * 0.4)}" cy="${n(y - r * 0.5 + ly * 0.4)}" r="${n(r * 0.14)}" fill="#FFFFFF" opacity="0.95"/>` +
+        `<path d="M${n(x - r * 0.62)} ${n(y + r * 0.5)}A${n(r * 0.8)} ${n(r * 0.8)} 0 0 0 ${n(x + r * 0.62)} ${n(y + r * 0.5)}" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="${n(r * 0.1)}" stroke-linecap="round"/>`
+      : "",
     opts.wet ? `<path d="M${n(x - r * 0.8)} ${n(y + r * 0.62)}Q${x} ${n(y + r * 1.08)} ${n(x + r * 0.8)} ${n(y + r * 0.62)}" stroke="#BDE6FF" stroke-width="${n(r * 0.16)}" stroke-linecap="round"/>` : "",
     // Upper lid line with a little wing: gives the eye shape and attitude.
     `<path d="M${n(x - r * 1.08)} ${n(y - r * 0.1)}C${n(x - r * 0.9)} ${n(y - r * 1.12)} ${n(x + r * 0.9)} ${n(y - r * 1.2)} ${n(x + r * 1.16)} ${n(y - r * 0.32)}" stroke="${p.line}" stroke-width="${n(r * 0.16)}" stroke-linecap="round"/>`,
@@ -177,6 +182,8 @@ export function eyes(id: Id, p: Palette, face: Face, a: FaceAnchors, side: "left
       return pick(openEye(id, p, l, r, { pupil: 0.46 }) + lidCover(l, "angryL"), openEye(id, p, rt, r, { pupil: 0.46 }) + lidCover(rt, "angryR"));
     case "droopy":
       return pick(openEye(id, p, l, r, { look: [0, r * 0.15] }) + lidCover(l, "half"), openEye(id, p, rt, r, { look: [0, r * 0.15] }) + lidCover(rt, "half"));
+    case "plead":
+      return pick(openEye(id, p, l, r * 1.06, { look: [r * 0.04, -r * 0.2], pupil: 0.8, shine: true }), openEye(id, p, rt, r * 1.06, { look: [-r * 0.04, -r * 0.2], pupil: 0.8, shine: true }));
     case "up":
       return pick(openEye(id, p, l, r, { look: [-r * 0.18, -r * 0.3] }), openEye(id, p, rt, r, { look: [-r * 0.18, -r * 0.3] }));
     case "side":

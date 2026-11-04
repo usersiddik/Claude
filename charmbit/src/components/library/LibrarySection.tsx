@@ -11,6 +11,7 @@ function LibraryWithUrl({ icons }: { icons: readonly IconAsset[] }) {
   return (
     <Library
       icons={icons}
+      initialQuery={params.get("q") ?? ""}
       // Older links used ?asset=<slug> for the icon library.
       selection={params.get("c") ? { collection: params.get("c"), sticker: params.get("s") } : params.get("asset") ? { collection: "icons", sticker: params.get("asset") } : {}}
       onSelect={({ collection, sticker }) => {

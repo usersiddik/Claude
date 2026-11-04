@@ -16,7 +16,7 @@ interface StickerActionsProps {
   onCopied?: () => void;
 }
 
-/** Copy, download, code, and share for one sticker. Shared by the library and the AI maker. */
+/** Copy, download, code, and share for one sticker. Used by the library editor. */
 export function StickerActions({ svg, title, slug, code, onCopied }: StickerActionsProps) {
   const [edge, setEdge] = useState(false);
   const actions = useStickerActions({ svg, title, slug, code }, edge, onCopied);

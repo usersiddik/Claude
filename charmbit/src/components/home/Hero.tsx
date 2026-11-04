@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { SITE } from "@/lib/site";
 import { libraryHref, stickerPath } from "@/lib/universe/paths";
 import { HERO_STICKERS } from "./hero-stickers";
-import { HeroPrompt } from "./HeroPrompt";
+import { HeroSearch } from "./HeroSearch";
 import { HeroStage } from "./HeroStage";
 import styles from "./Hero.module.css";
 
@@ -84,9 +84,9 @@ export function Hero({ total, live, names }: HeroProps) {
         <p className={styles.kicker}>{SITE.tagline}</p>
         <Headline />
         <p className={styles.lede}>
-          Describe any sticker and AI draws it from our cast, with your words lettered in. Or pick from {total} originals across {live} collections.
+          {total} original stickers across {live} collections: characters, festivals, hearts, and the words you send every day. Find one, recolour it, paste it anywhere.
         </p>
-        <HeroPrompt />
+        <HeroSearch />
         <div className={styles.actions}>
           <a href="#library" className={styles.textLink}>
             Or browse the library

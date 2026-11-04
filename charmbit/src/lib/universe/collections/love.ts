@@ -4,7 +4,9 @@ import { CAT_FUR, FLOWERS, HEARTS } from "../swatches.ts";
 import { colorOf, type LiveCollection, type StickerItem } from "../types.ts";
 
 /** Characters in love: drawn by the creature engine with the heart colour. */
-const CAST: readonly { id: string; name: string; caption: string; species: Species; reaction: ReactionId; stance?: Stance }[] = [
+/** `eyes` overrides the character's usual eye colour for that sticker. */
+const CAST: readonly { id: string; name: string; caption: string; species: Species; reaction: ReactionId; stance?: Stance; eyes?: string }[] = [
+  { id: "cat-flowers", name: "Flowers for you", caption: "For you", species: "cat", reaction: "flowers", stance: "stand", eyes: "#3A2C26" },
   { id: "cat-hug", name: "Cat hug", caption: "Hugs", species: "cat", reaction: "hug" },
   { id: "cat-cheek", name: "Cheek to cheek", caption: "Us", species: "cat", reaction: "cheek" },
   { id: "cat-shoulder", name: "Head on shoulder", caption: "My person", species: "cat", reaction: "shoulder" },
@@ -15,6 +17,8 @@ const CAST: readonly { id: string; name: string; caption: string; species: Speci
   { id: "frog-smitten", name: "Heart-eyed frog", caption: "Hopelessly yours", species: "frog", reaction: "smitten" },
   { id: "giraffe-kiss", name: "Giraffe kiss", caption: "Mwah", species: "giraffe", reaction: "kiss" },
 ];
+
+const LOVE_FUR = "#F1DCC0";
 
 const scenes: StickerItem[] = LOVE_IDS.map((id) => {
   const scene = LOVE_SCENES[id]!;
@@ -46,15 +50,17 @@ export const love: LiveCollection = {
   properties: [
     { id: "heart", kind: "color", label: "Heart", swatches: HEARTS, default: "#E4183F", custom: true },
     { id: "flower", kind: "color", label: "Flower", swatches: FLOWERS, default: "#E8264F", custom: true },
-    { id: "fur", kind: "color", label: "Cat fur", swatches: CAT_FUR, default: DEFAULT_LOOKS.cat.fur },
+    // Love's cats are cream by default, so they read as their own set next to the ginger Cats.
+    { id: "fur", kind: "color", label: "Cat fur", swatches: CAT_FUR, default: LOVE_FUR, custom: true },
   ],
   items: [...scenes, ...cast],
-  cover: ["glossy-heart", "rose", "cat-hug"],
+  cover: ["cat-flowers", "glossy-heart", "rose"],
   render: (item, values, options = {}) => {
     const heart = colorOf(values, "heart", "#E4183F");
     const entry = CAST.find((candidate) => candidate.id === item.id);
     if (!entry) return drawLove(item.id, { heart, flower: colorOf(values, "flower", "#E8264F"), portable: options.portable });
-    const look = entry.species === "cat" ? { ...DEFAULT_LOOKS.cat, fur: colorOf(values, "fur", DEFAULT_LOOKS.cat.fur) } : DEFAULT_LOOKS[entry.species];
+    const base = DEFAULT_LOOKS[entry.species];
+    const look = { fur: entry.species === "cat" ? colorOf(values, "fur", LOVE_FUR) : base.fur, eyes: entry.eyes ?? base.eyes };
     return drawCreature({ ...DEFAULT_CREATURE, species: entry.species, reaction: entry.reaction, stance: entry.stance ?? "sit", look, heart, portable: options.portable });
   },
 };
