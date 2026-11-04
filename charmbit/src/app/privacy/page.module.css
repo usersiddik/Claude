@@ -1,0 +1,48 @@
+.main {
+  padding: var(--space-8) 0 var(--section-y);
+}
+
+.article {
+  max-width: calc(720px + var(--gutter) * 2);
+  line-height: 1.6;
+}
+
+.title {
+  margin: var(--space-6) 0 var(--space-5);
+  font-size: clamp(3rem, 9vw, 6rem);
+}
+
+.lede {
+  font-size: 1.125rem;
+}
+
+.article h2 {
+  margin: var(--space-7) 0 var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--hairline);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.article p,
+.article ul {
+  margin: 0 0 var(--space-4);
+}
+
+.article ul {
+  padding-left: 1.25em;
+}
+
+.article li + li {
+  margin-top: var(--space-2);
+}
+
+.article a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+.back {
+  margin-top: var(--space-8);
+  color: var(--text-2);
+}
