@@ -1,20 +1,17 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { AssetArt } from "@/components/ui/AssetArt";
 import {
   BlushGlyph,
   CheckerIcon,
   CodeIcon,
   CopyIcon,
-  CoupleIcon,
   DownloadIcon,
   GlassIcon,
-  HeartGlyph,
   MoonIcon,
   ShareIcon,
   ShuffleIcon,
-  SingleIcon,
   SparkleIcon,
   StickerGlyph,
   StripesIcon,
@@ -24,82 +21,114 @@ import {
 import { Popover } from "@/components/ui/Popover";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { ExportFormat } from "@/lib/assets/types";
-import { exportSubject, renderSubject, subjectSlug, subjectTitle, type StudioSubject } from "@/lib/characters/export";
+import { silhouetteOf } from "@/lib/characters/draw";
+import { exportSpec, renderSpec, stickerSlug, stickerTitle } from "@/lib/characters/export";
 import {
-  DEFAULT_CHARACTER,
+  CATEGORIES,
+  DEFAULT_SPEC,
   EYE_SWATCHES,
+  findReaction,
   FUR_SWATCHES,
+  OUTFIT_SWATCHES,
   REACTIONS,
+  type Category,
   type Look,
-  type Pose,
   type ReactionId,
   type Species,
+  type StickerSpec,
 } from "@/lib/characters/options";
-import { silhouetteOf } from "@/lib/characters/render";
 import { copyText } from "@/lib/clipboard";
 import { announceCopy } from "@/lib/copy-events";
 import { canShareFiles, copyImage, download, renderForWhatsApp, renderSticker, shareSticker } from "@/lib/sticker";
 import { ColorPicker } from "./ColorPicker";
 import styles from "./Studio.module.css";
 
-type Mode = "single" | "couple";
 type Backdrop = "aurora" | "light" | "dark" | "grid";
 type Size = "s" | "m" | "l";
+type Filter = "all" | Category;
 
 const SIZE_PX: Record<Size, number> = { s: 256, m: 512, l: 1024 };
 const subscribeNothing = () => () => {};
 const pick = <T,>(items: readonly T[]): T => items[Math.floor(Math.random() * items.length)]!;
+const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 interface Finish {
   glass: boolean;
   blush: boolean;
   stripes: boolean;
   whiskers: boolean;
-  heart: boolean;
   edge: boolean;
 }
 
-/** The Sticker Studio: one character, any colour, six moods, solo or as a couple. */
+/** The Sticker Studio: pick a mood from the carousel, then make it yours. */
 export function Studio() {
-  const [mode, setMode] = useState<Mode>("single");
-  const [species, setSpecies] = useState<Species>("cat");
-  const [reaction, setReaction] = useState<ReactionId>(DEFAULT_CHARACTER.reaction);
-  const [look, setLook] = useState<Look>({ fur: DEFAULT_CHARACTER.fur, eyes: DEFAULT_CHARACTER.eyes });
-  const [partner, setPartner] = useState<Look>({ fur: "#55555F", eyes: "#2F9A68" });
-  const [pose, setPose] = useState<Pose>("snuggle");
-  const [finish, setFinish] = useState<Finish>({ glass: true, blush: true, stripes: true, whiskers: true, heart: true, edge: true });
+  const [species, setSpecies] = useState<Species>(DEFAULT_SPEC.species);
+  const [reaction, setReaction] = useState<ReactionId>(DEFAULT_SPEC.reaction);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [look, setLook] = useState<Look>(DEFAULT_SPEC.look);
+  const [partner, setPartner] = useState<Look>(DEFAULT_SPEC.partner);
+  const [outfit, setOutfit] = useState(DEFAULT_SPEC.outfit);
+  const [finish, setFinish] = useState<Finish>({ glass: false, blush: true, stripes: true, whiskers: true, edge: true });
   const [size, setSize] = useState<Size>("m");
   const [backdrop, setBackdrop] = useState<Backdrop>("aurora");
   const shareable = useSyncExternalStore(subscribeNothing, canShareFiles, () => false);
 
-  const subject: StudioSubject = useMemo(
-    () =>
-      mode === "single"
-        ? { kind: "single", options: { species, reaction, ...look, glass: finish.glass, blush: finish.blush, stripes: finish.stripes, whiskers: finish.whiskers } }
-        : { kind: "couple", options: { a: look, b: partner, pose, reaction, glass: finish.glass, blush: finish.blush, stripes: finish.stripes, whiskers: finish.whiskers, heart: finish.heart } },
-    [mode, species, reaction, look, partner, pose, finish],
+  const current = findReaction(reaction);
+  const spec: StickerSpec = useMemo(
+    () => ({ species, reaction, look, partner, outfit, glass: finish.glass, blush: finish.blush, stripes: finish.stripes, whiskers: finish.whiskers }),
+    [species, reaction, look, partner, outfit, finish],
   );
-  const svg = useMemo(() => renderSubject(subject), [subject]);
-  const title = subjectTitle(subject);
-  const slug = subjectSlug(subject);
-  const caption = REACTIONS.find((item) => item.id === reaction)?.caption ?? "";
+  const svg = useMemo(() => renderSpec(spec), [spec]);
+  const title = stickerTitle(spec);
+  const slug = stickerSlug(spec);
 
-  // Thumbnails can trail a frame behind while colours are being dragged, and use the
-  // filter-free variant: blur and fur texture are invisible at 46px but cost paint time.
-  const deferred = useDeferredValue(subject);
+  // Reactions available for this character, filtered by category.
+  const available = useMemo(() => REACTIONS.filter((item) => item.species.includes(species)), [species]);
+  const visible = useMemo(() => available.filter((item) => filter === "all" || item.category === filter), [available, filter]);
+  const categories = CATEGORIES.filter((category) => available.some((item) => item.category === category.id));
+
+  // Thumbnails trail a frame behind and use the filter-free variant (cheaper to paint at 52px).
+  const deferred = useDeferredValue(spec);
   const thumbnails = useMemo(
-    () =>
-      REACTIONS.map((item) =>
-        renderSubject(
-          deferred.kind === "single"
-            ? { kind: "single", options: { ...deferred.options, reaction: item.id } }
-            : { kind: "couple", options: { ...deferred.options, reaction: item.id } },
-          true,
-        ),
-      ),
-    [deferred],
+    () => new Map(visible.map((item) => [item.id, renderSpec({ ...deferred, reaction: item.id }, true)])),
+    [visible, deferred],
   );
 
+  /* Carousel ---------------------------------------------------------------- */
+  const track = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ start: true, end: false });
+  const measure = useCallback(() => {
+    const node = track.current;
+    if (!node) return;
+    setEdges({ start: node.scrollLeft <= 2, end: node.scrollLeft + node.clientWidth >= node.scrollWidth - 2 });
+  }, []);
+  useEffect(() => {
+    const node = track.current;
+    if (!node) return;
+    const observer = new ResizeObserver(() => measure());
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [measure]);
+  const scroll = (direction: 1 | -1) => {
+    const node = track.current;
+    if (!node) return;
+    node.scrollBy({ left: direction * node.clientWidth * 0.8, behavior: reducedMotion() ? "auto" : "smooth" });
+  };
+
+  function chooseFilter(next: Filter) {
+    setFilter(next);
+    const first = available.find((item) => next === "all" || item.category === next);
+    if (first && next !== "all" && findReaction(reaction).category !== next) setReaction(first.id);
+    track.current?.scrollTo({ left: 0, behavior: reducedMotion() ? "auto" : "smooth" });
+  }
+
+  function chooseSpecies(next: Species) {
+    setSpecies(next);
+    if (!findReaction(reaction).species.includes(next)) setReaction("hi");
+    if (!REACTIONS.some((item) => item.species.includes(next) && (filter === "all" || item.category === filter))) setFilter("all");
+  }
+
+  /* Exports ----------------------------------------------------------------- */
   const stickerOptions = { border: finish.edge, silhouette: silhouetteOf(svg) };
   const notify = (format: string, ok: boolean, verb?: "Copied" | "Saved") => announceCopy({ title, format, svg, ink: null, ok, verb });
 
@@ -138,13 +167,13 @@ export function Studio() {
   }
 
   function saveSvg() {
-    download(new Blob([exportSubject(subject, "svg")], { type: "image/svg+xml" }), `${slug}.svg`);
+    download(new Blob([exportSpec(spec, "svg")], { type: "image/svg+xml" }), `${slug}.svg`);
     notify("SVG", true, "Saved");
   }
 
   async function copyCode(format: ExportFormat, label: string) {
     try {
-      await copyText(exportSubject(subject, format));
+      await copyText(exportSpec(spec, format));
       notify(label, true);
     } catch {
       notify(label, false);
@@ -162,39 +191,38 @@ export function Studio() {
   function surprise() {
     setLook({ fur: pick(FUR_SWATCHES).hex, eyes: pick(EYE_SWATCHES).hex });
     setPartner({ fur: pick(FUR_SWATCHES).hex, eyes: pick(EYE_SWATCHES).hex });
-    setReaction(pick(REACTIONS).id);
+    setOutfit(pick(OUTFIT_SWATCHES).hex);
+    setReaction(pick(visible.length > 0 ? visible : available).id);
   }
 
   const toggle = (key: keyof Finish) => setFinish((previous) => ({ ...previous, [key]: !previous[key] }));
-  const isCat = mode === "couple" || species === "cat";
+  const isCat = species === "cat" || Boolean(current.pair);
   const toggles: { key: keyof Finish; label: string; icon: ReactNode; show: boolean }[] = [
     { key: "glass", label: isCat ? "Glass ears" : "Glass body", icon: <GlassIcon size={16} />, show: true },
     { key: "blush", label: "Blush", icon: <BlushGlyph size={16} />, show: true },
     { key: "stripes", label: "Stripes", icon: <StripesIcon size={16} />, show: isCat },
     { key: "whiskers", label: "Whiskers", icon: <WhiskersIcon size={16} />, show: isCat },
-    { key: "heart", label: "Heart", icon: <HeartGlyph size={16} />, show: mode === "couple" },
     { key: "edge", label: "Sticker edge", icon: <StickerGlyph size={16} />, show: true },
   ];
 
   return (
     <div className={styles.studio} id="studio">
-      <div
-        className={styles.stage}
-        data-backdrop={backdrop}
-        style={{ "--glow": look.fur, "--glow-2": mode === "couple" ? partner.fur : look.eyes } as CSSProperties}
-      >
+      <div className={styles.stage} data-backdrop={backdrop} style={{ "--glow": look.fur, "--glow-2": current.pair ? partner.fur : current.outfit ? outfit : look.eyes } as CSSProperties}>
         <div className={styles.stageTop}>
-          <SegmentedControl<Mode>
-            name="studio-mode"
-            label="Mode"
-            options={[
-              { id: "single", label: "Single", icon: <SingleIcon size={15} /> },
-              { id: "couple", label: "Couple", icon: <CoupleIcon size={15} /> },
-            ]}
-            value={mode}
-            onChange={setMode}
-            size="sm"
-          />
+          <div className={styles.categories} role="group" aria-label="Categories">
+            {[{ id: "all" as const, name: "All" }, ...categories].map((category) => (
+              <button
+                key={category.id}
+                type="button"
+                className={styles.category}
+                aria-pressed={filter === category.id}
+                onClick={() => chooseFilter(category.id)}
+              >
+                {category.id === "diwali" ? <SparkleIcon size={13} /> : null}
+                {category.name}
+              </button>
+            ))}
+          </div>
           <SegmentedControl<Backdrop>
             name="studio-backdrop"
             label="Backdrop"
@@ -213,26 +241,37 @@ export function Studio() {
 
         <div className={styles.viewport}>
           <span className={styles.halo} aria-hidden="true" />
-          <p key={`${reaction}-${mode}`} className={styles.bubble}>
-            {caption}
+          <p key={reaction} className={styles.bubble}>
+            {current.caption}
           </p>
-          <AssetArt asset={{ sourceSvg: svg }} label={title} className={styles.art} />
-          <span className={styles.floor} aria-hidden="true" />
+          <AssetArt key={`${reaction}-${species}`} asset={{ sourceSvg: svg }} label={title} className={styles.art} />
         </div>
 
-        <div className={styles.dock} role="group" aria-label="Mood">
-          {REACTIONS.map((item, index) => (
-            <button
-              key={item.id}
-              type="button"
-              className={styles.dockItem}
-              aria-pressed={item.id === reaction}
-              onClick={() => setReaction(item.id)}
-            >
-              <AssetArt asset={{ sourceSvg: thumbnails[index] ?? svg }} className={styles.dockArt} />
-              <span>{item.name}</span>
-            </button>
-          ))}
+        <div className={styles.carousel}>
+          <button type="button" className={styles.arrow} aria-label="Previous reactions" onClick={() => scroll(-1)} disabled={edges.start}>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m14.5 6-6 6 6 6" />
+            </svg>
+          </button>
+          <div ref={track} className={styles.track} role="group" aria-label="Reactions" onScroll={measure}>
+            {visible.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={styles.tile}
+                aria-pressed={item.id === reaction}
+                onClick={() => setReaction(item.id)}
+              >
+                <AssetArt asset={{ sourceSvg: thumbnails.get(item.id) ?? svg }} className={styles.tileArt} />
+                <span>{item.name}</span>
+              </button>
+            ))}
+          </div>
+          <button type="button" className={styles.arrow} aria-label="More reactions" onClick={() => scroll(1)} disabled={edges.end}>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m9.5 6 6 6-6 6" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -245,43 +284,36 @@ export function Studio() {
           </button>
         </div>
 
-        {mode === "single" ? (
-          <SegmentedControl<Species>
-            name="studio-species"
-            label="Character"
-            options={[
-              { id: "cat", label: "Cat" },
-              { id: "ghost", label: "Ghost" },
-            ]}
-            value={species}
-            onChange={setSpecies}
-          />
-        ) : (
-          <SegmentedControl<Pose>
-            name="studio-pose"
-            label="Pose"
-            options={[
-              { id: "snuggle", label: "Head on shoulder" },
-              { id: "cheek", label: "Cheek to cheek" },
-            ]}
-            value={pose}
-            onChange={setPose}
-          />
-        )}
+        <SegmentedControl<Species>
+          name="studio-species"
+          label="Character"
+          options={[
+            { id: "cat", label: "Cat" },
+            { id: "ghost", label: "Ghost" },
+          ]}
+          value={species}
+          onChange={chooseSpecies}
+        />
 
-        {mode === "single" ? (
-          <div className={styles.colors}>
-            <ColorPicker name="studio-fur" label={species === "cat" ? "Fur" : "Body"} swatches={FUR_SWATCHES} value={look.fur} onChange={(fur) => setLook((value) => ({ ...value, fur }))} />
-            <ColorPicker name="studio-eyes" label="Eyes" swatches={EYE_SWATCHES} value={look.eyes} onChange={(eyes) => setLook((value) => ({ ...value, eyes }))} />
-          </div>
-        ) : (
-          <div className={styles.colors}>
-            <ColorPicker name="studio-fur-a" label="Left cat" swatches={FUR_SWATCHES} value={look.fur} onChange={(fur) => setLook((value) => ({ ...value, fur }))} />
-            <ColorPicker name="studio-eyes-a" label="Left eyes" swatches={EYE_SWATCHES} value={look.eyes} onChange={(eyes) => setLook((value) => ({ ...value, eyes }))} custom={false} />
-            <ColorPicker name="studio-fur-b" label="Right cat" swatches={FUR_SWATCHES} value={partner.fur} onChange={(fur) => setPartner((value) => ({ ...value, fur }))} />
-            <ColorPicker name="studio-eyes-b" label="Right eyes" swatches={EYE_SWATCHES} value={partner.eyes} onChange={(eyes) => setPartner((value) => ({ ...value, eyes }))} custom={false} />
-          </div>
-        )}
+        <div className={styles.colors}>
+          <ColorPicker
+            name="studio-fur"
+            label={current.pair ? "Left cat" : species === "cat" ? "Fur" : "Body"}
+            swatches={FUR_SWATCHES}
+            value={look.fur}
+            onChange={(fur) => setLook((value) => ({ ...value, fur }))}
+          />
+          <ColorPicker name="studio-eyes" label={current.pair ? "Left eyes" : "Eyes"} swatches={EYE_SWATCHES} value={look.eyes} onChange={(eyes) => setLook((value) => ({ ...value, eyes }))} />
+          {current.pair ? (
+            <>
+              <ColorPicker name="studio-partner" label="Right cat" swatches={FUR_SWATCHES} value={partner.fur} onChange={(fur) => setPartner((value) => ({ ...value, fur }))} />
+              <ColorPicker name="studio-partner-eyes" label="Right eyes" swatches={EYE_SWATCHES} value={partner.eyes} onChange={(eyes) => setPartner((value) => ({ ...value, eyes }))} custom={false} />
+            </>
+          ) : null}
+          {current.outfit && (species === "cat" || current.pair) ? (
+            <ColorPicker name="studio-outfit" label={current.pair ? "Matching outfits" : "Outfit"} swatches={OUTFIT_SWATCHES} value={outfit} onChange={setOutfit} />
+          ) : null}
+        </div>
 
         <div className={styles.toggles} role="group" aria-label="Finish">
           {toggles
@@ -295,9 +327,7 @@ export function Studio() {
         </div>
 
         <div className={styles.sizeRow}>
-          <span className={styles.rowLabel} id="studio-size-label">
-            Size
-          </span>
+          <span className={styles.rowLabel}>Size</span>
           <SegmentedControl<Size>
             name="studio-size"
             label="Export size"
@@ -326,7 +356,7 @@ export function Studio() {
                 WhatsApp sticker <span>512 px WebP</span>
               </button>
               <button type="button" data-dismiss onClick={saveSvg}>
-                SVG <span>vector, glass and all</span>
+                SVG <span>vector, scales to any size</span>
               </button>
             </div>
           </Popover>

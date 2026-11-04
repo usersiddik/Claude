@@ -2,13 +2,14 @@ import Link from "next/link";
 import { AssetArt } from "@/components/ui/AssetArt";
 import { CheckIcon } from "@/components/ui/icons";
 import type { Asset } from "@/lib/assets/types";
-import { renderCouple } from "@/lib/characters/render";
+import { drawSticker } from "@/lib/characters/draw";
+import { DEFAULT_SPEC } from "@/lib/characters/options";
 import { primaryFill } from "@/lib/customize";
 import { buildExport, FORMATS } from "@/lib/exports";
 import { FillInkDemo } from "./FillInkDemo";
 import styles from "./Bento.module.css";
 
-const COUPLE_TAGS = ["Head on shoulder", "Cheek to cheek", "Any two colours", "Six moods"];
+const COUPLE_TAGS = ["Hug", "Head on shoulder", "Cheek to cheek", "Diwali couples", "Matching outfits"];
 
 const CARE = [
   { title: "Clean vector source", body: "Each asset is a small SVG on a 96- or 24-unit grid. No raster images, no embedded fonts." },
@@ -27,8 +28,8 @@ function excerpt(code: string, startsWith: string, lines = 4): string {
 export function Bento({ assets }: { assets: readonly Asset[] }) {
   const mochi = assets.find((asset) => asset.slug === "mochi") ?? assets[0];
   const couples = [
-    { label: "Head on shoulder", svg: renderCouple({ a: { fur: "#EED6B8", eyes: "#B9772A" }, b: { fur: "#55555F", eyes: "#2F9A68" }, pose: "snuggle", reaction: "blush", glass: true, blush: true, stripes: true, whiskers: true, heart: true }) },
-    { label: "Cheek to cheek", svg: renderCouple({ a: { fur: "#F2A04A", eyes: "#B9772A" }, b: { fur: "#F6F3EF", eyes: "#3F8DDB" }, pose: "cheek", reaction: "love", glass: true, blush: true, stripes: true, whiskers: true, heart: true }) },
+    { label: "Head on shoulder", svg: drawSticker({ ...DEFAULT_SPEC, reaction: "shoulder", look: { fur: "#F1DCC0", eyes: "#C27A22" }, partner: { fur: "#5A5B66", eyes: "#2E9E6A" } }) },
+    { label: "Diya for two", svg: drawSticker({ ...DEFAULT_SPEC, reaction: "diwali-diya" }) },
   ];
   if (!mochi) return null;
 
@@ -105,7 +106,7 @@ export function Bento({ assets }: { assets: readonly Asset[] }) {
                 <span className={styles.soon}>New</span>
               </p>
               <h3 className={styles.cardTitle}>Couples. Better together.</h3>
-              <p className={styles.body}>Two cats, your two colours, one shared moment. Made for the people you love.</p>
+              <p className={styles.body}>Two cats, your two colours, one shared moment, including Diwali scenes with matching outfits.</p>
             </div>
             <ul role="list" className={styles.duoArt}>
               {couples.map((couple) => (

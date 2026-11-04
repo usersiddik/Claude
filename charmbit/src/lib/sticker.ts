@@ -76,11 +76,9 @@ export async function renderSticker(svg: string, options: StickerOptions = {}): 
     ring.fillStyle = "#FFFFFF";
     ring.fillRect(0, 0, size, size);
 
-    context.shadowColor = "rgba(0, 0, 0, 0.18)";
-    context.shadowBlur = size * 0.025;
-    context.shadowOffsetY = size * 0.008;
+    // No drop shadow: chat apps render stickers on any background, where a baked-in
+    // shadow looks like a smudge under the sticker.
     context.drawImage(outline, 0, 0);
-    context.shadowColor = "transparent";
   }
 
   context.drawImage(image, padding, padding, art, art);

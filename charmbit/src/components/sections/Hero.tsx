@@ -7,7 +7,7 @@ export function Hero() {
     <section className={styles.hero} aria-labelledby="hero-title">
       <div className={`container ${styles.inner}`}>
         <p className={styles.eyebrow}>
-          <span className={styles.new}>New</span> Sticker Studio, now with couples
+          <span className={styles.new}>New</span> Diwali stickers are here
         </p>
         <h1 id="hero-title" className={styles.title}>
           Tiny charms.
@@ -15,8 +15,8 @@ export function Hero() {
           Serious code.
         </h1>
         <p className={styles.lede}>
-          Design your own sticker cat: pick a mood, any colour, and a glass finish. Send it to the people you love, or
-          ship it in your app.
+          27 reactions, from good-morning coffee to Diwali sparklers. Pick a mood, make it any colour, and send it to the
+          people you love, or ship it in your app.
         </p>
         <div className={styles.ctas}>
           <Link href="#studio" className={styles.primary}>

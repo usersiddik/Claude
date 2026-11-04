@@ -24,7 +24,10 @@
   --text: #f5f5f7;
   position: relative;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
+  /* The carousel scrolls; it must not set the stage's width. */
+  min-width: 0;
   min-height: 520px;
   border-radius: 32px;
   overflow: hidden;
@@ -89,10 +92,14 @@
 
 .stageTop {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   padding: 16px;
+}
+
+.stageTop > fieldset {
+  flex: none;
 }
 
 .stageTop fieldset {
@@ -126,8 +133,16 @@
   position: relative;
   width: min(440px, 80%);
   aspect-ratio: 1;
-  filter: drop-shadow(0 28px 36px rgb(0 0 0 / 0.35));
-  animation: hover 5.5s var(--spring) infinite alternate;
+  animation:
+    appear var(--slow) var(--spring),
+    hover 5.5s var(--spring) var(--slow) infinite alternate;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
 }
 
 @keyframes hover {
@@ -138,16 +153,6 @@
   to {
     transform: translateY(-8px) rotate(1deg);
   }
-}
-
-.floor {
-  position: absolute;
-  bottom: 6%;
-  width: min(300px, 50%);
-  height: 26px;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(0 0 0 / 0.45), transparent);
-  pointer-events: none;
 }
 
 .bubble {
@@ -173,69 +178,169 @@
   }
 }
 
-/* Mood dock */
-.dock {
+/* Categories */
+.categories {
   display: flex;
+  flex: 1;
   gap: 6px;
-  justify-self: center;
-  max-width: calc(100% - 24px);
-  margin-bottom: 16px;
-  padding: 6px;
-  border-radius: 22px;
-  background: rgb(255 255 255 / 0.1);
-  -webkit-backdrop-filter: saturate(160%) blur(20px);
-  backdrop-filter: saturate(160%) blur(20px);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14), 0 12px 32px -16px rgb(0 0 0 / 0.6);
+  min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }
 
-.stage[data-backdrop="light"] .dock,
-.stage[data-backdrop="grid"] .dock {
-  background: rgb(255 255 255 / 0.75);
+.categories::-webkit-scrollbar {
+  display: none;
+}
+
+.category {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 5px;
+  min-height: 32px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 980px;
+  background: var(--fill);
+  color: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  transition: background-color var(--fast) var(--spring), transform var(--fast) var(--spring);
+}
+
+.category:hover {
+  background: var(--pill);
+}
+
+.category:active {
+  transform: scale(0.96);
+}
+
+.category[aria-pressed="true"] {
+  background: #ffffff;
+  color: #1d1d1f;
+}
+
+.stage[data-backdrop="light"] .category[aria-pressed="true"],
+.stage[data-backdrop="grid"] .category[aria-pressed="true"] {
+  background: #1d1d1f;
+  color: #ffffff;
+}
+
+/* Reaction carousel */
+.carousel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 12px 14px;
+  padding: 6px;
+  border-radius: 24px;
+  background: rgb(255 255 255 / 0.1);
+  -webkit-backdrop-filter: saturate(160%) blur(20px);
+  backdrop-filter: saturate(160%) blur(20px);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14), 0 12px 32px -16px rgb(0 0 0 / 0.6);
+}
+
+.stage[data-backdrop="light"] .carousel,
+.stage[data-backdrop="grid"] .carousel {
+  background: rgb(255 255 255 / 0.78);
   box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.06), 0 12px 32px -16px rgb(0 0 0 / 0.3);
 }
 
-.dockItem {
+.arrow {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.9);
+  color: #1d1d1f;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.2);
+  transition: transform var(--fast) var(--spring), opacity var(--fast) var(--spring);
+}
+
+.arrow:hover:not(:disabled) {
+  transform: scale(1.08);
+}
+
+.arrow:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.track {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.tile {
   display: grid;
   justify-items: center;
   flex: none;
   gap: 2px;
-  width: 68px;
-  padding: 6px 4px 6px;
+  width: 76px;
+  padding: 6px 4px;
   border: 0;
   border-radius: 16px;
   background: transparent;
   color: inherit;
   font-size: 0.6875rem;
   font-weight: 500;
-  opacity: 0.78;
+  line-height: 1.15;
+  text-align: center;
+  scroll-snap-align: start;
+  opacity: 0.8;
   transition:
     transform var(--med) var(--spring),
     opacity var(--fast) var(--spring),
     background-color var(--fast) var(--spring);
 }
 
-.dockItem:hover {
+.tile span {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tile:hover {
   opacity: 1;
   transform: translateY(-3px);
 }
 
-.dockItem[aria-pressed="true"] {
+.tile[aria-pressed="true"] {
   opacity: 1;
-  background: rgb(255 255 255 / 0.16);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.3);
+  background: rgb(255 255 255 / 0.18);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.32);
 }
 
-.stage[data-backdrop="light"] .dockItem[aria-pressed="true"],
-.stage[data-backdrop="grid"] .dockItem[aria-pressed="true"] {
+.stage[data-backdrop="light"] .tile[aria-pressed="true"],
+.stage[data-backdrop="grid"] .tile[aria-pressed="true"] {
   background: #ffffff;
   box-shadow: 0 2px 8px rgb(0 0 0 / 0.12);
 }
 
-.dockArt {
-  width: 46px;
-  height: 46px;
+.tileArt {
+  width: 54px;
+  height: 54px;
 }
 
 /* Panel ------------------------------------------------------------------ */

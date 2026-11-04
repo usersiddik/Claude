@@ -2,21 +2,12 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { findSvgProblems } from "../src/lib/assets/svg.ts";
 import { mix, normalizeHex } from "../src/lib/characters/color.ts";
-import { exportSubject, renderSubject } from "../src/lib/characters/export.ts";
-import { DEFAULT_CHARACTER, REACTIONS } from "../src/lib/characters/options.ts";
-import { renderCharacter, renderCouple, silhouetteOf } from "../src/lib/characters/render.ts";
+import { drawSticker, silhouetteOf } from "../src/lib/characters/draw.ts";
+import { exportSpec, stickerSlug, stickerTitle } from "../src/lib/characters/export.ts";
+import { CATEGORIES, DEFAULT_SPEC, REACTIONS } from "../src/lib/characters/options.ts";
 
-const couple = {
-  a: { fur: "#EED6B8", eyes: "#B9772A" },
-  b: { fur: "#55555F", eyes: "#2F9A68" },
-  pose: "snuggle" as const,
-  reaction: "love" as const,
-  glass: true,
-  blush: true,
-  stripes: true,
-  whiskers: true,
-  heart: true,
-};
+const refsResolve = (svg: string) =>
+  [...svg.matchAll(/url\(#([^)]+)\)/g)].every(([, ref]) => svg.includes(`id="${ref}"`));
 
 describe("colour helpers", () => {
   it("normalises and mixes hex colours", () => {
@@ -26,60 +17,71 @@ describe("colour helpers", () => {
   });
 });
 
-describe("character renderer", () => {
-  it("renders every reaction for both species as safe SVG", () => {
-    for (const species of ["cat", "ghost"] as const) {
-      for (const reaction of REACTIONS) {
-        const svg = renderCharacter({ ...DEFAULT_CHARACTER, species, reaction: reaction.id });
-        assert.deepEqual(findSvgProblems(svg), [], `${species}/${reaction.id}`);
-        for (const [, ref] of svg.matchAll(/url\(#([^)]+)\)/g)) assert.ok(svg.includes(`id="${ref}"`), `${species}/${reaction.id}: url(#${ref})`);
+describe("reaction catalogue", () => {
+  it("has unique ids, a known category for each, and every category is used", () => {
+    assert.equal(new Set(REACTIONS.map((reaction) => reaction.id)).size, REACTIONS.length);
+    for (const category of CATEGORIES) assert.ok(REACTIONS.some((reaction) => reaction.category === category.id), category.id);
+    assert.ok(REACTIONS.length >= 25);
+  });
+});
+
+describe("sticker drawing", () => {
+  it("draws every reaction for every supported species as safe SVG with resolvable references", () => {
+    for (const reaction of REACTIONS) {
+      for (const species of reaction.species) {
+        for (const glass of [false, true]) {
+          const svg = drawSticker({ ...DEFAULT_SPEC, species, reaction: reaction.id, glass });
+          assert.deepEqual(findSvgProblems(svg), [], `${species}/${reaction.id}`);
+          assert.ok(refsResolve(svg), `${species}/${reaction.id}${glass ? "/glass" : ""}: unresolved url()`);
+          assert.ok(!svg.includes("__gold__"), `${reaction.id}: placeholder left in`);
+        }
       }
     }
   });
 
-  it("applies the chosen colours and toggles", () => {
-    const svg = renderCharacter({ ...DEFAULT_CHARACTER, fur: "#C6B3EE", glass: false, blush: false, whiskers: false });
-    assert.ok(svg.includes("#C6B3EE"));
-    assert.ok(!svg.includes('data-part="whiskers"'));
-    assert.ok(!/url\(#[^)]*-blush\)/.test(svg), "blush gradient unused");
-    assert.ok(renderCharacter({ ...DEFAULT_CHARACTER, glass: true }).includes("-glass)"));
+  it("falls back to cats for pair reactions", () => {
+    const svg = drawSticker({ ...DEFAULT_SPEC, species: "ghost", reaction: "hug" });
+    assert.ok(svg.includes(DEFAULT_SPEC.partner.fur));
   });
 
-  it("gives different variants different id namespaces", () => {
-    const first = renderCharacter({ ...DEFAULT_CHARACTER, fur: "#F2A04A" }).match(/id="([^"]+)"/)?.[1];
-    const second = renderCharacter({ ...DEFAULT_CHARACTER, fur: "#7F96C6" }).match(/id="([^"]+)"/)?.[1];
+  it("applies colours, outfit, and toggles", () => {
+    const svg = drawSticker({ ...DEFAULT_SPEC, look: { fur: "#C8B6EF", eyes: "#3E8FDE" }, whiskers: false, blush: false });
+    assert.ok(svg.includes("#C8B6EF") && svg.includes("#3E8FDE"));
+    assert.ok(!svg.includes('data-part="whiskers"'));
+    assert.ok(!/url\(#[^)]*-blush\)/.test(svg));
+    const festive = drawSticker({ ...DEFAULT_SPEC, reaction: "diwali-diya", outfit: "#0E8A5C" });
+    assert.ok(/url\(#[^)]*-outfit\)/.test(festive), "outfit gradient used");
+    assert.ok(festive.includes("#0E8A5C") || festive.includes("#0e8a5c") || /stop-color="#[0-9A-F]{6}"/.test(festive));
+  });
+
+  it("namespaces ids per variant", () => {
+    const first = drawSticker({ ...DEFAULT_SPEC, look: { fur: "#F4A24C", eyes: "#2E9E6A" } }).match(/id="([^"]+)"/)?.[1];
+    const second = drawSticker({ ...DEFAULT_SPEC, look: { fur: "#8EA3CF", eyes: "#2E9E6A" } }).match(/id="([^"]+)"/)?.[1];
     assert.notEqual(first, second);
   });
 
-  it("renders both couple poses with resolvable references", () => {
-    for (const pose of ["snuggle", "cheek"] as const) {
-      const svg = renderCouple({ ...couple, pose });
-      assert.deepEqual(findSvgProblems(svg), [], pose);
-      for (const [, ref] of svg.matchAll(/url\(#([^)]+)\)/g)) assert.ok(svg.includes(`id="${ref}"`), `${pose}: url(#${ref})`);
+  it("portable output has no filters", () => {
+    for (const reaction of ["hi", "fever", "diwali-hug"] as const) {
+      assert.ok(!drawSticker({ ...DEFAULT_SPEC, reaction, portable: true }).includes("<filter"), reaction);
     }
   });
 
-  it("portable output has no filters", () => {
-    assert.ok(!renderCharacter({ ...DEFAULT_CHARACTER, portable: true }).includes("<filter"));
-    assert.ok(!renderCouple({ ...couple, portable: true }).includes("<filter"));
-  });
-
   it("silhouette drops whiskers only", () => {
-    const svg = renderCharacter(DEFAULT_CHARACTER);
+    const svg = drawSticker(DEFAULT_SPEC);
     const shape = silhouetteOf(svg);
     assert.ok(!shape.includes('data-part="whiskers"'));
     assert.ok(shape.length < svg.length && shape.includes("<path"));
   });
 });
 
-describe("studio exports", () => {
-  const subject = { kind: "single" as const, options: DEFAULT_CHARACTER };
-  it("exports SVG, React, and filter-free Flutter", () => {
-    assert.match(exportSubject(subject, "svg"), /<title>Cat Love<\/title>/);
-    assert.match(exportSubject(subject, "react"), /export function CatLoveCharm/);
-    const dart = exportSubject(subject, "flutter");
-    assert.match(dart, /class CatLoveCharm extends StatelessWidget/);
+describe("sticker exports", () => {
+  it("titles and exports single and pair stickers", () => {
+    assert.equal(stickerTitle(DEFAULT_SPEC), "Cat Hi");
+    assert.equal(stickerSlug({ ...DEFAULT_SPEC, reaction: "hug" }), "cat-couple-hug");
+    assert.match(exportSpec(DEFAULT_SPEC, "svg"), /<title>Cat Hi<\/title>/);
+    assert.match(exportSpec({ ...DEFAULT_SPEC, reaction: "love" }, "react"), /export function CatLoveCharm/);
+    const dart = exportSpec({ ...DEFAULT_SPEC, reaction: "fever" }, "flutter");
+    assert.match(dart, /class CatFeverCharm extends StatelessWidget/);
     assert.ok(!dart.includes("<filter"));
-    assert.ok(renderSubject(subject).includes("<filter"));
   });
 });

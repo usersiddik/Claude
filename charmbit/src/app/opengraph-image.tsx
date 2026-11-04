@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
-import { DEFAULT_CHARACTER } from "@/lib/characters/options";
-import { renderCharacter, renderCouple } from "@/lib/characters/render";
+import { drawSticker } from "@/lib/characters/draw";
+import { DEFAULT_SPEC } from "@/lib/characters/options";
 import { SITE } from "@/lib/site";
 
 export const alt = `${SITE.name}: ${SITE.tagline}`;
@@ -12,20 +12,9 @@ const dataUri = (svg: string) => `data:image/svg+xml;base64,${Buffer.from(svg).t
 export default function OpenGraphImage() {
   // The OG renderer doesn't support SVG filters, so use the portable variants.
   const stickers = [
-    renderCharacter({ ...DEFAULT_CHARACTER, portable: true }),
-    renderCharacter({ ...DEFAULT_CHARACTER, fur: "#F2A04A", eyes: "#2F9A68", reaction: "happy", portable: true }),
-    renderCouple({
-      a: { fur: "#EED6B8", eyes: "#B9772A" },
-      b: { fur: "#55555F", eyes: "#2F9A68" },
-      pose: "snuggle",
-      reaction: "blush",
-      glass: true,
-      blush: true,
-      stripes: true,
-      whiskers: true,
-      heart: true,
-      portable: true,
-    }),
+    drawSticker({ ...DEFAULT_SPEC, reaction: "love", portable: true }),
+    drawSticker({ ...DEFAULT_SPEC, reaction: "naughty", look: { fur: "#5A5B66", eyes: "#2E9E6A" }, portable: true }),
+    drawSticker({ ...DEFAULT_SPEC, reaction: "diwali-diya", portable: true }),
   ];
 
   return new ImageResponse(
@@ -48,7 +37,7 @@ export default function OpenGraphImage() {
         <div style={{ display: "flex", alignItems: "center", gap: 48 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 16, width: 500 }}>
             <div style={{ fontSize: 72, fontWeight: 700, letterSpacing: -3, lineHeight: 1 }}>{SITE.tagline}</div>
-            <div style={{ fontSize: 28, color: "#C7C7CC" }}>Design your own sticker cat. Any colour, any mood, glass finish.</div>
+            <div style={{ fontSize: 28, color: "#C7C7CC" }}>27 reactions, any colour, couples and Diwali specials.</div>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
             {stickers.map((svg, index) => (

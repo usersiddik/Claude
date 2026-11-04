@@ -6,10 +6,17 @@ Original SVG characters, icons, and Duos for products people remember.
 Charmbit is a sticker studio and SVG library, for people who send stickers to friends and for developers
 who ship them in products:
 
-- **Sticker Studio** (the hero): design your own cat or ghost. Pick one of six moods (Happy, Love, Blush,
-  Sad, Wow, Sleepy), any fur and eye colour (presets or a custom picker), and toggles for glass ears,
-  blush, stripes, whiskers, and the sticker edge. Switch to **Couple** for two cats in "Head on shoulder" or
-  "Cheek to cheek" poses with a heart above, each with their own colours.
+- **Sticker Studio** (the hero): 27 reactions for a cat (and a ghost) in five categories, browsed with a
+  ◀ ▶ carousel:
+  - **Everyday:** Hi, Morning (coffee), Good night, Thank you, Huh?
+  - **Feelings:** Smile, Naughty, LOL, Single tear, Crying, Shy, Shocked, Grumpy, Cool, Fever, plus Boo! for
+    the ghost
+  - **Love:** Love (one classic glowing heart), Kiss, Miss you
+  - **Together:** Hug, Head on shoulder, Cheek to cheek
+  - **Diwali:** Diya, Sparkler, Sparklers together, Diya for two, Diwali hug (matching outfits, string lights)
+
+  Any fur and eye colour (presets or a custom picker), partner colours for couples, an outfit colour for festive
+  stickers, and toggles for glass ears, blush, stripes, whiskers, and the sticker edge.
 - **Exports**: copy as a transparent sticker image (256, 512, or 1024 px), download PNG, a WhatsApp-sized
   WebP, or SVG, or copy SVG, React, or Flutter code. Phones get the system share sheet.
 - **Library**: original charms and interface marks with search, two-tier categories, Fill and Ink colours,
@@ -64,8 +71,8 @@ src/
       svg.ts react.ts flutter.ts naming.ts
     site.ts                 Site name, copy, URL
     characters/             Studio character engine
-      options.ts            Moods, colour presets, option types
-      render.ts             Parametric cat, ghost, and couple renderer (pure SVG strings)
+      options.ts            Reaction catalogue, categories, colour and outfit presets, StickerSpec
+      draw.ts               Drawing engine: cat and ghost anatomy, faces, poses, props, outfits, pair scenes
       color.ts              Shading palette from one picked colour
       export.ts             Studio subjects → SVG / React / Flutter
     sticker.ts              Sticker rendering (PNG/WebP), image copy, download, share
@@ -73,7 +80,7 @@ src/
   components/
     ui/                     SegmentedControl, SwatchPicker, Popover, CodeView + highlight,
                             CopyIsland, ThemeToggle, AssetArt, Wordmark, icons
-    studio/                 Studio (stage, mood dock, controls, exports), ColorPicker
+    studio/                 Studio (stage, categories, reaction carousel, controls, exports), ColorPicker
     library/                Workspace (state + URL sync), ControlBar, CategoryNav, AssetCard,
                             Inspector (dialog), StickerPanel, copy action, URL state
     sections/               Header, Hero (+ Studio), LibrarySection, Bento + FillInkDemo, Footer
@@ -119,26 +126,31 @@ Defined in `src/lib/assets/types.ts`. You author `AssetMeta` and the loader adds
 The loader derives `number`, `sourceSvg` (optimised), `viewBox`, `width`, and `height`.
 Every count in the UI (chips, hero facts, results) is computed from this data.
 
-## Sticker Studio and the character engine
+## Sticker Studio and the drawing engine
 
-Studio characters aren't stored as files. `src/lib/characters/render.ts` draws them as SVG from options,
-so one character supports every colour and mood without duplicating artwork.
+Studio stickers aren't stored as files. `src/lib/characters/draw.ts` draws them as SVG from a
+`StickerSpec` (species, reaction, colours, outfit, toggles), so every reaction works in every colour.
 
-- **One picked colour → full shading.** `palette()` derives highlight, shadow, stripes, and muzzle tones from the
-  fur colour, and switches linework to a light tone on dark fur.
-- **Layers.** Ears (glass or fur), head with radial shading and a subtle fur-noise texture, eye sockets, glossy
-  eyes (iris fibres, pupil, specular highlights), nose, mouth, blush, whiskers, and mood accents (hearts, tear,
-  sparkles, "zz").
-- **Moods** are shared by every species. Add one to `REACTIONS` in `options.ts`, then handle its id in `eyes()`,
-  `mouth()`, and `accents()`.
-- **Couples** place two heads (with their own palettes) on rounded busts using one transform each; see
-  `renderCouple()` for the two poses.
-- **Ids** are namespaced with a hash of the options, so many variants can share a page safely.
-- **Portable mode** (`portable: true`) drops SVG filters (blur, fur texture). It's used for Flutter exports, the
-  OG image, and the small mood thumbnails.
-- `silhouetteOf()` removes whiskers so the sticker's die-cut edge follows the head, not the whisker tips.
+- **Characters** are drawn in their own 512 × 512 space. The cat has cheek tufts, solid ears with pink insides
+  (or optional glass ears), eyes with an eyeliner wing, a :3 mouth, whiskers, a soft face glow, a body with chest
+  fluff, paws, and a curled tail. The ghost shares the same face system.
+- **Faces** are combinations of eyes (open, happy, wink, closed, teary, wide, angry, droopy, up, side, laugh),
+  mouths, brows, blush levels, and tears (single, streams, joy). See the `FACES` table.
+- **Poses** move the arms (wave, hold, together, chin, cheeks, kiss, sparkler, crossed, up) and stack props between
+  the body and the paws, so held items sit naturally in the paws.
+- **Props:** classic glowing heart, mug, thermometer, ice pack, pillow and blanket, night cap, sunglasses, anger and
+  question marks, Zz, sweat drops, diya, sparkler, Diwali string lights, and marigolds.
+- **Outfits:** a kurta and a saree drape in one shared colour, so couples always match.
+- **Pair scenes** place two full characters with one transform each (hug arms are drawn across both).
+- **Adding a reaction:** add it to `REACTIONS` in `options.ts` (category, caption, species), give it a face in
+  `FACES`, and compose its pose and props in `single()` or `pair()` in `draw.ts`. The tests render every reaction
+  for every species and check that all references resolve.
+- **Ids** are namespaced with a hash of the spec, so many variants can share a page.
+- **Portable mode** drops SVG filters. It's used for Flutter exports, the OG image, and carousel thumbnails.
+- `silhouetteOf()` removes whiskers so the die-cut edge follows the body, not the whisker tips.
 
 **Size** sets the exported pixel size (256, 512, or 1024 px). The WhatsApp download is always 512 px WebP.
+Exported stickers have no drop shadow, so they look clean on any chat background.
 
 ## Sticker output
 
@@ -148,7 +160,7 @@ so one character supports every colour and mood without duplicating artwork.
   isn't supported, it downloads the PNG instead.
 - **PNG** and **WhatsApp WebP** downloads. WebP is used when the browser can encode it, otherwise PNG.
 - **Share** opens the system share sheet on devices that support sharing files.
-- **White border** adds a die-cut edge and a soft shadow. It's on by default.
+- **White border** adds a die-cut edge (no shadow). It's on by default.
 
 ## Adding a Charm, Mark, or Duo
 
