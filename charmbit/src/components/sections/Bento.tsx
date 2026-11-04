@@ -2,16 +2,17 @@ import Link from "next/link";
 import { AssetArt } from "@/components/ui/AssetArt";
 import { CheckIcon } from "@/components/ui/icons";
 import type { Asset } from "@/lib/assets/types";
+import { renderCouple } from "@/lib/characters/render";
 import { primaryFill } from "@/lib/customize";
 import { buildExport, FORMATS } from "@/lib/exports";
 import { FillInkDemo } from "./FillInkDemo";
 import styles from "./Bento.module.css";
 
-const DUO_SETS = ["Friends", "Couples", "Celebrations", "Inside jokes"];
+const COUPLE_TAGS = ["Head on shoulder", "Cheek to cheek", "Any two colours", "Six moods"];
 
 const CARE = [
   { title: "Clean vector source", body: "Each asset is a small SVG on a 96- or 24-unit grid. No raster images, no embedded fonts." },
-  { title: "Not an image generator", body: "Charmbit is a curated library of authored artwork. Nothing is generated on request." },
+  { title: "Not an AI image generator", body: "Every sticker is drawn from authored vector parts, so colours and moods change instantly and stay crisp." },
   { title: "Customizable after copy", body: "React and Flutter outputs take size and color props; fills are plain hex values." },
   { title: "License: preview", body: "Terms haven’t been published yet. Check back before shipping in a product." },
 ];
@@ -25,7 +26,10 @@ function excerpt(code: string, startsWith: string, lines = 4): string {
 
 export function Bento({ assets }: { assets: readonly Asset[] }) {
   const mochi = assets.find((asset) => asset.slug === "mochi") ?? assets[0];
-  const duos = assets.filter((asset) => asset.family === "duo");
+  const couples = [
+    { label: "Head on shoulder", svg: renderCouple({ a: { fur: "#EED6B8", eyes: "#B9772A" }, b: { fur: "#55555F", eyes: "#2F9A68" }, pose: "snuggle", reaction: "blush", glass: true, blush: true, stripes: true, whiskers: true, heart: true }) },
+    { label: "Cheek to cheek", svg: renderCouple({ a: { fur: "#F2A04A", eyes: "#B9772A" }, b: { fur: "#F6F3EF", eyes: "#3F8DDB" }, pose: "cheek", reaction: "love", glass: true, blush: true, stripes: true, whiskers: true, heart: true }) },
+  ];
   if (!mochi) return null;
 
   const outputs = FORMATS.map((format) => {
@@ -95,32 +99,30 @@ export function Bento({ assets }: { assets: readonly Asset[] }) {
             <FillInkDemo svg={mochi.sourceSvg} primary={primaryFill(mochi)} />
           </article>
 
-          <article id="duos" className={`${styles.card} ${styles.half} ${styles.duos}`}>
+          <article id="couples" className={`${styles.card} ${styles.half} ${styles.duos}`}>
             <div className={styles.copy}>
               <p className={styles.kicker}>
-                <span className={styles.soon}>Coming soon</span>
+                <span className={styles.soon}>New</span>
               </p>
-              <h3 className={styles.cardTitle}>Duos. Better together.</h3>
-              <p className={styles.body}>
-                Matching pairs for shared moments. Every set is designed to be all-ages.
-              </p>
+              <h3 className={styles.cardTitle}>Couples. Better together.</h3>
+              <p className={styles.body}>Two cats, your two colours, one shared moment. Made for the people you love.</p>
             </div>
             <ul role="list" className={styles.duoArt}>
-              {duos.map((duo) => (
-                <li key={duo.id}>
-                  <AssetArt asset={duo} label={`${duo.title}, Duo preview`} className={styles.duoImage} />
-                  <span>{duo.title}</span>
+              {couples.map((couple) => (
+                <li key={couple.label}>
+                  <AssetArt asset={{ sourceSvg: couple.svg }} label={`Couple sticker: ${couple.label}`} className={styles.duoImage} />
+                  <span>{couple.label}</span>
                 </li>
               ))}
             </ul>
             <div className={styles.duoFooter}>
               <ul role="list" className={styles.tags}>
-                {DUO_SETS.map((set) => (
-                  <li key={set}>{set}</li>
+                {COUPLE_TAGS.map((tag) => (
+                  <li key={tag}>{tag}</li>
                 ))}
               </ul>
-              <Link href="/?filter=duos#library" className={styles.link}>
-                Preview Duos <span aria-hidden="true">›</span>
+              <Link href="#studio" className={styles.link}>
+                Make yours <span aria-hidden="true">›</span>
               </Link>
             </div>
           </article>

@@ -145,6 +145,49 @@ export const BlushGlyph = (p: IconProps) => (
   </Icon>
 );
 
+export const SparkleIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 3.5c.6 4.2 2.3 6 6.5 6.5-4.2.6-5.9 2.3-6.5 6.5-.6-4.2-2.3-5.9-6.5-6.5 4.2-.5 5.9-2.3 6.5-6.5ZM18.5 15.5c.3 1.7 1 2.4 2.5 2.7-1.5.3-2.2 1-2.5 2.6-.3-1.6-1-2.3-2.5-2.6 1.5-.3 2.2-1 2.5-2.7Z" />
+  </Icon>
+);
+export const ShuffleIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 7h3.5c4.5 0 4.5 10 9 10H20M17.5 14.5 20 17l-2.5 2.5M4 17h3.5c1.4 0 2.3-.9 3-2.2M13.5 9.2c.7-1.3 1.6-2.2 3-2.2H20M17.5 4.5 20 7l-2.5 2.5" />
+  </Icon>
+);
+export const CodeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="m8.5 7-5 5 5 5M15.5 7l5 5-5 5" />
+  </Icon>
+);
+export const GlassIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M6 3.5h12l3 5.5-9 11.5L3 9Z" />
+    <path d="M3 9h18M9 3.5 12 9l3-5.5M12 9v11" opacity="0.6" />
+  </Icon>
+);
+export const StripesIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M8 4c1 3 1 6 0 9M12 3v11M16 4c-1 3-1 6 0 9M6 20h12" />
+  </Icon>
+);
+export const WhiskersIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M10 11 3 9.5M10 13.5H3M10 16l-6 2.5M14 11l7-1.5M14 13.5h7M14 16l6 2.5" />
+  </Icon>
+);
+export const SingleIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5 19c0-4 3-7 7-7s7 3 7 7M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+  </Icon>
+);
+export const CoupleIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M2.5 19c0-3.3 2.2-5.5 5.5-5.5s5.5 2.2 5.5 5.5M8 13.5a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4ZM14.5 13.6c.5-.1 1-.1 1.5-.1 3.3 0 5.5 2.2 5.5 5.5M16 13.5a3.2 3.2 0 1 0 0-6.4" />
+    <path d="M12 5.2c.5-1.2 2.4-1.2 2.4.3 0 1-2.4 2.3-2.4 2.3s-2.4-1.3-2.4-2.3c0-1.5 1.9-1.5 2.4-.3Z" />
+  </Icon>
+);
+
 /* Category glyphs */
 export const CategoryIcons = {
   all: (p: IconProps) => (
@@ -167,12 +210,6 @@ export const CategoryIcons = {
       <path d="m15 15 4.5 4.5" />
     </Icon>
   ),
-  duo: (p: IconProps) => (
-    <Icon {...p}>
-      <circle cx="8.5" cy="13" r="4.5" />
-      <circle cx="15.5" cy="13" r="4.5" />
-    </Icon>
-  ),
   character: (p: IconProps) => (
     <Icon {...p}>
       <circle cx="12" cy="12" r="8" />
@@ -189,19 +226,6 @@ export const CategoryIcons = {
     <Icon {...p}>
       <rect x="3.5" y="5" width="17" height="14" rx="3" />
       <path d="M3.5 9h17M7 7v.01M9.5 7v.01" />
-    </Icon>
-  ),
-  sticker: (p: IconProps) => <StickerGlyph {...p} />,
-  cat: (p: IconProps) => (
-    <Icon {...p}>
-      <path d="M5 19.5c-.8-2-1-4.2-.5-6.5L5 5l4.2 3.2a8.4 8.4 0 0 1 5.6 0L19 5l.5 8c.5 2.3.3 4.5-.5 6.5Z" />
-      <path d="M9.5 13v.01M14.5 13v.01" strokeWidth={2.4} />
-    </Icon>
-  ),
-  ghost: (p: IconProps) => (
-    <Icon {...p}>
-      <path d="M5.5 20V11a6.5 6.5 0 0 1 13 0v9l-2.2-1.6L14 20l-2-1.6L10 20l-2.3-1.6Z" />
-      <path d="M10 11v.01M14 11v.01" strokeWidth={2.4} />
     </Icon>
   ),
   reaction: (p: IconProps) => (

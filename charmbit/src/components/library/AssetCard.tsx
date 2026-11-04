@@ -3,7 +3,6 @@
 import { memo } from "react";
 import { AssetArt } from "@/components/ui/AssetArt";
 import { CopyIcon } from "@/components/ui/icons";
-import { findPack } from "@/lib/assets/packs";
 import type { Asset } from "@/lib/assets/types";
 import styles from "./AssetCard.module.css";
 
@@ -24,11 +23,10 @@ interface AssetCardProps {
 /** Click the card to inspect; the pill copies in one click. */
 export const AssetCard = memo(function AssetCard({ asset, svg, ink, copyLabel, formatLabel, onOpen, onCopy }: AssetCardProps) {
   const available = asset.status === "available";
-  const colorway = asset.pack ? findPack(asset.pack.id)?.colorways.find((item) => item.id === asset.pack?.colorway) : undefined;
-  const badge = !available ? "Preview" : colorway ? colorway.name : FAMILY[asset.family];
+  const badge = available ? FAMILY[asset.family] : "Preview";
 
   return (
-    <article className={styles.card} data-family={asset.family} data-pack={asset.pack ? "" : undefined}>
+    <article className={styles.card} data-family={asset.family}>
       <div className={styles.canvas} style={ink ? { color: ink } : undefined}>
         <AssetArt asset={{ sourceSvg: svg }} className={styles.art} />
       </div>

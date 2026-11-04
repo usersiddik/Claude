@@ -25,9 +25,9 @@ describe("customisation", () => {
     assert.equal(applyFill(mochi.sourceSvg, "#F6D673", null), mochi.sourceSvg);
   });
 
-  it("leaves fixed-colorway stickers untouched", () => {
-    const sticker = assets.find((asset) => asset.pack)!;
-    assert.equal(customizeSvg(sticker, "#B4D2F0"), sticker.sourceSvg);
+  it("leaves fixed-colour artwork untouched", () => {
+    const fixed = { ...mochi, recolorable: false };
+    assert.equal(customizeSvg(fixed, "#B4D2F0"), mochi.sourceSvg);
   });
 
   it("falls back to defaults for unknown ids", () => {

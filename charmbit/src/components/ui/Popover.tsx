@@ -53,7 +53,20 @@ export function Popover({ label, trigger, children, align = "start" }: PopoverPr
       >
         {trigger}
       </button>
-      <div ref={panel} id={id} className={styles.panel} data-align={align} hidden={!open}>
+      <div
+        ref={panel}
+        id={id}
+        className={styles.panel}
+        data-align={align}
+        hidden={!open}
+        onClick={(event) => {
+          // Menu items marked data-dismiss close the popover after they act.
+          if ((event.target as HTMLElement).closest("[data-dismiss]")) {
+            setOpen(false);
+            button.current?.focus();
+          }
+        }}
+      >
         {children}
       </div>
     </div>

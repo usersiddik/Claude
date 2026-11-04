@@ -10,6 +10,8 @@ export interface StickerOptions {
   /** Colour for currentColor linework (images have no surrounding text colour). */
   ink?: string;
   type?: "image/png" | "image/webp";
+  /** Optional SVG used only for the die-cut edge (e.g. without whiskers). */
+  silhouette?: string;
 }
 
 export const STICKER_SIZE = 512;
@@ -48,8 +50,9 @@ export async function renderSticker(svg: string, options: StickerOptions = {}): 
   // WhatsApp asks for ~16px of margin at 512px; the border lives inside that margin.
   const padding = Math.round(size * (border ? 0.07 : 0.04));
   const art = size - padding * 2;
-  const markup = prepareSvg(svg, art, ink);
-  const image = await loadImage(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`);
+  const toUrl = (source: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(prepareSvg(source, art, ink))}`;
+  const image = await loadImage(toUrl(svg));
+  const shape = options.silhouette ? await loadImage(toUrl(options.silhouette)) : image;
 
   const canvas = document.createElement("canvas");
   canvas.width = size;
@@ -67,7 +70,7 @@ export async function renderSticker(svg: string, options: StickerOptions = {}): 
     const radius = size * 0.03;
     for (let angle = 0; angle < 360; angle += 12) {
       const radians = (angle * Math.PI) / 180;
-      ring.drawImage(image, padding + Math.cos(radians) * radius, padding + Math.sin(radians) * radius, art, art);
+      ring.drawImage(shape, padding + Math.cos(radians) * radius, padding + Math.sin(radians) * radius, art, art);
     }
     ring.globalCompositeOperation = "source-in";
     ring.fillStyle = "#FFFFFF";

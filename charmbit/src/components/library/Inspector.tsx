@@ -7,7 +7,6 @@ import { CopyIsland } from "@/components/ui/CopyIsland";
 import { CloseIcon, CopyIcon } from "@/components/ui/icons";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { SwatchPicker } from "@/components/ui/SwatchPicker";
-import { findPack } from "@/lib/assets/packs";
 import type { Asset } from "@/lib/assets/types";
 import { customizeSvg, FILL_OPTIONS, INK_OPTIONS } from "@/lib/customize";
 import { buildExport, findFormat } from "@/lib/exports";
@@ -15,7 +14,6 @@ import type { Colors } from "./copy";
 import { CANVAS_OPTIONS, FORMAT_OPTIONS, outputLabel } from "./options";
 import { StickerPanel } from "./StickerPanel";
 import type { Canvas, LibraryState, Output } from "./url-state";
-import { Variations } from "./Variations";
 import styles from "./Inspector.module.css";
 
 const SIZES = [24, 48, 64, 128] as const;
@@ -73,8 +71,6 @@ export function Inspector({ asset, state, colors, onChange, onClose, onCopy }: I
     () => (asset && !sticker ? buildExport(asset, format.id, { fill: colors.fill, ink: colors.ink ?? undefined }) : ""),
     [asset, sticker, format.id, colors.fill, colors.ink],
   );
-  const pack = findPack(asset?.pack?.id);
-  const colorway = pack?.colorways.find((item) => item.id === asset?.pack?.colorway);
   const svg = asset ? customizeSvg(asset, colors.fill) : "";
   const available = asset?.status === "available";
   const inkStyle = colors.ink ? ({ color: colors.ink } as CSSProperties) : undefined;
@@ -98,15 +94,7 @@ export function Inspector({ asset, state, colors, onChange, onClose, onCopy }: I
                 {asset.title}
               </h2>
               <p className={styles.meta}>
-                <span>
-                  {pack && colorway
-                    ? `${pack.name} the ${pack.species} · ${colorway.name}`
-                    : asset.family === "duo"
-                      ? "Duo · Preview"
-                      : asset.family === "mark"
-                        ? "Mark"
-                        : "Charm"}
-                </span>
+                <span>{asset.family === "mark" ? "Mark" : "Charm"}</span>
                 <span>
                   {asset.width}×{asset.height}
                 </span>
@@ -147,8 +135,6 @@ export function Inspector({ asset, state, colors, onChange, onClose, onCopy }: I
                   </li>
                 ))}
               </ul>
-
-              <Variations asset={asset} onSelect={(slug) => onChange({ asset: slug })} />
 
               <div className={styles.colors}>
                 {asset.recolorable === false ? null : (
@@ -207,11 +193,8 @@ export function Inspector({ asset, state, colors, onChange, onClose, onCopy }: I
                 </>
               ) : (
                 <div className={styles.soon}>
-                  <p className={styles.soonTitle}>Duos are coming soon</p>
-                  <p>
-                    This is a preview of an upcoming paired set. SVG, React, and Flutter code will be ready here when Duos
-                    ship.
-                  </p>
+                  <p className={styles.soonTitle}>Coming soon</p>
+                  <p>This asset is a preview. Code will be ready here when it ships.</p>
                 </div>
               )}
             </section>

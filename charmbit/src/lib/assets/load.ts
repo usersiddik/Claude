@@ -12,8 +12,7 @@ export const FAMILY_DIRECTORY: Record<AssetFamily, string> = {
   duo: "duos",
 };
 
-export function svgPathFor(meta: Pick<AssetMeta, "family" | "slug" | "pack">, root = process.cwd()): string {
-  if (meta.pack) return path.join(root, "assets", "svg", "packs", meta.pack.id, `${meta.slug}.svg`);
+export function svgPathFor(meta: Pick<AssetMeta, "family" | "slug">, root = process.cwd()): string {
   return path.join(root, "assets", "svg", FAMILY_DIRECTORY[meta.family], `${meta.slug}.svg`);
 }
 

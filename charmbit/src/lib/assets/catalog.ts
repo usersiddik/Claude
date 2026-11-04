@@ -1,4 +1,3 @@
-import { expandPacks } from "./packs.ts";
 import type { AssetMeta } from "./types.ts";
 
 /**
@@ -7,7 +6,7 @@ import type { AssetMeta } from "./types.ts";
  */
 const ALL_FORMATS = ["svg", "react", "flutter"] as const;
 
-const FLAT: readonly AssetMeta[] = [
+export const CATALOG: readonly AssetMeta[] = [
   {
     id: "charm-mochi",
     slug: "mochi",
@@ -19,7 +18,7 @@ const FLAT: readonly AssetMeta[] = [
     palette: ["butter", "coral", "ink", "white"],
     traits: { character: "Mochi", pose: "sitting", expression: "happy" },
     preview: { tone: "butter" },
-    relatedAssetIds: ["charm-wisp", "duo-high-five"],
+    relatedAssetIds: ["charm-wisp", "charm-gold-star"],
     exports: ALL_FORMATS,
     status: "available",
     featured: true,
@@ -51,7 +50,7 @@ const FLAT: readonly AssetMeta[] = [
     palette: ["lilac", "ink"],
     traits: { character: "Wisp", pose: "floating", expression: "surprised" },
     preview: { tone: "lilac" },
-    relatedAssetIds: ["charm-mochi", "duo-high-five"],
+    relatedAssetIds: ["charm-mochi", "charm-nimbus"],
     exports: ALL_FORMATS,
     status: "available",
     featured: true,
@@ -67,7 +66,7 @@ const FLAT: readonly AssetMeta[] = [
     palette: ["coral", "mint", "ink"],
     traits: { character: "Sprout", pose: "potted", expression: "proud" },
     preview: { tone: "mint" },
-    relatedAssetIds: ["charm-gold-star", "duo-same-brain"],
+    relatedAssetIds: ["charm-gold-star", "charm-mochi"],
     exports: ALL_FORMATS,
     status: "available",
   },
@@ -82,7 +81,7 @@ const FLAT: readonly AssetMeta[] = [
     palette: ["mint", "lilac", "ink"],
     traits: { character: "Nimbus", pose: "hovering", expression: "grumpy" },
     preview: { tone: "mint" },
-    relatedAssetIds: ["charm-toastie", "duo-same-brain"],
+    relatedAssetIds: ["charm-toastie", "charm-wisp"],
     exports: ALL_FORMATS,
     status: "available",
     isNew: true,
@@ -222,47 +221,5 @@ const FLAT: readonly AssetMeta[] = [
     exports: ALL_FORMATS,
     status: "available",
   },
-  {
-    id: "duo-high-five",
-    slug: "high-five",
-    title: "High Five",
-    family: "duo",
-    subject: "pair",
-    description: "Mochi and Wisp meet in the middle. A preview of the first Duos set.",
-    tags: ["friends", "celebrate", "reaction", "pair"],
-    palette: ["butter", "lilac", "ink"],
-    relationship: {
-      groupId: "duos-celebrations",
-      kind: "pair",
-      occasion: "celebration",
-      memberIds: ["charm-mochi", "charm-wisp"],
-    },
-    preview: { tone: "cream" },
-    relatedAssetIds: ["charm-mochi", "charm-wisp"],
-    exports: ALL_FORMATS,
-    status: "comingSoon",
-  },
-  {
-    id: "duo-same-brain",
-    slug: "same-brain",
-    title: "Same Brain",
-    family: "duo",
-    subject: "pair",
-    description: "Two friends, one shared idea. A preview of the inside-jokes set.",
-    tags: ["friends", "inside joke", "pair", "idea"],
-    palette: ["mint", "coral", "cream", "butter", "ink"],
-    relationship: {
-      groupId: "duos-inside-jokes",
-      kind: "pair",
-      occasion: "inside joke",
-      memberIds: ["charm-nimbus", "charm-sprout"],
-    },
-    preview: { tone: "cream" },
-    relatedAssetIds: ["charm-nimbus", "charm-sprout"],
-    exports: ALL_FORMATS,
-    status: "comingSoon",
-  },
 ];
 
-/** Sticker packs first: they're the most-browsed items. */
-export const CATALOG: readonly AssetMeta[] = [...expandPacks(), ...FLAT];

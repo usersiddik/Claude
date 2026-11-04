@@ -3,21 +3,18 @@
 **Tiny charms. Serious code.**
 Original SVG characters, icons, and Duos for products people remember.
 
-Charmbit is a single-page library of original stickers and SVG characters, for people who send them
-to friends and for developers who ship them in products:
+Charmbit is a sticker studio and SVG library, for people who send stickers to friends and for developers
+who ship them in products:
 
-- **Sticker packs**: characters with colorways × reactions. Miso the Cat (Ginger, Silver, Golden glow,
-  Mist) and Boo the Ghost (Cloud, Moonlight), each with Happy, Love, Sad, and Blush.
-- **Sticker output**: copy any asset as a transparent 512×512 PNG with a white die-cut edge, download a
-  PNG or a WhatsApp-sized WebP, or use the system share sheet on phones.
-- **Hero stage**: Miso peeks up from the bottom edge; pick a mood and colorway and copy the sticker.
-- **Workspace**: a sticky control bar (search with ⌘K / Ctrl K, a Sticker · SVG · React · Flutter switcher,
-  Fill and Ink popovers, and a Light / Dark / Grid preview canvas), two-tier categories (collections and
-  use cases), and a card grid with one-click copy pills.
-- **Inspector**: click a card to preview it at 24, 48, 64, and 128px, switch reaction and colorway, tweak
-  colors, and either export the sticker or read and copy the syntax-highlighted code with its props.
-- **Copy island**: a floating confirmation pill shows what was copied and in which format.
-- **Bento**: four cards covering outputs, the Fill + Ink model, upcoming Duos, and the essentials.
+- **Sticker Studio** (the hero): design your own cat or ghost. Pick one of six moods (Happy, Love, Blush,
+  Sad, Wow, Sleepy), any fur and eye colour (presets or a custom picker), and toggles for glass ears,
+  blush, stripes, whiskers, and the sticker edge. Switch to **Couple** for two cats in "Head on shoulder" or
+  "Cheek to cheek" poses with a heart above, each with their own colours.
+- **Exports**: copy as a transparent sticker image (256, 512, or 1024 px), download PNG, a WhatsApp-sized
+  WebP, or SVG, or copy SVG, React, or Flutter code. Phones get the system share sheet.
+- **Library**: original charms and interface marks with search, two-tier categories, Fill and Ink colours,
+  an inspector with size previews and code, and one-click copy as a sticker or code.
+- **Bento**: one source to every format, the Fill + Ink model, couples, and the essentials.
 
 All three formats are generated from one source SVG file, with the chosen colors applied.
 
@@ -45,22 +42,18 @@ Open Graph, robots, and sitemap URLs use it. On Vercel it falls back to the proj
 | `npm run typecheck` | `tsc --noEmit` in strict mode                    |
 | `npm test`          | `node:test` unit tests (catalogue + exporters)   |
 | `npm run build`     | Static production build                          |
-| `npm run art:packs` | Regenerate sticker-pack SVGs from `scripts/generate-packs.ts` |
 
 ## Project structure
 
 ```
 assets/svg/                 Source artwork, one file per asset
-  charms/  marks/  duos/
-  packs/<pack>/             Sticker packs (generated, safe to redraw by hand)
-scripts/generate-packs.ts   Composes pack stickers: body × colorway × reaction
+  charms/  marks/
 src/
   app/                      Routes: page, layout, OG image, icon, robots, sitemap
   lib/
     assets/
       types.ts              Asset schema
-      catalog.ts            Asset metadata (packs first, then flat assets)
-      packs.ts              Pack definitions: colorways, reactions, catalogue expansion
+      catalog.ts            Library asset metadata
       palette.ts            Shared artwork palette
       load.ts               Build-time loader: joins catalogue + SVG files, validates
       svg.ts                Pure SVG helpers: optimise, parse, validate, format
@@ -70,14 +63,20 @@ src/
       index.ts              FORMATS registry + buildExport(asset, format, colours)
       svg.ts react.ts flutter.ts naming.ts
     site.ts                 Site name, copy, URL
+    characters/             Studio character engine
+      options.ts            Moods, colour presets, option types
+      render.ts             Parametric cat, ghost, and couple renderer (pure SVG strings)
+      color.ts              Shading palette from one picked colour
+      export.ts             Studio subjects → SVG / React / Flutter
     sticker.ts              Sticker rendering (PNG/WebP), image copy, download, share
     copy-events.ts          Copy notifications (any component announces, the island listens)
   components/
     ui/                     SegmentedControl, SwatchPicker, Popover, CodeView + highlight,
                             CopyIsland, ThemeToggle, AssetArt, Wordmark, icons
+    studio/                 Studio (stage, mood dock, controls, exports), ColorPicker
     library/                Workspace (state + URL sync), ControlBar, CategoryNav, AssetCard,
-                            Inspector (dialog), StickerPanel, Variations, copy action, URL state
-    sections/               Header, Hero + HeroStage, LibrarySection, Bento + FillInkDemo, Footer
+                            Inspector (dialog), StickerPanel, copy action, URL state
+    sections/               Header, Hero (+ Studio), LibrarySection, Bento + FillInkDemo, Footer
 tests/                      node:test suites
 ```
 
@@ -120,26 +119,26 @@ Defined in `src/lib/assets/types.ts`. You author `AssetMeta` and the loader adds
 The loader derives `number`, `sourceSvg` (optimised), `viewBox`, `width`, and `height`.
 Every count in the UI (chips, hero facts, results) is computed from this data.
 
-## Sticker packs
+## Sticker Studio and the character engine
 
-A pack is one character in several colorways, each with the same set of reactions. Definitions live in
-`src/lib/assets/packs.ts`, and `expandPacks()` turns them into catalogue entries automatically
-(slug: `<pack>-<colorway>-<reaction>`, e.g. `miso-gold-blush`).
+Studio characters aren't stored as files. `src/lib/characters/render.ts` draws them as SVG from options,
+so one character supports every colour and mood without duplicating artwork.
 
-**To add a reaction or colorway** to an existing pack:
+- **One picked colour → full shading.** `palette()` derives highlight, shadow, stripes, and muzzle tones from the
+  fur colour, and switches linework to a light tone on dark fur.
+- **Layers.** Ears (glass or fur), head with radial shading and a subtle fur-noise texture, eye sockets, glossy
+  eyes (iris fibres, pupil, specular highlights), nose, mouth, blush, whiskers, and mood accents (hearts, tear,
+  sparkles, "zz").
+- **Moods** are shared by every species. Add one to `REACTIONS` in `options.ts`, then handle its id in `eyes()`,
+  `mouth()`, and `accents()`.
+- **Couples** place two heads (with their own palettes) on rounded busts using one transform each; see
+  `renderCouple()` for the two poses.
+- **Ids** are namespaced with a hash of the options, so many variants can share a page safely.
+- **Portable mode** (`portable: true`) drops SVG filters (blur, fur texture). It's used for Flutter exports, the
+  OG image, and the small mood thumbnails.
+- `silhouetteOf()` removes whiskers so the sticker's die-cut edge follows the head, not the whisker tips.
 
-1. Add it to the pack in `packs.ts`.
-2. For a colorway, add its paint (body gradient, stripes, muzzle, ears, ink) to `PAINTS` in
-   `scripts/generate-packs.ts`. For a reaction, add its eyes, mouth, and accent to the `eyes`, `mouth`,
-   and `extras` functions.
-3. Run `npm run art:packs`, then `npm test`.
-
-**To redraw a sticker by hand**, replace its SVG file in `assets/svg/packs/<pack>/`. Keep the 128-unit
-viewBox and prefix every `id` with the slug (for example `id="miso-gold-blush-body"`), so several
-stickers can share a page without their gradients colliding. The loader enforces this.
-
-Packs have fixed colorways (`recolorable: false`), so the Fill control doesn't apply to them; Ink still
-recolours `currentColor` linework where a colorway uses it.
+**Size** sets the exported pixel size (256, 512, or 1024 px). The WhatsApp download is always 512 px WebP.
 
 ## Sticker output
 
@@ -227,20 +226,18 @@ The format switchers (control bar, hero, inspector) and the bento diagram pick u
 
 `src/lib/assets/filters.ts` defines two tiers in `FILTER_GROUPS`:
 
-- **Collections:** All Assets, Charms, Marks, Duos
-- **Sticker packs:** All Stickers, Miso the Cat, Boo the Ghost (pack views group cards by colorway)
+- **Collections:** All Assets, Charms, Marks
 - **Use cases:** Characters & Mascots, Objects & Rewards, UI & Status Marks, Reactions & Celebrations
 
 Each filter is a predicate over asset data, and counts are always derived. Assets with
-`status: "comingSoon"` appear only under **Duos**, with a Preview badge, so every other view is fully
-copyable.
+`status: "comingSoon"` never appear in these views, so everything shown can be copied.
 
 ## URL state
 
 | Param    | Example         | Effect                     |
 | -------- | --------------- | -------------------------- |
 | `q`      | `?q=happy`      | Search query               |
-| `filter` | `?filter=miso`  | `charms`, `marks`, `duos`, `stickers`, `miso`, `boo`, `characters`, `objects`, `ui`, `reactions` |
+| `filter` | `?filter=marks` | `charms`, `marks`, `characters`, `objects`, `ui`, `reactions` |
 | `color`  | `?color=sky`    | Main fill (a `FILL_OPTIONS` id) |
 | `ink`    | `?ink=indigo`   | Linework (an `INK_OPTIONS` id)  |
 | `as`     | `?as=react`     | Copy as: `sticker` (default), `svg`, `react`, `flutter` |

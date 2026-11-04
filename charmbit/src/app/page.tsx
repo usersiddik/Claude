@@ -44,7 +44,7 @@ export default function HomePage() {
     <>
       <SiteHeader />
       <main id="main">
-        <Hero assets={assets} />
+        <Hero />
         <LibrarySection assets={assets} />
         <Bento assets={assets} />
       </main>

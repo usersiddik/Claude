@@ -4,7 +4,6 @@ import { useCallback, useDeferredValue, useMemo, useState } from "react";
 import { countByFilter, findFilter, selectAssets } from "@/lib/assets/filters";
 import type { Asset } from "@/lib/assets/types";
 import { customizeSvg, findFill, findInk } from "@/lib/customize";
-import { findPack } from "@/lib/assets/packs";
 import { AssetCard } from "./AssetCard";
 import { CategoryNav } from "./CategoryNav";
 import { ControlBar } from "./ControlBar";
@@ -18,23 +17,6 @@ interface WorkspaceProps {
   assets: readonly Asset[];
   /** URL params, or null for the static server render. */
   params: { get(name: string): string | null; toString(): string } | null;
-}
-
-const PACK_VIEWS = new Set(["stickers", "miso", "boo"]);
-
-/** Pack views read as a matrix: one row per colorway, one card per reaction. */
-function groupByColorway(items: Asset[]) {
-  const groups = new Map<string, { key: string; title: string; swatch: string; items: Asset[] }>();
-  for (const asset of items) {
-    const pack = findPack(asset.pack?.id);
-    const colorway = pack?.colorways.find((item) => item.id === asset.pack?.colorway);
-    if (!pack || !colorway) continue;
-    const key = `${pack.id}-${colorway.id}`;
-    const group = groups.get(key) ?? { key, title: `${pack.name} · ${colorway.name}`, swatch: colorway.swatch, items: [] };
-    group.items.push(asset);
-    groups.set(key, group);
-  }
-  return [...groups.values()];
 }
 
 export function Workspace({ assets, params }: WorkspaceProps) {
@@ -91,7 +73,6 @@ export function Workspace({ assets, params }: WorkspaceProps) {
   const handleOpen = (asset: Asset) => update({ asset: asset.slug });
 
   const active = findFilter(state.filter);
-  const groups = PACK_VIEWS.has(state.filter) ? groupByColorway(results) : [{ key: "all", title: "", swatch: "", items: results }];
   const renderCard = (asset: Asset) => (
     <li key={asset.id}>
       <AssetCard
@@ -125,36 +106,10 @@ export function Workspace({ assets, params }: WorkspaceProps) {
             </p>
           </div>
 
-          {PACK_VIEWS.has(state.filter) && state.format === "sticker" ? (
-            <p className={styles.notice}>
-              Stickers copy as transparent 512 × 512 images. Paste them into WhatsApp, iMessage, Telegram, or Slack.
-            </p>
-          ) : null}
-
-          {state.filter === "duos" ? (
-            <p className={styles.notice}>Duos are in preview. You can inspect them now; code arrives when the set ships.</p>
-          ) : null}
-
           {results.length > 0 ? (
-            groups.length === 1 && !groups[0]!.title ? (
-              <ul role="list" className={styles.grid}>
-                {results.map(renderCard)}
-              </ul>
-            ) : (
-              <div className={styles.groups}>
-                {groups.map((group) => (
-                  <section key={group.key} aria-labelledby={`group-${group.key}`}>
-                    <h4 id={`group-${group.key}`} className={styles.groupTitle}>
-                      <span className={styles.groupSwatch} style={{ background: group.swatch }} aria-hidden="true" />
-                      {group.title}
-                    </h4>
-                    <ul role="list" className={styles.grid}>
-                      {group.items.map(renderCard)}
-                    </ul>
-                  </section>
-                ))}
-              </div>
-            )
+            <ul role="list" className={styles.grid}>
+              {results.map(renderCard)}
+            </ul>
           ) : (
             <div className={styles.empty}>
               <p className={styles.emptyTitle}>No results</p>
