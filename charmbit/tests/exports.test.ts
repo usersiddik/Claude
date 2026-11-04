@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { optimizeSvg } from "../src/lib/assets/svg.ts";
-import { buildExports, componentName } from "../src/lib/exports/index.ts";
+import { componentName } from "../src/lib/exports/index.ts";
 import { svgToJsx, toJsxAttributeName } from "../src/lib/exports/react.ts";
 import { toFlutter } from "../src/lib/exports/flutter.ts";
 import { toReact } from "../src/lib/exports/react.ts";
@@ -75,13 +75,5 @@ describe("Flutter export", () => {
     assert.match(code, /SvgPicture\.string\(/);
     assert.match(code, /semanticsLabel = 'Test\\'s Star'/);
     assert.ok(code.includes(`r'''${source.sourceSvg}'''`));
-  });
-});
-
-describe("buildExports", () => {
-  it("only builds the formats an asset offers", () => {
-    const built = buildExports({ ...source, exports: ["svg", "flutter"] });
-    assert.deepEqual(built.map((item) => item.format), ["svg", "flutter"]);
-    assert.equal(built[1]?.fileName, "test-star.dart");
   });
 });

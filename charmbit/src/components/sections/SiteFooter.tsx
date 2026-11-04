@@ -7,11 +7,10 @@ import styles from "./Sections.module.css";
 export function SiteFooter() {
   return (
     <footer className={styles.footer}>
-      <div className={`container ${styles.footerGrid}`}>
+      <div className={`container ${styles.footerInner}`}>
         <div className={styles.footerBrand}>
           <Wordmark />
-          <p className={styles.footerTagline}>{SITE.tagline}</p>
-          <p className={styles.fine}>{SITE.supportingLine}</p>
+          <p>{SITE.tagline}</p>
         </div>
         <nav aria-label="Footer">
           <ul role="list" className={styles.footerLinks}>
@@ -20,13 +19,10 @@ export function SiteFooter() {
                 <Link href={link.href}>{link.label}</Link>
               </li>
             ))}
-            <li>
-              <Link href="/#formats">Code formats</Link>
-            </li>
           </ul>
         </nav>
         <p className={styles.footerSmall}>
-          © {new Date().getFullYear()} Charmbit · Original SVG artwork · Licence terms coming soon
+          © {new Date().getFullYear()} Charmbit. Original SVG artwork. License terms coming soon.
         </p>
       </div>
     </footer>

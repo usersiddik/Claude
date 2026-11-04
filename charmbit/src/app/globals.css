@@ -1,71 +1,60 @@
-/* Charmbit design tokens + base styles. Component styles live in CSS Modules. */
+/*
+ * Charmbit design tokens.
+ * Quiet neutral surfaces, one typeface, hairline borders, 4–6px radii.
+ * The artwork carries the colour; the interface stays out of the way.
+ */
 
 :root {
   color-scheme: light;
 
   /* Surfaces */
-  --paper: #f7f3ec;
-  --paper-deep: #efe8dc;
-  --card: #fffdf9;
-  --line: #e2d9ca;
-  --line-strong: #cfc3b0;
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --tile: #f3f3f1;
+  --tile-hover: #ececea;
+  --fill-subtle: #f0efed;
 
-  /* Ink */
-  --ink: #1c1b22;
-  --ink-soft: #4a4752;
-  --ink-muted: #625e69;
+  /* Lines */
+  --line: #e7e6e3;
+  --line-strong: #d4d2cd;
 
-  /* Artwork palette (mirrors src/lib/assets/palette.ts) */
-  --cream: #fbf4e6;
-  --stone: #e6dccb;
-  --butter: #f6d673;
-  --lilac: #bdb0e3;
-  --mint: #bfe6d2;
-  --coral: #f4a28c;
+  /* Text */
+  --text: #1c1b22;
+  --text-2: #55535c;
+  --text-3: #6b6974;
 
   /* Type */
-  --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
-  --font-ui: var(--font-instrument), system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-code: var(--font-jetbrains), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font: var(--font-instrument), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-md: 0.9375rem;
+  --text-lg: 1.0625rem;
+  --title-sm: 1.25rem;
+  --title-md: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
+  --title-lg: clamp(2.5rem, 1.6rem + 4.4vw, 4.5rem);
 
-  --step--2: 0.6875rem;
-  --step--1: 0.8125rem;
-  --step-0: 1rem;
-  --step-1: 1.1875rem;
-  --step-2: clamp(1.4rem, 1.2rem + 0.9vw, 1.85rem);
-  --step-3: clamp(1.9rem, 1.5rem + 2vw, 2.9rem);
-  --step-4: clamp(2.6rem, 1.6rem + 5.2vw, 5.4rem);
+  /* Shape */
+  --radius-s: 4px;
+  --radius-m: 6px;
 
-  /* Space + shape */
-  --gutter: 16px;
-  --container: 1200px;
-  --radius-s: 6px;
-  --radius-m: 10px;
-  --radius-l: 14px;
+  /* Layout */
+  --gutter: 20px;
+  --container: 1120px;
+  --header-h: 60px;
 
-  /* Paper + sticker shadows */
-  --shadow-rest: 0 1px 0 rgb(28 27 34 / 0.05), 0 2px 6px -3px rgb(78 54 28 / 0.18);
-  --shadow-lift: 0 2px 0 rgb(28 27 34 / 0.04), 0 18px 28px -14px rgb(78 54 28 / 0.38);
-  --shadow-panel: 0 1px 0 rgb(28 27 34 / 0.05), 0 24px 48px -28px rgb(78 54 28 / 0.45);
+  /* Elevation (used sparingly) */
+  --shadow-s: 0 1px 2px rgb(28 27 34 / 0.06);
+  --shadow-m: 0 1px 2px rgb(28 27 34 / 0.04), 0 8px 24px -12px rgb(28 27 34 / 0.18);
 
   /* Motion */
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-soft: cubic-bezier(0.45, 0, 0.25, 1);
-  --dur-fast: 160ms;
-  --dur-med: 260ms;
-
-  --dot-grid: radial-gradient(circle at 1px 1px, rgb(28 27 34 / 0.13) 1px, transparent 1.4px) 0 0 / 14px 14px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --fast: 140ms;
+  --med: 240ms;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   :root {
-    --gutter: 24px;
-  }
-}
-
-@media (min-width: 1024px) {
-  :root {
-    --gutter: 40px;
+    --gutter: 32px;
   }
 }
 
@@ -78,26 +67,24 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  scrollbar-gutter: stable;
-  scroll-padding-top: 84px;
+  scroll-padding-top: calc(var(--header-h) + 16px);
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-ui);
-  font-size: var(--step-0);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 1rem;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1,
 h2,
 h3,
-h4,
 p,
 ul,
 ol,
@@ -116,11 +103,9 @@ ol[role="list"] {
 h1,
 h2,
 h3 {
-  font-family: var(--font-display);
-  font-weight: 560;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  font-variation-settings: "opsz" 96;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
   text-wrap: balance;
 }
 
@@ -142,28 +127,20 @@ button {
   cursor: pointer;
 }
 
-code,
-kbd,
-pre {
-  font-family: var(--font-code);
-}
-
 svg {
   display: block;
 }
 
 ::selection {
-  background: var(--butter);
-  color: var(--ink);
+  background: #e9e3ff;
 }
 
 :focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 3px;
-  border-radius: 4px;
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
 }
 
-/* Inline asset artwork rendered from sourceSvg. */
+/* Inline artwork rendered from sourceSvg. */
 [data-art] {
   display: block;
 }
@@ -195,19 +172,20 @@ svg {
 .skip-link {
   position: absolute;
   left: var(--gutter);
-  top: 8px;
+  top: 10px;
   z-index: 100;
-  padding: 8px 14px;
-  background: var(--ink);
-  color: var(--cream);
+  padding: 8px 12px;
   border-radius: var(--radius-s);
+  background: var(--text);
+  color: var(--surface);
+  font-size: var(--text-sm);
   text-decoration: none;
   transform: translateY(-160%);
-  transition: transform var(--dur-fast) var(--ease-out);
+  transition: transform var(--fast) var(--ease);
 }
 
 .skip-link:focus-visible {
-  transform: translateY(0);
+  transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

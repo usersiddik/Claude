@@ -1,26 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Instrument_Sans, JetBrains_Mono } from "next/font/google";
+import { Instrument_Sans } from "next/font/google";
 import { SITE } from "@/lib/site";
 import "./globals.css";
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  axes: ["opsz"],
-  variable: "--font-fraunces",
-  display: "swap",
-});
 
 const instrument = Instrument_Sans({
   subsets: ["latin"],
   variable: "--font-instrument",
   display: "swap",
-});
-
-const jetbrains = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains",
-  display: "swap",
-  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -47,13 +33,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f7f3ec",
+  themeColor: "#fafaf9",
   colorScheme: "light",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${instrument.variable} ${jetbrains.variable}`}>
+    <html lang="en" className={instrument.variable}>
       <body>
         <a className="skip-link" href="#main">
           Skip to content

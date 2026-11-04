@@ -9,13 +9,15 @@ export function LibrarySection({ assets }: { assets: readonly Asset[] }) {
   return (
     <section id="library" className={styles.section} aria-labelledby="library-title">
       <div className="container">
-        <SectionHeading
-          id="library-title"
-          eyebrow="Library"
-          title="The Charm Shelf"
-          lede="Charms are characters and expressive objects. Marks are interface icons with a bit of personality. Open any label to see its code."
-        />
-        {/* The static render shows the full shelf; URL state (search, filter, open asset) applies on the client. */}
+        <div className={styles.headingGap}>
+          <SectionHeading
+            id="library-title"
+            eyebrow="Library"
+            title="Find it. Color it. Copy it."
+            lede="Charms are characters and expressive objects. Marks are interface icons with a little personality."
+          />
+        </div>
+        {/* Static render shows the full library; URL state applies on the client. */}
         <Suspense fallback={<CharmLibrary assets={assets} params={null} />}>
           <LibraryWithUrl assets={assets} />
         </Suspense>

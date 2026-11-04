@@ -5,17 +5,13 @@ interface SectionHeadingProps {
   eyebrow: string;
   title: string;
   lede?: string;
-  badge?: string;
+  align?: "start" | "center";
 }
 
-export function SectionHeading({ id, eyebrow, title, lede, badge }: SectionHeadingProps) {
+export function SectionHeading({ id, eyebrow, title, lede, align = "start" }: SectionHeadingProps) {
   return (
-    <header className={styles.heading}>
-      <p className={styles.eyebrow}>
-        <span className={styles.dot} aria-hidden="true" />
-        {eyebrow}
-        {badge ? <span className={styles.badge}>{badge}</span> : null}
-      </p>
+    <header className={styles.heading} data-align={align}>
+      <p className={styles.eyebrow}>{eyebrow}</p>
       <h2 id={id} className={styles.title}>
         {title}
       </h2>

@@ -1,0 +1,210 @@
+.toolbar {
+  display: grid;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+}
+
+@media (min-width: 1024px) {
+  .toolbar {
+    position: sticky;
+    top: calc(var(--header-h) + 12px);
+    z-index: 10;
+    box-shadow: var(--shadow-s);
+  }
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  padding: 12px;
+  min-width: 0;
+}
+
+.row + .row {
+  border-top: 1px solid var(--line);
+}
+
+/* Search ---------------------------------------------------------------- */
+
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 260px;
+  max-width: 100%;
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .search {
+    flex: 0 1 300px;
+  }
+}
+
+.searchIcon {
+  position: absolute;
+  left: 11px;
+  color: var(--text-3);
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  min-height: 36px;
+  padding: 0 34px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--bg);
+  font-size: var(--text-md);
+  transition: border-color var(--fast) var(--ease), background-color var(--fast) var(--ease);
+}
+
+.input::placeholder {
+  color: var(--text-3);
+}
+
+.input:hover {
+  border-color: var(--line-strong);
+}
+
+.input:focus {
+  border-color: var(--text);
+  background: var(--surface);
+  outline: none;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+
+.kbd {
+  position: absolute;
+  right: 8px;
+  display: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface);
+  font-family: inherit;
+  font-size: var(--text-xs);
+  color: var(--text-3);
+}
+
+@media (hover: hover) and (min-width: 768px) {
+  .kbd {
+    display: grid;
+  }
+}
+
+.input:focus ~ .kbd,
+.input:not(:placeholder-shown) ~ .kbd {
+  opacity: 0;
+}
+
+/* Filters --------------------------------------------------------------- */
+
+.filters {
+  display: flex;
+  gap: 2px;
+  min-width: 0;
+  margin: 0 -12px;
+  padding: 0 12px;
+  border: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filters::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .filters {
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    flex-wrap: wrap;
+  }
+}
+
+.filter {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-s);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background-color var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+
+.filter:hover {
+  color: var(--text);
+  background: var(--fill-subtle);
+}
+
+.filter:has(.radio:checked) {
+  background: var(--text);
+  color: var(--surface);
+}
+
+.filter:has(.radio:focus-visible) {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+.radio {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.count {
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+
+.filter:has(.radio:checked) .count {
+  color: rgb(255 255 255 / 0.7);
+}
+
+/* Customise row ---------------------------------------------------------- */
+
+.customize {
+  gap: 12px 32px;
+}
+
+.reset {
+  margin-left: auto;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: none;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.reset:hover {
+  background: var(--fill-subtle);
+  color: var(--text);
+}
+
+.reset[hidden] {
+  display: none;
+}

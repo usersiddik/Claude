@@ -1,0 +1,142 @@
+.group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* Legends don't participate in flex layout, so float them into the row. */
+.label {
+  float: left;
+  min-width: 52px;
+  padding: 0;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-3);
+}
+
+.input {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Swatches ------------------------------------------------------------ */
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.swatch {
+  --swatch: #ffffff;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* The colour dot */
+.swatch::before {
+  content: "";
+  pointer-events: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--swatch);
+  box-shadow: inset 0 0 0 1px rgb(28 27 34 / 0.14);
+  transition: transform var(--fast) var(--ease);
+}
+
+/* "Original" shows the artwork's own palette as four quarters. */
+.swatch[data-original]::before {
+  background: conic-gradient(#f6d673 0 25%, #f4a28c 0 50%, #bdb0e3 0 75%, #bfe6d2 0);
+}
+
+/* Selection ring */
+.swatch::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--text);
+  opacity: 0;
+  transition: opacity var(--fast) var(--ease);
+}
+
+.swatch:hover::before {
+  transform: scale(1.08);
+}
+
+.swatch:has(.input:checked)::after {
+  opacity: 1;
+}
+
+.swatch:has(.input:focus-visible) {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+/* Segmented control ---------------------------------------------------- */
+
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: var(--radius-m);
+  background: var(--fill-subtle);
+}
+
+.segment {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: var(--radius-s);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: color var(--fast) var(--ease);
+}
+
+.segment:hover {
+  color: var(--text);
+}
+
+.segment:has(.input:checked) {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-s), 0 0 0 0.5px rgb(28 27 34 / 0.08);
+}
+
+.segment:has(.input:focus-visible) {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+
+/* Small screens: label above its control so nothing wraps awkwardly. */
+@media (max-width: 639px) {
+  .group {
+    display: block;
+  }
+
+  .label {
+    float: none;
+    display: block;
+    margin-bottom: 8px;
+  }
+}

@@ -1,11 +1,14 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
-import { countByFilter, selectAssets, type FilterId } from "@/lib/assets/filters";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { CheckIcon } from "@/components/ui/icons";
+import { countByFilter, selectAssets } from "@/lib/assets/filters";
 import type { Asset } from "@/lib/assets/types";
+import { copyText } from "@/lib/clipboard";
+import { customizeSvg, DEFAULT_FILL_ID, DEFAULT_INK_ID, findFill, findInk } from "@/lib/customize";
+import { buildExport, DEFAULT_FORMAT, FORMATS } from "@/lib/exports";
 import { AssetCard } from "./AssetCard";
-import { AssetDrawer } from "./AssetDrawer";
-import { Discovery } from "./Discovery";
+import { Toolbar } from "./Toolbar";
 import { readState, writeSearch, type LibraryState } from "./url-state";
 import styles from "./CharmLibrary.module.css";
 
@@ -15,10 +18,19 @@ interface CharmLibraryProps {
   params: { get(name: string): string | null; toString(): string } | null;
 }
 
+interface Toast {
+  id: number;
+  text: string;
+  ok: boolean;
+}
+
 export function CharmLibrary({ assets, params }: CharmLibraryProps) {
   const [state, setState] = useState<LibraryState>(() => readState(params));
   // URL strings we wrote ourselves, so URL echoes never overwrite fresher typing.
   const [writes, setWrites] = useState<readonly string[]>([]);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [toast, setToast] = useState<Toast | null>(null);
+  const timers = useRef<{ copied?: ReturnType<typeof setTimeout>; toast?: ReturnType<typeof setTimeout> }>({});
   const deferredQuery = useDeferredValue(state.query);
 
   // Follow external URL changes (header links, back/forward) without an effect.
@@ -35,6 +47,14 @@ export function CharmLibrary({ assets, params }: CharmLibraryProps) {
     }
   }
 
+  useEffect(() => {
+    const pending = timers.current;
+    return () => {
+      clearTimeout(pending.copied);
+      clearTimeout(pending.toast);
+    };
+  }, []);
+
   function update(patch: Partial<LibraryState>) {
     const next = { ...state, ...patch };
     setState(next);
@@ -44,79 +64,97 @@ export function CharmLibrary({ assets, params }: CharmLibraryProps) {
     window.history.replaceState(null, "", `${window.location.pathname}${search}${window.location.hash}`);
   }
 
+  const fill = findFill(state.fill);
+  const ink = findInk(state.ink);
+  const format = FORMATS.find((candidate) => candidate.id === state.format) ?? FORMATS[0]!;
+  const inkIsCustom = ink.id !== DEFAULT_INK_ID;
+
   const results = useMemo(
     () => selectAssets(assets, { query: deferredQuery, filter: state.filter }),
     [assets, deferredQuery, state.filter],
   );
   const counts = useMemo(() => countByFilter(assets, deferredQuery), [assets, deferredQuery]);
-  const featured = useMemo(() => assets.filter((asset) => asset.featured), [assets]);
-  const selected = useMemo(() => assets.find((asset) => asset.slug === state.asset) ?? null, [assets, state.asset]);
-  const browsing = state.query.trim() === "" && state.filter === "all";
+  const previews = useMemo(
+    () => new Map(assets.map((asset) => [asset.id, customizeSvg(asset, fill.hex)])),
+    [assets, fill.hex],
+  );
 
-  const open = (asset: Asset) => update({ asset: asset.slug });
-  const close = () => update({ asset: null });
-  const clear = () => update({ query: "", filter: "all" });
+  const handleCopy = useCallback(
+    async (asset: Asset) => {
+      const code = buildExport(asset, format.id, { fill: fill.hex, ink: inkIsCustom ? ink.hex : undefined });
+      let ok = true;
+      try {
+        await copyText(code);
+      } catch {
+        ok = false;
+      }
+      clearTimeout(timers.current.copied);
+      clearTimeout(timers.current.toast);
+      if (ok) setCopiedId(asset.id);
+      setToast({
+        id: Date.now(),
+        ok,
+        text: ok ? `${asset.title} copied as ${format.label}` : `Couldn’t copy ${asset.title}. Check clipboard permissions.`,
+      });
+      timers.current.copied = setTimeout(() => setCopiedId(null), 1600);
+      timers.current.toast = setTimeout(() => setToast(null), 2400);
+    },
+    [format.id, format.label, fill.hex, ink.hex, inkIsCustom],
+  );
+
+  const filtered = state.query.trim() !== "" || state.filter !== "all";
+  const customized = state.fill !== DEFAULT_FILL_ID || state.ink !== DEFAULT_INK_ID || state.format !== DEFAULT_FORMAT;
 
   return (
     <>
-      <Discovery
-        query={state.query}
-        filter={state.filter}
+      <Toolbar
+        state={state}
         counts={counts}
-        resultCount={results.length}
-        total={assets.length}
-        onQueryChange={(query) => update({ query })}
-        onFilterChange={(filter: FilterId) => update({ filter })}
-        onClear={clear}
+        customized={customized}
+        onChange={update}
+        onReset={() => update({ fill: DEFAULT_FILL_ID, ink: DEFAULT_INK_ID, format: DEFAULT_FORMAT })}
       />
 
-      {browsing && featured.length > 0 ? (
-        <section className={styles.featured} aria-labelledby="featured-title">
-          <div className={styles.subhead}>
-            <h3 id="featured-title" className={styles.subtitle}>
-              Fresh from the shelf
-            </h3>
-            <p className={styles.subnote}>Hand-picked favourites from the current set.</p>
-          </div>
-          <div className={styles.shelfWrap}>
-            <ul role="list" className={styles.shelf}>
-              {featured.map((asset) => (
-                <li key={asset.id} className={styles.shelfItem}>
-                  <AssetCard asset={asset} onOpen={open} headingLevel="h4" />
-                </li>
-              ))}
-            </ul>
-            <div className={styles.ledge} aria-hidden="true" />
-          </div>
-        </section>
-      ) : null}
+      <div className={styles.summary}>
+        <p id="library-result-summary" role="status">
+          {filtered ? `${results.length} of ${assets.length} assets` : `${assets.length} assets`}
+        </p>
+        <p className={styles.hint}>Click any asset to copy it as {format.label}.</p>
+      </div>
 
-      <section className={styles.all} aria-labelledby="all-title">
-        <div className={styles.subhead}>
-          <h3 id="all-title" className={styles.subtitle}>
-            {browsing ? "Everything on the shelf" : "Results"}
-          </h3>
+      {results.length > 0 ? (
+        <ul role="list" className={styles.grid}>
+          {results.map((asset) => (
+            <li key={asset.id}>
+              <AssetCard
+                asset={asset}
+                svg={previews.get(asset.id) ?? asset.sourceSvg}
+                ink={ink.hex}
+                formatLabel={format.label}
+                copied={copiedId === asset.id}
+                onCopy={handleCopy}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className={styles.empty}>
+          <p className={styles.emptyTitle}>No matches</p>
+          <p>Try another word, like “happy”, “search”, or “coffee”.</p>
+          <button type="button" className={styles.emptyButton} onClick={() => update({ query: "", filter: "all" })}>
+            Clear search
+          </button>
         </div>
-        {results.length > 0 ? (
-          <ul role="list" className={styles.grid}>
-            {results.map((asset) => (
-              <li key={asset.id}>
-                <AssetCard asset={asset} onOpen={open} headingLevel="h4" />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className={styles.empty}>
-            <p className={styles.emptyTitle}>Nothing on this shelf yet.</p>
-            <p>Try a different word, like “happy”, “search”, or “coffee”.</p>
-            <button type="button" className={styles.emptyButton} onClick={clear}>
-              Clear search and filters
-            </button>
-          </div>
-        )}
-      </section>
+      )}
 
-      <AssetDrawer asset={selected} assets={assets} onClose={close} onSelect={open} />
+      <div className={styles.toastRegion} role="status" aria-live="polite">
+        {toast ? (
+          <div key={toast.id} className={styles.toast} data-error={toast.ok ? undefined : ""}>
+            {toast.ok ? <CheckIcon size={16} /> : null}
+            {toast.text}
+          </div>
+        ) : null}
+      </div>
     </>
   );
 }

@@ -1,52 +1,64 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { memo } from "react";
 import { AssetArt } from "@/components/ui/AssetArt";
-import { CopyButton } from "@/components/ui/CopyButton";
+import { CheckIcon, CopyIcon } from "@/components/ui/icons";
 import type { Asset } from "@/lib/assets/types";
-import { toSvg } from "@/lib/exports/svg";
-import { catalogNumber, familyLabel } from "./format";
+import { familyLabel } from "./format";
 import styles from "./AssetCard.module.css";
 
 interface AssetCardProps {
   asset: Asset;
-  onOpen: (asset: Asset) => void;
-  headingLevel?: "h3" | "h4";
+  /** The SVG to preview, with the chosen colour applied. */
+  svg: string;
+  ink: string;
+  formatLabel: string;
+  copied: boolean;
+  onCopy: (asset: Asset) => void;
 }
 
-/** A tiny printed charm label. The title button opens the drawer; the whole card is its hit area. */
-export function AssetCard({ asset, onOpen, headingLevel: Heading = "h4" }: AssetCardProps) {
+/** One asset. The whole tile is the copy button; Duos that aren't ready are inert. */
+export const AssetCard = memo(function AssetCard({ asset, svg, ink, formatLabel, copied, onCopy }: AssetCardProps) {
   const available = asset.status === "available";
-  const tone = { "--tone": `var(--${asset.preview.tone})` } as CSSProperties;
+  const art = <AssetArt asset={{ sourceSvg: svg }} className={styles.art} />;
+
+  if (!available) {
+    return (
+      <div className={styles.card} data-family={asset.family} data-disabled="">
+        <div className={styles.stage} style={{ color: ink }}>
+          {art}
+        </div>
+        <div className={styles.meta}>
+          <span className={styles.name}>{asset.title}</span>
+          <span className={styles.soon}>Coming soon</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <article className={styles.card} style={tone} data-family={asset.family}>
-      <span className={styles.hole} aria-hidden="true" />
-      <p className={styles.top}>
-        <span>{catalogNumber(asset.number)}</span>
-        <span className={styles.family}>{familyLabel(asset.family)}</span>
-      </p>
-      <div className={styles.preview}>
-        <AssetArt asset={asset} className={styles.art} />
-      </div>
-      <Heading className={styles.title}>
-        <button type="button" className={styles.open} aria-haspopup="dialog" onClick={() => onOpen(asset)}>
+    <button
+      type="button"
+      className={styles.card}
+      data-family={asset.family}
+      data-copied={copied ? "" : undefined}
+      onClick={() => onCopy(asset)}
+    >
+      <span className={styles.stage} style={{ color: ink }}>
+        {art}
+        <span className={styles.badge} aria-hidden="true">
+          <CopyIcon className={styles.copyIcon} size={15} />
+          <CheckIcon className={styles.checkIcon} size={15} />
+        </span>
+      </span>
+      <span className={styles.meta}>
+        <span className={styles.name}>
+          <span className="sr-only">Copy </span>
           {asset.title}
-        </button>
-      </Heading>
-      <p className={styles.tags}>{asset.tags.slice(0, 3).join(" · ")}</p>
-      <div className={styles.action}>
-        {available ? (
-          <CopyButton
-            variant="chip"
-            getText={() => toSvg(asset)}
-            label={`Copy SVG for ${asset.title}`}
-            what={`${asset.title} SVG`}
-          />
-        ) : (
-          <span className={styles.soon}>Soon</span>
-        )}
-      </div>
-    </article>
+          <span className="sr-only"> as {formatLabel}</span>
+        </span>
+        <span className={styles.kind}>{familyLabel(asset.family)}</span>
+      </span>
+    </button>
   );
-}
+});

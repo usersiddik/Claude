@@ -27,7 +27,7 @@ export default function OpenGraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 72,
-          background: "#F7F3EC",
+          background: "#FAFAF9",
           color: PALETTE.ink.hex,
         }}
       >
@@ -36,7 +36,7 @@ export default function OpenGraphImage() {
             style={{
               width: 44,
               height: 36,
-              borderRadius: 10,
+              borderRadius: 6,
               border: `4px solid ${PALETTE.ink.hex}`,
               background: PALETTE.butter.hex,
             }}

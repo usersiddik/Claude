@@ -5,37 +5,31 @@ export const FAQ = [
   {
     question: "What is Charmbit?",
     answer:
-      "Charmbit is a curated library of original SVG assets: Charms (characters and expressive objects), Marks (playful interface icons), and, soon, Duos (paired sets). Each asset is a small, carefully tuned SVG file you can copy straight into a product.",
+      "A library of original SVG artwork for products: Charms (characters and expressive objects), Marks (interface icons with personality), and soon, Duos (matching pairs).",
   },
   {
-    question: "Which code formats can I copy?",
+    question: "Which formats can I copy?",
     answer:
-      "Raw SVG, a typed React (TSX) component, and a Flutter widget that uses the flutter_svg package. All three are generated from the same source SVG, so they always match.",
+      "SVG, a typed React component, or a Flutter widget. Choose one with Copy as, then click any asset. All three come from the same source file, so they always match.",
   },
   {
-    question: "Can I change the colours or size?",
+    question: "Can I change the colors?",
     answer:
-      "Yes. Linework uses currentColor, so it follows the surrounding text colour, and fills are plain hex values you can edit. The React component takes size and color props; the Flutter widget takes size and color parameters.",
+      "Yes. Color changes the main fill and Ink changes the linework. Your choice is built into whatever you copy, and you can still change size and color later through props.",
   },
   {
     question: "Do I need to install anything?",
     answer:
-      "Not for SVG. The React export needs only React itself. The Flutter export needs flutter_svg, which you can add with: flutter pub add flutter_svg.",
+      "Not for SVG. React output only needs React. Flutter output uses the flutter_svg package.",
   },
   {
-    question: "Does Charmbit generate images with AI?",
-    answer:
-      "No. Charmbit is a library of authored SVG files. There is no image generator in Charmbit.",
+    question: "Is the artwork AI-generated?",
+    answer: "No. Charmbit is a library of authored SVG files. There is no image generator.",
   },
   {
-    question: "How are the assets licensed?",
+    question: "How is it licensed?",
     answer:
-      "Licence terms haven’t been published yet. Until they are, treat the library as a preview and check back before using assets in a shipped product.",
-  },
-  {
-    question: "When will Duos be available?",
-    answer:
-      "Duos are the next family in progress. There’s no release date yet; the two previews in the library show the direction.",
+      "License terms haven’t been published yet. Until they are, treat the library as a preview and check back before shipping it in a product.",
   },
 ] as const;
 
@@ -46,8 +40,8 @@ export function Faq() {
         <SectionHeading
           id="about-title"
           eyebrow="About"
-          title="Small library, clear answers."
-          lede="Charmbit is for developers and designers who want personality in their product without a heavy asset pipeline."
+          title="Questions"
+          lede="Charmbit is for developers and designers who want personality in a product without a heavy asset pipeline."
         />
         <div className={styles.faq}>
           {FAQ.map((item) => (

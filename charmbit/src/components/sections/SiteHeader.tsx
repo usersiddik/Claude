@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { MobileMenu } from "./MobileMenu";
 import { NAV_LINKS } from "./nav";
-import { SearchTrigger } from "./SearchTrigger";
 import styles from "./SiteHeader.module.css";
 
 export function SiteHeader() {
@@ -23,10 +22,7 @@ export function SiteHeader() {
             ))}
           </ul>
         </nav>
-        <div className={styles.actions}>
-          <SearchTrigger />
-          <MobileMenu />
-        </div>
+        <MobileMenu />
       </div>
     </header>
   );

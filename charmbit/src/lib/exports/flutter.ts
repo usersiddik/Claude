@@ -1,7 +1,7 @@
 import { readViewBox, parseSvg } from "../assets/svg.ts";
 import { PALETTE } from "../assets/palette.ts";
 import { componentName } from "./naming.ts";
-import type { ExportSource } from "./types.ts";
+import type { ExportOptions, ExportSource } from "./types.ts";
 
 function dartString(value: string): string {
   return `'${value.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\$/g, "\\$")}'`;
@@ -12,7 +12,7 @@ function dartColor(hex: string): string {
 }
 
 /** A StatelessWidget wrapping `SvgPicture.string` from flutter_svg. */
-export function toFlutter(asset: ExportSource): string {
+export function toFlutter(asset: ExportSource, options: ExportOptions = {}): string {
   const { attributes } = parseSvg(asset.sourceSvg);
   const { width } = readViewBox(attributes.viewBox ?? "0 0 24 24");
   const name = componentName(asset.slug, asset.family);
@@ -28,7 +28,7 @@ class ${name} extends StatelessWidget {
   const ${name}({
     super.key,
     this.size = ${width},
-    this.color = const ${dartColor(PALETTE.ink.hex)},
+    this.color = const ${dartColor(options.ink ?? PALETTE.ink.hex)},
     this.semanticsLabel = ${dartString(asset.title)},
   });
 

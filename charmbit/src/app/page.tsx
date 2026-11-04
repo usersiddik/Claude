@@ -1,7 +1,7 @@
-import { BuiltToShip } from "@/components/sections/BuiltToShip";
 import { DuosTeaser } from "@/components/sections/DuosTeaser";
 import { Faq } from "@/components/sections/Faq";
 import { Hero } from "@/components/sections/Hero";
+import { HowItWorks } from "@/components/sections/HowItWorks";
 import { LibrarySection } from "@/components/sections/LibrarySection";
 import { SiteFooter } from "@/components/sections/SiteFooter";
 import { SiteHeader } from "@/components/sections/SiteHeader";
@@ -47,8 +47,8 @@ export default function HomePage() {
       <main id="main">
         <Hero assets={assets} />
         <LibrarySection assets={assets} />
+        <HowItWorks />
         <DuosTeaser assets={assets} />
-        <BuiltToShip />
         <Faq />
       </main>
       <SiteFooter />

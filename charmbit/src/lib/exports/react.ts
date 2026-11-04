@@ -1,6 +1,6 @@
 import { formatMarkup, parseSvg, readViewBox } from "../assets/svg.ts";
 import { componentName } from "./naming.ts";
-import type { ExportSource } from "./types.ts";
+import type { ExportOptions, ExportSource } from "./types.ts";
 
 const SPECIAL_ATTRIBUTES: Record<string, string> = {
   class: "className",
@@ -28,7 +28,7 @@ function quote(value: string): string {
 }
 
 /** A typed, dependency-free React component (works in Server Components). */
-export function toReact(asset: ExportSource): string {
+export function toReact(asset: ExportSource, options: ExportOptions = {}): string {
   const { attributes, inner } = parseSvg(asset.sourceSvg);
   const viewBox = attributes.viewBox ?? "0 0 24 24";
   const { width } = readViewBox(viewBox);
@@ -40,7 +40,7 @@ export function toReact(asset: ExportSource): string {
 export type ${name}Props = Omit<SVGProps<SVGSVGElement>, "color"> & {
   /** Width and height: a number (px) or any CSS length. */
   size?: number | string;
-  /** Ink colour (the SVG's currentColor). Inherits text colour by default. */
+  /** Ink colour (the SVG's currentColor). */
   color?: string;
   /** Accessible name. Pass "" when the graphic is purely decorative. */
   title?: string;
@@ -48,7 +48,7 @@ export type ${name}Props = Omit<SVGProps<SVGSVGElement>, "color"> & {
 
 export function ${name}({
   size = ${width},
-  color = "currentColor",
+  color = ${quote(options.ink ?? "currentColor")},
   title = ${quote(asset.title)},
   className,
   style,
