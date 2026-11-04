@@ -326,3 +326,30 @@
   background: color-mix(in srgb, #30d158 18%, transparent);
   color: #1f9d48;
 }
+
+.stickerOut {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.stickerArt {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  color: #1d1d1f;
+  filter: drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff) drop-shadow(0 1.5px 0 #fff) drop-shadow(0 -1.5px 0 #fff);
+}
+
+.stickerText {
+  display: grid;
+  gap: 2px;
+  font-size: 0.6875rem;
+  color: #c7c7cc;
+}
+
+.stickerText strong {
+  font-weight: 600;
+  color: var(--code-text);
+}

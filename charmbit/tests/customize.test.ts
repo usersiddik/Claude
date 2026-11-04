@@ -9,7 +9,7 @@ const mochi = assets.find((asset) => asset.slug === "mochi")!;
 
 describe("customisation", () => {
   it("every asset's main fill appears in its artwork", () => {
-    for (const asset of assets) {
+    for (const asset of assets.filter((item) => item.recolorable !== false)) {
       assert.ok(asset.sourceSvg.toUpperCase().includes(`FILL="${primaryFill(asset).toUpperCase()}"`), asset.id);
     }
   });
@@ -23,6 +23,11 @@ describe("customisation", () => {
 
   it("is a no-op for Original", () => {
     assert.equal(applyFill(mochi.sourceSvg, "#F6D673", null), mochi.sourceSvg);
+  });
+
+  it("leaves fixed-colorway stickers untouched", () => {
+    const sticker = assets.find((asset) => asset.pack)!;
+    assert.equal(customizeSvg(sticker, "#B4D2F0"), sticker.sourceSvg);
   });
 
   it("falls back to defaults for unknown ids", () => {

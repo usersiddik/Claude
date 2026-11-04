@@ -105,6 +105,46 @@ export const FlutterGlyph = (p: IconProps) => (
   </Icon>
 );
 
+export const StickerGlyph = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M20 13.5V7a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h6.5" />
+    <path d="M13.5 20c0-3.6 2.9-6.5 6.5-6.5L13.5 20Z" />
+  </Icon>
+);
+export const DownloadIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14" />
+  </Icon>
+);
+export const ShareIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 15V4M8 7.5 12 3.5l4 4M7 11H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1" />
+  </Icon>
+);
+export const HeartGlyph = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 19.5s-7.5-4.5-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.5-7.5 10-7.5 10Z" />
+  </Icon>
+);
+export const SmileGlyph = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="8" />
+    <path d="M8.8 13.5c1.8 2 4.6 2 6.4 0M9.5 10v.01M14.5 10v.01" />
+  </Icon>
+);
+export const DropGlyph = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 4c-3 4.2-5 7-5 9.5a5 5 0 0 0 10 0C17 11 15 8.2 12 4Z" />
+  </Icon>
+);
+export const BlushGlyph = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="8" />
+    <path d="M8 10.5c.8-1 2.2-1 3 0M13 10.5c.8-1 2.2-1 3 0M10 15c1.2 1 2.8 1 4 0" />
+    <path d="M6.8 13.2h1.6M15.6 13.2h1.6" />
+  </Icon>
+);
+
 /* Category glyphs */
 export const CategoryIcons = {
   all: (p: IconProps) => (
@@ -149,6 +189,19 @@ export const CategoryIcons = {
     <Icon {...p}>
       <rect x="3.5" y="5" width="17" height="14" rx="3" />
       <path d="M3.5 9h17M7 7v.01M9.5 7v.01" />
+    </Icon>
+  ),
+  sticker: (p: IconProps) => <StickerGlyph {...p} />,
+  cat: (p: IconProps) => (
+    <Icon {...p}>
+      <path d="M5 19.5c-.8-2-1-4.2-.5-6.5L5 5l4.2 3.2a8.4 8.4 0 0 1 5.6 0L19 5l.5 8c.5 2.3.3 4.5-.5 6.5Z" />
+      <path d="M9.5 13v.01M14.5 13v.01" strokeWidth={2.4} />
+    </Icon>
+  ),
+  ghost: (p: IconProps) => (
+    <Icon {...p}>
+      <path d="M5.5 20V11a6.5 6.5 0 0 1 13 0v9l-2.2-1.6L14 20l-2-1.6L10 20l-2.3-1.6Z" />
+      <path d="M10 11v.01M14 11v.01" strokeWidth={2.4} />
     </Icon>
   ),
   reaction: (p: IconProps) => (

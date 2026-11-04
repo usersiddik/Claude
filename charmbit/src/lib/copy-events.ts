@@ -7,6 +7,8 @@ export interface CopyNotice {
   svg: string;
   ink: string | null;
   ok: boolean;
+  /** Defaults to "Copied". */
+  verb?: "Copied" | "Saved";
 }
 
 const EVENT = "charmbit:copied";

@@ -2,7 +2,7 @@ import type { Asset } from "./types.ts";
 
 type Filterable = Pick<
   Asset,
-  "title" | "slug" | "family" | "subject" | "description" | "tags" | "traits" | "relationship" | "palette" | "status"
+  "title" | "slug" | "family" | "subject" | "description" | "tags" | "traits" | "relationship" | "palette" | "status" | "pack"
 >;
 
 const available = (asset: Filterable) => asset.status === "available";
@@ -13,7 +13,7 @@ export interface FilterDefinition {
   label: string;
   /** Short label for mobile pills. */
   short: string;
-  icon: "all" | "charm" | "mark" | "duo" | "character" | "object" | "ui" | "reaction";
+  icon: "all" | "charm" | "mark" | "duo" | "character" | "object" | "ui" | "reaction" | "sticker" | "cat" | "ghost";
   test: (asset: Filterable) => boolean;
 }
 
@@ -27,9 +27,18 @@ export const FILTER_GROUPS = [
     label: "Collections",
     filters: [
       { id: "all", label: "All Assets", short: "All", icon: "all", test: available },
-      { id: "charms", label: "Charms", short: "Charms", icon: "charm", test: (a) => available(a) && a.family === "charm" },
+      { id: "charms", label: "Charms", short: "Charms", icon: "charm", test: (a) => available(a) && a.family === "charm" && !a.pack },
       { id: "marks", label: "Marks", short: "Marks", icon: "mark", test: (a) => available(a) && a.family === "mark" },
       { id: "duos", label: "Duos", short: "Duos", icon: "duo", test: (a) => a.family === "duo" },
+    ],
+  },
+  {
+    id: "packs",
+    label: "Sticker packs",
+    filters: [
+      { id: "stickers", label: "All Stickers", short: "Stickers", icon: "sticker", test: (a) => available(a) && Boolean(a.pack) },
+      { id: "miso", label: "Miso the Cat", short: "Miso", icon: "cat", test: (a) => a.pack?.id === "miso" },
+      { id: "boo", label: "Boo the Ghost", short: "Boo", icon: "ghost", test: (a) => a.pack?.id === "boo" },
     ],
   },
   {
@@ -77,6 +86,7 @@ function haystack(asset: Filterable): string {
     asset.traits?.pose,
     asset.traits?.expression,
     asset.relationship?.occasion,
+    asset.pack?.colorway,
   ]
     .filter(Boolean)
     .join(" ")

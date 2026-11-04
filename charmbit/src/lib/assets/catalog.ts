@@ -1,3 +1,4 @@
+import { expandPacks } from "./packs.ts";
 import type { AssetMeta } from "./types.ts";
 
 /**
@@ -6,7 +7,7 @@ import type { AssetMeta } from "./types.ts";
  */
 const ALL_FORMATS = ["svg", "react", "flutter"] as const;
 
-export const CATALOG: readonly AssetMeta[] = [
+const FLAT: readonly AssetMeta[] = [
   {
     id: "charm-mochi",
     slug: "mochi",
@@ -262,3 +263,6 @@ export const CATALOG: readonly AssetMeta[] = [
     status: "comingSoon",
   },
 ];
+
+/** Sticker packs first: they're the most-browsed items. */
+export const CATALOG: readonly AssetMeta[] = [...expandPacks(), ...FLAT];

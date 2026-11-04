@@ -12,13 +12,18 @@ export const FAMILY_DIRECTORY: Record<AssetFamily, string> = {
   duo: "duos",
 };
 
-export function svgPathFor(meta: Pick<AssetMeta, "family" | "slug">, root = process.cwd()): string {
+export function svgPathFor(meta: Pick<AssetMeta, "family" | "slug" | "pack">, root = process.cwd()): string {
+  if (meta.pack) return path.join(root, "assets", "svg", "packs", meta.pack.id, `${meta.slug}.svg`);
   return path.join(root, "assets", "svg", FAMILY_DIRECTORY[meta.family], `${meta.slug}.svg`);
 }
 
 export function buildAsset(meta: AssetMeta, rawSvg: string, number: number): Asset {
   const sourceSvg = optimizeSvg(rawSvg);
   const problems = findSvgProblems(sourceSvg);
+  // Gradient and filter ids must be namespaced so several assets can share a page.
+  for (const [, id] of sourceSvg.matchAll(/\bid="([^"]+)"/g)) {
+    if (!id?.startsWith(`${meta.slug}-`)) problems.push(`id "${id}" must start with "${meta.slug}-".`);
+  }
   if (problems.length > 0) {
     throw new Error(`${meta.id}: ${problems.join(" ")}`);
   }

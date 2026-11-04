@@ -41,6 +41,10 @@
   width: 36%;
 }
 
+[data-pack] .art {
+  width: 74%;
+}
+
 .footer {
   display: flex;
   align-items: center;

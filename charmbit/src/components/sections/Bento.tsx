@@ -49,10 +49,10 @@ export function Bento({ assets }: { assets: readonly Asset[] }) {
           <article className={`${styles.card} ${styles.wide}`}>
             <div className={styles.copy}>
               <p className={styles.kicker}>Zero setup</p>
-              <h3 className={styles.cardTitle}>One source. Three outputs.</h3>
+              <h3 className={styles.cardTitle}>One source. Every format.</h3>
               <p className={styles.body}>
-                Every format is generated from the same SVG file, so they never drift. React needs only React. Flutter
-                uses flutter_svg.
+                Stickers for chats, code for products. Everything is generated from the same SVG file, so it never
+                drifts. React needs only React; Flutter uses flutter_svg.
               </p>
             </div>
             <div className={styles.flow}>
@@ -61,9 +61,16 @@ export function Bento({ assets }: { assets: readonly Asset[] }) {
                 <code>{FORMATS[0]!.fileName(mochi)}</code>
               </div>
               <svg className={styles.wires} viewBox="0 0 60 120" preserveAspectRatio="none" aria-hidden="true">
-                <path d="M0 60 C30 60 30 12 60 12M0 60 H60M0 60 C30 60 30 108 60 108" />
+                <path d="M0 60C30 60 30 14 60 14M0 60C30 60 30 46 60 46M0 60C30 60 30 76 60 76M0 60C30 60 30 106 60 106" />
               </svg>
               <ul role="list" className={styles.outputs}>
+                <li className={`${styles.output} ${styles.stickerOut}`}>
+                  <AssetArt asset={mochi} className={styles.stickerArt} />
+                  <span className={styles.stickerText}>
+                    <strong>Sticker</strong>
+                    <span>512 × 512 transparent PNG with a die-cut edge. Paste into any chat.</span>
+                  </span>
+                </li>
                 {outputs.map((output) => (
                   <li key={output.id} className={styles.output}>
                     <span className={styles.outputHead}>

@@ -14,7 +14,7 @@ export function LibrarySection({ assets }: { assets: readonly Asset[] }) {
             Library
           </h2>
           <p className={styles.lede}>
-            {available} assets ready to copy. Click any card to inspect its code, or use the pill to copy in one click.
+            {available} stickers and assets ready to copy. Click a card for variations and code, or use the pill to copy in one click.
           </p>
         </header>
         {/* Static render shows the full library; URL state applies on the client. */}

@@ -3,6 +3,7 @@
 import { memo } from "react";
 import { AssetArt } from "@/components/ui/AssetArt";
 import { CopyIcon } from "@/components/ui/icons";
+import { findPack } from "@/lib/assets/packs";
 import type { Asset } from "@/lib/assets/types";
 import styles from "./AssetCard.module.css";
 
@@ -13,17 +14,21 @@ interface AssetCardProps {
   /** Preview SVG with the chosen fill applied. */
   svg: string;
   ink: string | null;
+  /** Visible pill text, e.g. "Copy sticker". */
+  copyLabel: string;
   formatLabel: string;
   onOpen: (asset: Asset) => void;
   onCopy: (asset: Asset) => void;
 }
 
 /** Click the card to inspect; the pill copies in one click. */
-export const AssetCard = memo(function AssetCard({ asset, svg, ink, formatLabel, onOpen, onCopy }: AssetCardProps) {
+export const AssetCard = memo(function AssetCard({ asset, svg, ink, copyLabel, formatLabel, onOpen, onCopy }: AssetCardProps) {
   const available = asset.status === "available";
+  const colorway = asset.pack ? findPack(asset.pack.id)?.colorways.find((item) => item.id === asset.pack?.colorway) : undefined;
+  const badge = !available ? "Preview" : colorway ? colorway.name : FAMILY[asset.family];
 
   return (
-    <article className={styles.card} data-family={asset.family}>
+    <article className={styles.card} data-family={asset.family} data-pack={asset.pack ? "" : undefined}>
       <div className={styles.canvas} style={ink ? { color: ink } : undefined}>
         <AssetArt asset={{ sourceSvg: svg }} className={styles.art} />
       </div>
@@ -33,12 +38,12 @@ export const AssetCard = memo(function AssetCard({ asset, svg, ink, formatLabel,
             {asset.title}
           </button>
         </h3>
-        <span className={styles.badge}>{available ? FAMILY[asset.family] : "Preview"}</span>
+        <span className={styles.badge}>{badge}</span>
       </div>
       {available ? (
         <button type="button" className={styles.copy} onClick={() => onCopy(asset)} aria-label={`Copy ${asset.title} as ${formatLabel}`}>
           <CopyIcon size={14} />
-          <span aria-hidden="true">Copy {formatLabel}</span>
+          <span aria-hidden="true">{copyLabel}</span>
         </button>
       ) : null}
     </article>

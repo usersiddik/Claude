@@ -62,6 +62,10 @@ export function applyFill(svg: string, from: string, to: string | null): string 
 }
 
 /** Returns the asset's SVG with the chosen main fill applied. */
-export function customizeSvg(asset: Pick<Asset, "palette" | "sourceSvg">, fill: string | null): string {
+export function customizeSvg(
+  asset: Pick<Asset, "palette" | "sourceSvg" | "recolorable">,
+  fill: string | null,
+): string {
+  if (asset.recolorable === false) return asset.sourceSvg;
   return applyFill(asset.sourceSvg, primaryFill(asset), fill);
 }

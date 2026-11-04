@@ -60,6 +60,10 @@ export interface AssetMeta {
   status: AssetStatus;
   featured?: boolean;
   isNew?: boolean;
+  /** Sticker-pack membership: character pack, colorway, and reaction. */
+  pack?: { id: string; colorway: string; reaction: string };
+  /** False when the artwork has fixed colorways (packs); the Fill control then doesn't apply. */
+  recolorable?: boolean;
 }
 
 export interface Asset extends AssetMeta {

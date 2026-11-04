@@ -7,12 +7,15 @@ import { CopyIsland } from "@/components/ui/CopyIsland";
 import { CloseIcon, CopyIcon } from "@/components/ui/icons";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { SwatchPicker } from "@/components/ui/SwatchPicker";
-import type { Asset, ExportFormat } from "@/lib/assets/types";
+import { findPack } from "@/lib/assets/packs";
+import type { Asset } from "@/lib/assets/types";
 import { customizeSvg, FILL_OPTIONS, INK_OPTIONS } from "@/lib/customize";
 import { buildExport, findFormat } from "@/lib/exports";
 import type { Colors } from "./copy";
-import { CANVAS_OPTIONS, FORMAT_OPTIONS } from "./options";
-import type { Canvas, LibraryState } from "./url-state";
+import { CANVAS_OPTIONS, FORMAT_OPTIONS, outputLabel } from "./options";
+import { StickerPanel } from "./StickerPanel";
+import type { Canvas, LibraryState, Output } from "./url-state";
+import { Variations } from "./Variations";
 import styles from "./Inspector.module.css";
 
 const SIZES = [24, 48, 64, 128] as const;
@@ -64,11 +67,14 @@ export function Inspector({ asset, state, colors, onChange, onClose, onCopy }: I
     if (target?.isConnected) target.focus();
   }
 
-  const format = findFormat(state.format);
+  const sticker = state.format === "sticker";
+  const format = findFormat(sticker ? "svg" : state.format);
   const code = useMemo(
-    () => (asset ? buildExport(asset, format.id, { fill: colors.fill, ink: colors.ink ?? undefined }) : ""),
-    [asset, format.id, colors.fill, colors.ink],
+    () => (asset && !sticker ? buildExport(asset, format.id, { fill: colors.fill, ink: colors.ink ?? undefined }) : ""),
+    [asset, sticker, format.id, colors.fill, colors.ink],
   );
+  const pack = findPack(asset?.pack?.id);
+  const colorway = pack?.colorways.find((item) => item.id === asset?.pack?.colorway);
   const svg = asset ? customizeSvg(asset, colors.fill) : "";
   const available = asset?.status === "available";
   const inkStyle = colors.ink ? ({ color: colors.ink } as CSSProperties) : undefined;
@@ -92,7 +98,15 @@ export function Inspector({ asset, state, colors, onChange, onClose, onCopy }: I
                 {asset.title}
               </h2>
               <p className={styles.meta}>
-                <span>{asset.family === "duo" ? "Duo · Preview" : asset.family === "mark" ? "Mark" : "Charm"}</span>
+                <span>
+                  {pack && colorway
+                    ? `${pack.name} the ${pack.species} · ${colorway.name}`
+                    : asset.family === "duo"
+                      ? "Duo · Preview"
+                      : asset.family === "mark"
+                        ? "Mark"
+                        : "Charm"}
+                </span>
                 <span>
                   {asset.width}×{asset.height}
                 </span>
@@ -134,8 +148,12 @@ export function Inspector({ asset, state, colors, onChange, onClose, onCopy }: I
                 ))}
               </ul>
 
+              <Variations asset={asset} onSelect={(slug) => onChange({ asset: slug })} />
+
               <div className={styles.colors}>
-                <SwatchPicker name="inspector-fill" label="Fill" options={FILL_OPTIONS} value={state.fill} onChange={(id) => onChange({ fill: id })} />
+                {asset.recolorable === false ? null : (
+                  <SwatchPicker name="inspector-fill" label="Fill" options={FILL_OPTIONS} value={state.fill} onChange={(id) => onChange({ fill: id })} />
+                )}
                 <SwatchPicker name="inspector-ink" label="Ink" options={INK_OPTIONS} value={state.ink} nullStyle="auto" onChange={(id) => onChange({ ink: id })} />
               </div>
             </section>
@@ -145,22 +163,31 @@ export function Inspector({ asset, state, colors, onChange, onClose, onCopy }: I
                 Code
               </h3>
               <div className={styles.codeHead}>
-                <SegmentedControl<ExportFormat>
+                <SegmentedControl<Output>
                   name="inspector-format"
-                  label="Code format"
+                  label="Copy as"
                   options={FORMAT_OPTIONS}
                   value={state.format}
                   onChange={(id) => onChange({ format: id })}
                 />
-                {available ? (
+                {available && !sticker ? (
                   <button type="button" className={styles.copy} onClick={() => onCopy(asset)}>
                     <CopyIcon size={15} />
-                    Copy {format.label}
+                    Copy {outputLabel(state.format)}
                   </button>
                 ) : null}
               </div>
 
-              {available ? (
+              {available && sticker ? (
+                <StickerPanel
+                  asset={asset}
+                  svg={svg}
+                  ink={colors.ink}
+                  border={state.border}
+                  onBorderChange={(border) => onChange({ border })}
+                  onCopy={() => onCopy(asset)}
+                />
+              ) : available ? (
                 <>
                   <div className={styles.fileRow}>
                     <code className={styles.file}>{format.fileName(asset)}</code>

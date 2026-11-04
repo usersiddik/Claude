@@ -1,17 +1,24 @@
 import { DEFAULT_FILTER, isFilterId, type FilterId } from "@/lib/assets/filters";
 import type { ExportFormat } from "@/lib/assets/types";
 import { DEFAULT_FILL_ID, DEFAULT_INK_ID, FILL_OPTIONS, INK_OPTIONS } from "@/lib/customize";
-import { DEFAULT_FORMAT, isExportFormat } from "@/lib/exports";
+import { isExportFormat } from "@/lib/exports";
 
 export const CANVASES = ["light", "dark", "grid"] as const;
 export type Canvas = (typeof CANVASES)[number];
+
+/** What a copy produces: a sticker image, or code in one of the export formats. */
+export type Output = "sticker" | ExportFormat;
+export const DEFAULT_OUTPUT: Output = "sticker";
+export const isOutput = (value: string | null | undefined): value is Output => value === "sticker" || isExportFormat(value);
 
 export interface LibraryState {
   query: string;
   filter: FilterId;
   fill: string;
   ink: string;
-  format: ExportFormat;
+  format: Output;
+  /** White die-cut border on sticker output. */
+  border: boolean;
   canvas: Canvas;
   /** Slug of the asset open in the inspector. */
   asset: string | null;
@@ -22,7 +29,8 @@ export const DEFAULT_STATE: LibraryState = {
   filter: DEFAULT_FILTER,
   fill: DEFAULT_FILL_ID,
   ink: DEFAULT_INK_ID,
-  format: DEFAULT_FORMAT,
+  format: DEFAULT_OUTPUT,
+  border: true,
   canvas: "light",
   asset: null,
 };
@@ -44,7 +52,8 @@ export function readState(params: ParamsLike | null): LibraryState {
     filter: isFilterId(filter) ? filter : DEFAULT_FILTER,
     fill: known(FILL_OPTIONS, params.get("color"), DEFAULT_FILL_ID),
     ink: known(INK_OPTIONS, params.get("ink"), DEFAULT_INK_ID),
-    format: isExportFormat(format) ? format : DEFAULT_FORMAT,
+    format: isOutput(format) ? format : DEFAULT_OUTPUT,
+    border: params.get("border") !== "off",
     canvas: CANVASES.includes(canvas as Canvas) ? (canvas as Canvas) : "light",
     asset: params.get("asset"),
   };
@@ -59,7 +68,8 @@ export function writeSearch(current: string, state: LibraryState): string {
   set("filter", state.filter, DEFAULT_FILTER);
   set("color", state.fill, DEFAULT_FILL_ID);
   set("ink", state.ink, DEFAULT_INK_ID);
-  set("as", state.format, DEFAULT_FORMAT);
+  set("as", state.format, DEFAULT_OUTPUT);
+  set("border", state.border ? "" : "off", "");
   set("canvas", state.canvas, "light");
   set("asset", state.asset, "");
   const search = params.toString();

@@ -39,7 +39,7 @@ export function CopyIsland({ scope }: CopyIslandProps) {
           <span className={styles.text}>
             {notice.ok ? (
               <>
-                Copied <strong>{notice.title}</strong> as {notice.format}
+                {notice.verb ?? "Copied"} <strong>{notice.title}</strong> as {notice.format}
               </>
             ) : (
               <>Couldn’t copy {notice.title}. Check clipboard permissions.</>

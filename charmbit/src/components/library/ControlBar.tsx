@@ -5,10 +5,9 @@ import { Popover } from "@/components/ui/Popover";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { swatchBackground, SwatchPicker } from "@/components/ui/SwatchPicker";
 import { ChevronIcon, SearchIcon } from "@/components/ui/icons";
-import type { ExportFormat } from "@/lib/assets/types";
 import { FILL_OPTIONS, findFill, findInk, INK_OPTIONS } from "@/lib/customize";
 import { CANVAS_OPTIONS, FORMAT_OPTIONS } from "./options";
-import type { Canvas, LibraryState } from "./url-state";
+import type { Canvas, LibraryState, Output } from "./url-state";
 import styles from "./ControlBar.module.css";
 
 export const SEARCH_INPUT_ID = "library-search";
@@ -68,7 +67,7 @@ export function ControlBar({ state, onChange }: ControlBarProps) {
               onChange({ query: "" });
             }
           }}
-          placeholder="Search happy, coffee, weather…"
+          placeholder="Search love, cat, coffee…"
           autoComplete="off"
           spellCheck={false}
           enterKeyHint="search"
@@ -80,9 +79,9 @@ export function ControlBar({ state, onChange }: ControlBarProps) {
       </form>
 
       <div className={styles.tools}>
-        <SegmentedControl<ExportFormat>
+        <SegmentedControl<Output>
           name="format"
-          label="Code format"
+          label="Copy as"
           options={FORMAT_OPTIONS}
           value={state.format}
           onChange={(format) => onChange({ format })}

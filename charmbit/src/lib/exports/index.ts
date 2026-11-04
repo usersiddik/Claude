@@ -72,7 +72,7 @@ export interface Customization {
 
 /** Builds one format with the user's colour choices applied. */
 export function buildExport(
-  asset: Pick<Asset, "title" | "slug" | "family" | "sourceSvg" | "palette">,
+  asset: Pick<Asset, "title" | "slug" | "family" | "sourceSvg" | "palette" | "recolorable">,
   format: ExportFormat,
   customization: Customization = { fill: null },
 ): string {
