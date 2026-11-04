@@ -125,6 +125,11 @@
   color: var(--text-2);
 }
 
+.fine a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+
 /* Header ----------------------------------------------------------------------------- */
 
 .signIn {

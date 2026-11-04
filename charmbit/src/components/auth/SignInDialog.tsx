@@ -54,7 +54,9 @@ export function SignInDialog({ open, onClose, onSignIn }: SignInDialogProps) {
         <GoogleMark />
         Continue with Google
       </button>
-      <p className={styles.fine}>We only receive your name, email address, and profile photo from Google.</p>
+      <p className={styles.fine}>
+        We only receive your name, email address, and profile photo from Google. <a href="/privacy">Privacy</a>
+      </p>
     </dialog>
   );
 }
