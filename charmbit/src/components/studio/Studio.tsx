@@ -68,7 +68,7 @@ export function Studio() {
   const [look, setLook] = useState<Look>(DEFAULT_SPEC.look);
   const [partner, setPartner] = useState<Look>(DEFAULT_SPEC.partner);
   const [outfit, setOutfit] = useState(DEFAULT_SPEC.outfit);
-  const [finish, setFinish] = useState<Finish>({ glass: false, blush: true, stripes: true, whiskers: true, edge: true });
+  const [finish, setFinish] = useState<Finish>({ glass: false, blush: true, stripes: true, whiskers: true, edge: false });
   const [size, setSize] = useState<Size>("m");
   const [backdrop, setBackdrop] = useState<Backdrop>("aurora");
   const shareable = useSyncExternalStore(subscribeNothing, canShareFiles, () => false);
@@ -202,7 +202,7 @@ export function Studio() {
     { key: "blush", label: "Blush", icon: <BlushGlyph size={16} />, show: true },
     { key: "stripes", label: "Stripes", icon: <StripesIcon size={16} />, show: isCat },
     { key: "whiskers", label: "Whiskers", icon: <WhiskersIcon size={16} />, show: isCat },
-    { key: "edge", label: "Sticker edge", icon: <StickerGlyph size={16} />, show: true },
+    { key: "edge", label: "White outline", icon: <StickerGlyph size={16} />, show: true },
   ];
 
   return (

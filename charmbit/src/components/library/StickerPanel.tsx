@@ -88,8 +88,8 @@ export function StickerPanel({ asset, svg, ink, border, onBorderChange, onCopy }
 
       <label className={styles.toggle}>
         <span>
-          <strong>White border</strong>
-          <span>The classic die-cut sticker edge.</span>
+          <strong>White outline</strong>
+          <span>Optional die-cut edge. Off keeps the sticker clean in chats.</span>
         </span>
         <input
           type="checkbox"

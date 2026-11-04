@@ -109,7 +109,7 @@ function classicHeart(id: Id, at: Point, s: number, rotate = 0): string {
   const [x, y] = at;
   return (
     `<g transform="rotate(${rotate} ${x} ${y})">` +
-    `<circle cx="${x}" cy="${y}" r="${n(s * 2)}" fill="url(#${id("heartGlow")})"/>` +
+    `<circle data-part="glow" cx="${x}" cy="${y}" r="${n(s * 2)}" fill="url(#${id("heartGlow")})"/>` +
     `<path d="${heartPath(at, s)}" fill="url(#${id("heart")})" stroke="#8E0A28" stroke-opacity="0.35" stroke-width="${n(s * 0.05)}"/>` +
     `<path d="M${n(x - s * 0.62)} ${n(y - s * 0.42)}C${n(x - s * 0.6)} ${n(y - s * 0.72)} ${n(x - s * 0.38)} ${n(y - s * 0.84)} ${n(x - s * 0.18)} ${n(y - s * 0.76)}" stroke="#FFFFFF" stroke-width="${n(s * 0.12)}" stroke-linecap="round" opacity="0.85"/>` +
     `</g>`
@@ -443,7 +443,7 @@ function diya(id: Id, [x, y]: Point, s: number): string {
   const fx = x + v(4);
   const fy = y - v(14);
   return (
-    `<circle cx="${n(fx)}" cy="${n(fy - v(18))}" r="${v(70)}" fill="url(#${id("warm")})"/>` +
+    `<circle data-part="glow" cx="${n(fx)}" cy="${n(fy - v(18))}" r="${v(70)}" fill="url(#${id("warm")})"/>` +
     `<path d="M${n(x - v(46))} ${n(y - v(6))}C${n(x - v(42))} ${n(y + v(26))} ${n(x - v(20))} ${n(y + v(36))} ${x} ${n(y + v(36))}C${n(x + v(20))} ${n(y + v(36))} ${n(x + v(42))} ${n(y + v(26))} ${n(x + v(46))} ${n(y - v(6))}Z" fill="url(#${id("clay")})" stroke="#7C3410" stroke-width="${v(3)}" stroke-linejoin="round"/>` +
     `<ellipse cx="${x}" cy="${n(y - v(6))}" rx="${v(46)}" ry="${v(10)}" fill="#8E3C14"/>` +
     `<ellipse cx="${x}" cy="${n(y - v(7))}" rx="${v(38)}" ry="${v(6)}" fill="#E8A13A"/>` +
@@ -469,11 +469,13 @@ function sparkler(id: Id, from: Point, to: Point, s: number): string {
   }).join("");
   return (
     `<path d="M${pt(from)}L${pt(to)}" stroke="#8F959E" stroke-width="${n(5 * s)}" stroke-linecap="round"/>` +
+    `<g data-part="decor">` +
     `<circle cx="${x}" cy="${y}" r="${n(70 * s)}" fill="url(#${id("warm")})"/>` +
     `<path d="${rays}" stroke="#FFD34D" stroke-width="${n(3.4 * s)}" stroke-linecap="round"/>` +
     `<path d="${rays}" stroke="#FFFFFF" stroke-width="${n(1.4 * s)}" stroke-linecap="round" opacity="0.9"/>` +
     dots +
-    `<circle cx="${x}" cy="${y}" r="${n(9 * s)}" fill="#FFFBE6"/>`
+    `<circle cx="${x}" cy="${y}" r="${n(9 * s)}" fill="#FFFBE6"/>` +
+    `</g>`
   );
 }
 
@@ -509,7 +511,7 @@ function lights(): string {
       index += 1;
     }
   }
-  return `<path d="${wire}" stroke="#5A4632" stroke-width="3" fill="none"/>${bulbs}`;
+  return `<g data-part="decor"><path d="${wire}" stroke="#5A4632" stroke-width="3" fill="none"/>${bulbs}</g>`;
 }
 
 function marigold([x, y]: Point, s: number): string {
@@ -1057,9 +1059,14 @@ export function drawSticker(spec: StickerSpec): string {
   return `${svgOpen}<defs>${defs}</defs>${body}</svg>`;
 }
 
-/** SVG without parts that shouldn't shape a sticker's die-cut edge (whiskers). */
+/**
+ * SVG without parts that shouldn't shape a sticker's outline: whiskers, soft
+ * glows, string lights, and sparkler sparks.
+ */
 export function silhouetteOf(svg: string): string {
-  return svg.replace(/<g data-part="whiskers"[\s\S]*?<\/g>/g, "");
+  return svg
+    .replace(/<g data-part="(?:whiskers|decor)"[\s\S]*?<\/g>/g, "")
+    .replace(/<circle data-part="glow"[^>]*\/>/g, "");
 }
 
 export type { Scene };

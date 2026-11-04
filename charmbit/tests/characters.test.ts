@@ -66,7 +66,15 @@ describe("sticker drawing", () => {
     }
   });
 
-  it("silhouette drops whiskers only", () => {
+  it("silhouette drops glows, lights, and sparks", () => {
+    const svg = drawSticker({ ...DEFAULT_SPEC, reaction: "sparkler" });
+    const shape = silhouetteOf(svg);
+    assert.ok(svg.includes('data-part="decor"'));
+    assert.ok(!shape.includes('data-part="decor"') && !shape.includes('data-part="glow"'));
+    assert.ok(shape.includes("-outfit)"), "the character itself stays");
+  });
+
+  it("silhouette drops whiskers", () => {
     const svg = drawSticker(DEFAULT_SPEC);
     const shape = silhouetteOf(svg);
     assert.ok(!shape.includes('data-part="whiskers"'));

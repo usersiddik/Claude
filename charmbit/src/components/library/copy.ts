@@ -17,7 +17,7 @@ export interface Colors {
  * and announces the result. Where image copy isn't supported, the sticker
  * downloads instead.
  */
-export async function copyAsset(asset: Asset, output: Output, colors: Colors, border = true): Promise<boolean> {
+export async function copyAsset(asset: Asset, output: Output, colors: Colors, border = false): Promise<boolean> {
   const svg = customizeSvg(asset, colors.fill);
   const notice = { title: asset.title, format: outputLabel(output), svg, ink: colors.ink };
 

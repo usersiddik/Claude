@@ -150,7 +150,7 @@ Studio stickers aren't stored as files. `src/lib/characters/draw.ts` draws them 
 - `silhouetteOf()` removes whiskers so the die-cut edge follows the body, not the whisker tips.
 
 **Size** sets the exported pixel size (256, 512, or 1024 px). The WhatsApp download is always 512 px WebP.
-Exported stickers have no drop shadow, so they look clean on any chat background.
+Exported stickers have no drop shadow and no outline by default, so they look clean on any chat background.
 
 ## Sticker output
 
@@ -160,7 +160,8 @@ Exported stickers have no drop shadow, so they look clean on any chat background
   isn't supported, it downloads the PNG instead.
 - **PNG** and **WhatsApp WebP** downloads. WebP is used when the browser can encode it, otherwise PNG.
 - **Share** opens the system share sheet on devices that support sharing files.
-- **White border** adds a die-cut edge (no shadow). It's on by default.
+- **White outline** adds an optional die-cut edge that follows only the solid parts of the art (not glows, lights,
+  or sparks). It's off by default, so stickers paste cleanly into chats.
 
 ## Adding a Charm, Mark, or Duo
 
@@ -253,7 +254,7 @@ Each filter is a predicate over asset data, and counts are always derived. Asset
 | `color`  | `?color=sky`    | Main fill (a `FILL_OPTIONS` id) |
 | `ink`    | `?ink=indigo`   | Linework (an `INK_OPTIONS` id)  |
 | `as`     | `?as=react`     | Copy as: `sticker` (default), `svg`, `react`, `flutter` |
-| `border` | `?border=off`   | Turns off the sticker's white die-cut edge |
+| `border` | `?border=on`    | Adds the optional white outline to sticker output |
 | `canvas` | `?canvas=dark`  | Preview canvas: `light`, `dark`, `grid` |
 | `asset`  | `?asset=wisp`   | Opens that asset in the inspector |
 

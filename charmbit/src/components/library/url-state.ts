@@ -17,7 +17,7 @@ export interface LibraryState {
   fill: string;
   ink: string;
   format: Output;
-  /** White die-cut border on sticker output. */
+  /** White die-cut outline on sticker output (off by default). */
   border: boolean;
   canvas: Canvas;
   /** Slug of the asset open in the inspector. */
@@ -30,7 +30,7 @@ export const DEFAULT_STATE: LibraryState = {
   fill: DEFAULT_FILL_ID,
   ink: DEFAULT_INK_ID,
   format: DEFAULT_OUTPUT,
-  border: true,
+  border: false,
   canvas: "light",
   asset: null,
 };
@@ -53,7 +53,7 @@ export function readState(params: ParamsLike | null): LibraryState {
     fill: known(FILL_OPTIONS, params.get("color"), DEFAULT_FILL_ID),
     ink: known(INK_OPTIONS, params.get("ink"), DEFAULT_INK_ID),
     format: isOutput(format) ? format : DEFAULT_OUTPUT,
-    border: params.get("border") !== "off",
+    border: params.get("border") === "on",
     canvas: CANVASES.includes(canvas as Canvas) ? (canvas as Canvas) : "light",
     asset: params.get("asset"),
   };
@@ -69,7 +69,7 @@ export function writeSearch(current: string, state: LibraryState): string {
   set("color", state.fill, DEFAULT_FILL_ID);
   set("ink", state.ink, DEFAULT_INK_ID);
   set("as", state.format, DEFAULT_OUTPUT);
-  set("border", state.border ? "" : "off", "");
+  set("border", state.border ? "on" : "", "");
   set("canvas", state.canvas, "light");
   set("asset", state.asset, "");
   const search = params.toString();

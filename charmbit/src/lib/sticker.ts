@@ -1,7 +1,7 @@
 /**
  * Sticker output: renders an asset's SVG to a transparent bitmap (512×512 by
  * default, the size messaging apps use for stickers) with an optional white
- * die-cut border, then copies, downloads, or shares it. Browser-only.
+ * die-cut outline (off by default), then copies, downloads, or shares it. Browser-only.
  */
 
 export interface StickerOptions {
@@ -45,7 +45,7 @@ function toBlob(canvas: HTMLCanvasElement, type: string): Promise<Blob> {
 
 export async function renderSticker(svg: string, options: StickerOptions = {}): Promise<Blob> {
   const size = options.size ?? STICKER_SIZE;
-  const border = options.border ?? true;
+  const border = options.border ?? false;
   const ink = options.ink ?? DEFAULT_INK;
   // WhatsApp asks for ~16px of margin at 512px; the border lives inside that margin.
   const padding = Math.round(size * (border ? 0.07 : 0.04));
@@ -67,10 +67,21 @@ export async function renderSticker(svg: string, options: StickerOptions = {}): 
     outline.height = size;
     const ring = outline.getContext("2d");
     if (!ring) throw new Error("Canvas is unavailable.");
-    const radius = size * 0.03;
-    for (let angle = 0; angle < 360; angle += 12) {
+    // Only solid pixels shape the edge, so soft glows don't balloon into white blobs.
+    const mask = document.createElement("canvas");
+    mask.width = size;
+    mask.height = size;
+    const solid = mask.getContext("2d");
+    if (!solid) throw new Error("Canvas is unavailable.");
+    solid.drawImage(shape, padding, padding, art, art);
+    const pixels = solid.getImageData(0, 0, size, size);
+    for (let index = 3; index < pixels.data.length; index += 4) pixels.data[index] = pixels.data[index]! > 170 ? 255 : 0;
+    solid.putImageData(pixels, 0, 0);
+
+    const radius = size * 0.022;
+    for (let angle = 0; angle < 360; angle += 15) {
       const radians = (angle * Math.PI) / 180;
-      ring.drawImage(shape, padding + Math.cos(radians) * radius, padding + Math.sin(radians) * radius, art, art);
+      ring.drawImage(mask, Math.cos(radians) * radius, Math.sin(radians) * radius);
     }
     ring.globalCompositeOperation = "source-in";
     ring.fillStyle = "#FFFFFF";
