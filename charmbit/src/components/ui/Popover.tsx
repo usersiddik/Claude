@@ -9,10 +9,12 @@ interface PopoverProps {
   trigger: ReactNode;
   children: ReactNode;
   align?: "start" | "end";
+  /** Replaces the default trigger styling (e.g. a round avatar). */
+  triggerClassName?: string;
 }
 
 /** A small anchored panel. Escape or an outside click closes it and returns focus. */
-export function Popover({ label, trigger, children, align = "start" }: PopoverProps) {
+export function Popover({ label, trigger, children, align = "start", triggerClassName }: PopoverProps) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
@@ -45,7 +47,7 @@ export function Popover({ label, trigger, children, align = "start" }: PopoverPr
       <button
         ref={button}
         type="button"
-        className={styles.trigger}
+        className={triggerClassName ?? styles.trigger}
         aria-label={label}
         aria-expanded={open}
         aria-controls={id}

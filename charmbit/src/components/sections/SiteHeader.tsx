@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AccountButton } from "@/components/auth/AccountButton";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { MobileMenu } from "./MobileMenu";
@@ -25,6 +26,7 @@ export function SiteHeader() {
         </nav>
         <div className={styles.actions}>
           <ThemeToggle />
+          <AccountButton />
           <MobileMenu />
         </div>
       </div>

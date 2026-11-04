@@ -1,0 +1,232 @@
+/* Sign-in prompt ----------------------------------------------------------------- */
+
+.dialog {
+  width: min(420px, calc(100vw - 32px));
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  text-align: center;
+  box-shadow: var(--shadow-float);
+}
+
+.dialog[open] {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  animation: rise 420ms var(--ease-spring) both;
+}
+
+.dialog::backdrop {
+  background: rgb(15 14 13 / 0.5);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+}
+
+.close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--fill);
+}
+
+.close:hover {
+  background: var(--fill-hover);
+}
+
+.fan {
+  position: relative;
+  width: 200px;
+  height: 104px;
+  margin-bottom: var(--space-2);
+}
+
+.fan img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 96px;
+  height: 96px;
+  translate: -50% -50%;
+}
+
+.fan img:nth-child(1) {
+  z-index: 1;
+  width: 104px;
+  height: 104px;
+}
+
+.fan img:nth-child(2) {
+  transform: translateX(-66px) rotate(-12deg) scale(0.8);
+}
+
+.fan img:nth-child(3) {
+  transform: translateX(66px) rotate(12deg) scale(0.8);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 400;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.text {
+  max-width: 30ch;
+  color: var(--text-2);
+}
+
+/* Google's neutral button: white fill, grey outline, dark label. */
+.google {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 48px;
+  margin-top: var(--space-2);
+  padding: 0 var(--space-5);
+  border: 1px solid #747775;
+  border-radius: 980px;
+  background: #ffffff;
+  color: #1f1f1f;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  transition:
+    background-color var(--fast) var(--ease),
+    transform 300ms var(--ease-spring);
+}
+
+.google:hover {
+  background: #f5f6f7;
+}
+
+.google:active {
+  transform: scale(0.98);
+}
+
+.fine {
+  font-size: 0.75rem;
+  color: var(--text-2);
+}
+
+/* Header ----------------------------------------------------------------------------- */
+
+.signIn {
+  min-height: 32px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: 980px;
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: transform 300ms var(--ease-spring);
+}
+
+.signIn:hover {
+  transform: translateY(-1px);
+}
+
+.avatarButton {
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  transition: box-shadow var(--fast) var(--ease);
+}
+
+.avatarButton:hover,
+.avatarButton[aria-expanded="true"] {
+  box-shadow: 0 0 0 2px var(--hairline-strong);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.menu {
+  display: grid;
+  gap: var(--space-1);
+  text-align: left;
+}
+
+.menuName {
+  font-weight: 600;
+}
+
+.menuEmail {
+  overflow: hidden;
+  font-size: 0.8125rem;
+  color: var(--text-2);
+  text-overflow: ellipsis;
+}
+
+.menuAction {
+  justify-self: start;
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--fill);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.menuAction:hover {
+  background: var(--fill-hover);
+}
+
+/* Toast ------------------------------------------------------------------------------ */
+
+.toastRegion {
+  position: fixed;
+  top: calc(var(--header-h) + var(--space-3));
+  left: 50%;
+  z-index: 200;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.toast {
+  max-width: calc(100vw - 32px);
+  padding: 10px 18px;
+  border-radius: 980px;
+  background: rgb(18 18 20 / 0.9);
+  color: #f5f5f7;
+  font-size: 0.875rem;
+  box-shadow: var(--shadow-float);
+  animation: rise 420ms var(--ease-spring) both;
+}

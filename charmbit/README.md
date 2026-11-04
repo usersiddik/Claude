@@ -33,9 +33,11 @@ toggles where they make sense (blush, stripes or spots, whiskers, glass ears, st
 - **Exports:** copy as a transparent sticker image, download PNG (512 or 1024 px), a WhatsApp-sized WebP,
   or SVG, or copy SVG, React, or Flutter code. Phones get the system share sheet. GIF is next.
 - Light and dark themes (system preference, plus a remembered toggle).
-- No database, CMS, auth, analytics, API keys, or backend API. The site is fully static, including one
-  prerendered SVG file per sticker at `/stickers/<collection>/<sticker>.svg`.
-- Runtime dependencies: `next`, `react`, and `react-dom` only.
+- **Sign in with Google to copy:** browsing, searching, and customising are open to everyone; copying,
+  downloading, code export, and sharing ask for a Google sign-in first (see "Google sign-in").
+- No database, CMS, or analytics. Pages and stickers are static (one prerendered SVG per sticker at
+  `/stickers/<collection>/<sticker>.svg`); four small routes under `/api/auth` handle sign-in.
+- Runtime dependencies: `next`, `react`, and `react-dom` only (sign-in uses Web Crypto and `fetch`).
 
 ## Getting started
 
@@ -55,8 +57,38 @@ Open Graph, robots, and sitemap URLs use it. On Vercel it falls back to the proj
 | ------------------- | ------------------------------------------------ |
 | `npm run lint`      | ESLint (Next core-web-vitals + TypeScript rules) |
 | `npm run typecheck` | `tsc --noEmit` in strict mode                    |
-| `npm test`          | `node:test` unit tests (art, universe, search, exports) |
+| `npm test`          | `node:test` unit tests (art, universe, search, sign-in, exports) |
 | `npm run build`     | Static production build                          |
+
+## Google sign-in
+
+Copy sticker, every download (PNG, WhatsApp WebP, SVG), every code export (SVG, React, Flutter), and Share
+ask the visitor to sign in with Google first. Everything else stays open.
+
+How it works (no auth library, no database):
+
+- `GET /api/auth/google` starts the OAuth 2.0 authorization-code flow with PKCE (S256) and a random `state`,
+  both kept in a signed, http-only, 10-minute cookie along with where to come back to (same-site paths only).
+- `GET /api/auth/callback/google` checks `state`, exchanges the code with Google, checks the ID token's issuer,
+  audience, expiry, and verified email, then sets a signed, http-only session cookie (30 days).
+- `GET /api/auth/session` says whether sign-in is on and who is signed in; `POST /api/auth/logout` signs out.
+- Cookies are signed with HMAC-SHA256 (`AUTH_SECRET`) and compared in constant time. Nothing is stored on the
+  server; Charmbit only receives the name, email, and photo Google shares.
+- Before leaving for Google, the library saves the visitor's colours, outline, and search in `sessionStorage`
+  and restores them on return, so they land back on the same sticker. A note says who they're signed in as.
+
+### Turn it on
+
+1. Google Cloud Console → APIs & Services → OAuth consent screen: choose External, add the app name and a
+   support email, and the scopes `openid`, `email`, `profile`.
+2. Credentials → Create credentials → OAuth client ID → Web application. Authorised redirect URIs:
+   `https://claude-charmbit.vercel.app/api/auth/callback/google` (and
+   `http://localhost:3000/api/auth/callback/google` for local development).
+3. In Vercel → Project → Settings → Environment Variables, add `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and
+   `AUTH_SECRET` (32+ random characters, e.g. `openssl rand -base64 32`), then redeploy.
+
+Until all three are set, sign-in stays off and copying works without it, so the site never locks everyone out.
+The gate protects the buttons; like any website, the artwork itself can still be seen and saved from the page.
 
 ## Search
 
@@ -81,6 +113,7 @@ assets/svg/                 Flat charm and mark artwork, one file per asset
 scripts/lettering.cjs       Traces sticker lettering to SVG paths (see "Lettering")
 src/
   app/                      Page, layout, OG image, icon, robots, sitemap
+    api/auth/               google (start), callback/google, session, logout
     stickers/[collection]/[file]/route.ts   Prerendered SVG for every sticker
   lib/
     art/                    The drawing engines (pure string building, server or browser)
@@ -106,9 +139,11 @@ src/
     assets/                 Flat charm catalogue, loader, SVG helpers
     customize.ts            Fill and Ink options for flat charms
     exports/                SVG, React, and Flutter exporters
+    auth/                   Google sign-in: signed tokens, PKCE, ID token checks (token.ts), settings (config.ts)
     sticker.ts              Bitmap rendering (PNG/WebP), image copy, download, share
     copy-events.ts          Copy notifications (any component announces, the island listens)
   components/
+    auth/                   AuthProvider (session, gate, toast), SignInDialog, AccountButton
     home/                   Hero (+ stage, search, sticker layout), Collections (+ grid), LibraryChapter,
                             FloatingCta, Reveal (scroll reveal and in-place library links)
     library/                Library (search, rail, groups, grid, phone sheet), Editor, StickerActions, Fields,

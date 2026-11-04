@@ -8,6 +8,7 @@ import { stickerPath, svgDataUri } from "@/lib/universe/paths";
 import { buildSearchIndex, POPULAR_SEARCHES, search } from "@/lib/universe/search";
 import { CopyIsland } from "@/components/ui/CopyIsland";
 import type { StrokeId } from "@/lib/sticker";
+import { BEFORE_SIGN_IN } from "@/components/auth/AuthProvider";
 import { Editor } from "./Editor";
 import { SEARCH_EVENT } from "./search-events";
 import styles from "./Library.module.css";
@@ -23,6 +24,30 @@ interface LibraryProps {
   onSelect: (next: { collection: string; sticker: string }) => void;
   /** Search to start with (from `?q=`). */
   initialQuery?: string;
+  /** Bring back colours, outline, and search saved before a sign-in redirect (client-rendered instances only). */
+  restore?: boolean;
+}
+
+interface Saved {
+  edits: Record<string, Values>;
+  stroke: StrokeId;
+  query: string;
+}
+
+const SAVED = "charmbit:library";
+let saved: Saved | null | undefined;
+
+/** Reads (once) what the library saved before leaving for Google sign-in. */
+function takeSaved(): Saved | null {
+  if (saved !== undefined) return saved;
+  try {
+    const raw = sessionStorage.getItem(SAVED);
+    sessionStorage.removeItem(SAVED);
+    saved = raw ? (JSON.parse(raw) as Saved) : null;
+  } catch {
+    saved = null;
+  }
+  return saved;
 }
 
 interface Entry {
@@ -33,22 +58,22 @@ interface Entry {
 const isPhone = () => window.matchMedia("(max-width: 1023px)").matches;
 
 /** Browse a collection, pick a sticker, make it yours, copy it. */
-export function Library({ icons, selection, onSelect, initialQuery = "" }: LibraryProps) {
+export function Library({ icons, selection, onSelect, initialQuery = "", restore = false }: LibraryProps) {
   const universe: LiveCollection[] = useMemo(() => [...GENERATED, iconsCollection(icons)], [icons]);
   const collection = universe.find((candidate) => candidate.id === selection.collection) ?? universe[0]!;
   const item = findItem(collection, selection.sticker);
 
   // The outline width carries across stickers and collections.
-  const [stroke, setStroke] = useState<StrokeId>("none");
+  const [stroke, setStroke] = useState<StrokeId>(() => (restore && takeSaved()?.stroke) || "none");
 
   // Customisations are remembered per collection while you browse.
-  const [edits, setEdits] = useState<Record<string, Values>>({});
+  const [edits, setEdits] = useState<Record<string, Values>>(() => (restore && takeSaved()?.edits) || {});
   const defaults = useMemo(() => defaultValues(collection), [collection]);
   const values: Values = useMemo(() => ({ ...defaults, ...edits[collection.id] }), [defaults, edits, collection.id]);
   const changed = Object.keys(edits[collection.id] ?? {}).some((key) => edits[collection.id]?.[key] !== defaults[key]);
 
   // Search across every collection. The hero (or ?q=) can start one.
-  const [query, setQuery] = useState(initialQuery);
+  const [query, setQuery] = useState(() => initialQuery || (restore && takeSaved()?.query) || "");
   const index = useMemo(() => buildSearchIndex(universe), [universe]);
   const results = useMemo(() => (query.trim() ? search(index, query) : null), [index, query]);
   useEffect(() => {
@@ -59,6 +84,19 @@ export function Library({ icons, selection, onSelect, initialQuery = "" }: Libra
     window.addEventListener(SEARCH_EVENT, onSearch);
     return () => window.removeEventListener(SEARCH_EVENT, onSearch);
   }, []);
+
+  // Signing in leaves the page; keep the visitor's work for when they come back.
+  useEffect(() => {
+    const save = () => {
+      try {
+        sessionStorage.setItem(SAVED, JSON.stringify({ edits, stroke, query } satisfies Saved));
+      } catch {
+        // Private mode: they'll start fresh, which is fine.
+      }
+    };
+    window.addEventListener(BEFORE_SIGN_IN, save);
+    return () => window.removeEventListener(BEFORE_SIGN_IN, save);
+  }, [edits, stroke, query]);
 
   // A new search shows its best match in the editor.
   const first = results?.[0];

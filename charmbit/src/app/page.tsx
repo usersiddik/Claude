@@ -1,3 +1,4 @@
+import { AuthProvider } from "@/components/auth/AuthProvider";
 import { Collections } from "@/components/home/Collections";
 import { FloatingCta } from "@/components/home/FloatingCta";
 import { Hero } from "@/components/home/Hero";
@@ -38,7 +39,7 @@ export default function HomePage() {
   const names = Object.fromEntries(live.flatMap((collection) => collection.items.map((item) => [`${collection.id}/${item.id}`, stickerTitle(collection, item)])));
 
   return (
-    <>
+    <AuthProvider>
       <SiteHeader />
       <main id="main">
         <Hero total={total} live={live.length} names={names} />
@@ -50,6 +51,6 @@ export default function HomePage() {
       <Reveal />
       <CopyIsland scope="page" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData(universe) }} />
-    </>
+    </AuthProvider>
   );
 }

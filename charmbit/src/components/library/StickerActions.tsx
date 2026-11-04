@@ -3,6 +3,7 @@
 import { CheckIcon, CodeIcon, CopyIcon, DownloadIcon, ShareIcon } from "@/components/ui/icons";
 import { Popover } from "@/components/ui/Popover";
 import type { ExportFormat } from "@/lib/assets/types";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { useStickerActions } from "./useStickerActions";
 import styles from "./Library.module.css";
 
@@ -20,10 +21,18 @@ interface StickerActionsProps {
 /** Copy, download, code, and share for one sticker. Used by the library editor. */
 export function StickerActions({ svg, title, slug, code, stroke, onCopied }: StickerActionsProps) {
   const actions = useStickerActions({ svg, title, slug, code }, stroke, onCopied);
+  // Browsing and customising are open to all; taking a sticker away needs a sign-in.
+  const { locked, requireSignIn } = useAuth();
+  const gate =
+    <A extends unknown[]>(run: (...args: A) => unknown) =>
+    (...args: A) => {
+      if (locked) requireSignIn();
+      else void run(...args);
+    };
 
   return (
     <div className={styles.actions}>
-      <button type="button" className={styles.copy} data-state={actions.state} onClick={actions.copy}>
+      <button type="button" className={styles.copy} data-state={actions.state} onClick={gate(actions.copy)}>
         <span className={styles.copyIdle}>
           <CopyIcon size={18} />
           Copy sticker
@@ -36,35 +45,35 @@ export function StickerActions({ svg, title, slug, code, stroke, onCopied }: Sti
       <div className={styles.secondaryActions}>
         <Popover label="Download" align="start" trigger={<><DownloadIcon size={16} /> Download</>}>
           <div className={styles.menu}>
-            <button type="button" data-dismiss onClick={() => actions.png(512)}>
+            <button type="button" data-dismiss onClick={gate(() => actions.png(512))}>
               PNG <span>512 px · transparent</span>
             </button>
-            <button type="button" data-dismiss onClick={() => actions.png(1024)}>
+            <button type="button" data-dismiss onClick={gate(() => actions.png(1024))}>
               PNG, large <span>1024 px · transparent</span>
             </button>
-            <button type="button" data-dismiss onClick={actions.whatsapp}>
+            <button type="button" data-dismiss onClick={gate(actions.whatsapp)}>
               WhatsApp sticker <span>512 px WebP, under 100 KB</span>
             </button>
-            <button type="button" data-dismiss onClick={actions.svgFile}>
+            <button type="button" data-dismiss onClick={gate(actions.svgFile)}>
               SVG <span>vector, any size</span>
             </button>
           </div>
         </Popover>
         <Popover label="Copy code" align="end" trigger={<><CodeIcon size={16} /> Code</>}>
           <div className={styles.menu}>
-            <button type="button" data-dismiss onClick={() => actions.code("svg", "SVG code")}>
+            <button type="button" data-dismiss onClick={gate(() => actions.code("svg", "SVG code"))}>
               SVG <span>inline markup</span>
             </button>
-            <button type="button" data-dismiss onClick={() => actions.code("react", "React")}>
+            <button type="button" data-dismiss onClick={gate(() => actions.code("react", "React"))}>
               React <span>typed TSX component</span>
             </button>
-            <button type="button" data-dismiss onClick={() => actions.code("flutter", "Flutter")}>
+            <button type="button" data-dismiss onClick={gate(() => actions.code("flutter", "Flutter"))}>
               Flutter <span>flutter_svg widget</span>
             </button>
           </div>
         </Popover>
         {actions.shareable ? (
-          <button type="button" className={styles.iconAction} onClick={actions.share} aria-label="Share">
+          <button type="button" className={styles.iconAction} onClick={gate(actions.share)} aria-label="Share">
             <ShareIcon size={16} />
           </button>
         ) : null}
