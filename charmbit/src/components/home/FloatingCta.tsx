@@ -12,18 +12,21 @@ export function FloatingCta() {
     const hero = document.getElementById("top");
     const library = document.getElementById("library");
     const footer = document.getElementById("formats");
+    const maker = document.getElementById("make");
     if (!hero || !library) return;
     const seen = new Map<Element, boolean>();
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) seen.set(entry.target, entry.isIntersecting);
-        setShow(!seen.get(hero) && !seen.get(library) && !(footer && seen.get(footer)));
+        // Stay out of the way of the hero, the AI composer, the library, and the footer.
+        setShow(!seen.get(hero) && !seen.get(library) && !(footer && seen.get(footer)) && !(maker && seen.get(maker)));
       },
       { threshold: 0.05 },
     );
     observer.observe(hero);
     observer.observe(library);
     if (footer) observer.observe(footer);
+    if (maker) observer.observe(maker);
     return () => observer.disconnect();
   }, []);
 

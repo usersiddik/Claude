@@ -1,12 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CheckIcon, CloseIcon, CodeIcon, CopyIcon, DownloadIcon, ShareIcon } from "@/components/ui/icons";
-import { Popover } from "@/components/ui/Popover";
+import { CloseIcon } from "@/components/ui/icons";
 import { svgDataUri } from "@/lib/universe/paths";
 import { exportItem, propertiesFor, renderItem, stickerSlug, stickerTitle, type LiveCollection, type StickerItem, type Value, type Values } from "@/lib/universe";
 import { ColorField, ToggleField } from "./Fields";
-import { useStickerActions } from "./useStickerActions";
+import { StickerActions } from "./StickerActions";
 import styles from "./Library.module.css";
 
 type Canvas = "light" | "dark" | "grid";
@@ -34,17 +33,16 @@ const CANVASES: readonly { id: Canvas; label: string }[] = [
 
 export function Editor({ collection, item, values, position, onChange, onReset, onStep, variant, onClose, changed }: EditorProps) {
   const [canvas, setCanvas] = useState<Canvas>("light");
-  const [edge, setEdge] = useState(false);
+  const [pulse, setPulse] = useState(0);
   const svg = useMemo(() => renderItem(collection, item, values), [collection, item, values]);
   const title = stickerTitle(collection, item);
-  const actions = useStickerActions({ svg, title, slug: stickerSlug(collection, item), code: (format) => exportItem(collection, item, values, format) }, edge);
   const properties = propertiesFor(collection, item);
   const prefix = `${variant}-${collection.id}`;
 
   return (
     <div className={styles.editor} data-variant={variant}>
       <div className={styles.preview} data-canvas={canvas}>
-        <div key={`${item.id}-${actions.pulse}`} className={styles.previewArt} data-pulse={actions.pulse > 0 ? "" : undefined}>
+        <div key={`${item.id}-${pulse}`} className={styles.previewArt} data-pulse={pulse > 0 ? "" : undefined}>
           {/* eslint-disable-next-line @next/next/no-img-element -- generated SVG; an image keeps its ids isolated */}
           <img src={svgDataUri(svg)} alt={title} className={styles.previewSvg} draggable={false} />
         </div>
@@ -100,59 +98,7 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
         </div>
       ) : null}
 
-      <div className={styles.actions}>
-        <button type="button" className={styles.copy} data-state={actions.state} onClick={actions.copy}>
-          <span className={styles.copyIdle}>
-            <CopyIcon size={18} />
-            Copy sticker
-          </span>
-          <span className={styles.copyDone} aria-hidden={actions.state !== "done"}>
-            <CheckIcon size={18} />
-            Copied
-          </span>
-        </button>
-        <div className={styles.secondaryActions}>
-          <Popover label="Download" align="start" trigger={<><DownloadIcon size={16} /> Download</>}>
-            <div className={styles.menu}>
-              <button type="button" data-dismiss onClick={() => actions.png(512)}>
-                PNG <span>512 px · transparent</span>
-              </button>
-              <button type="button" data-dismiss onClick={() => actions.png(1024)}>
-                PNG, large <span>1024 px · transparent</span>
-              </button>
-              <button type="button" data-dismiss onClick={actions.whatsapp}>
-                WhatsApp sticker <span>512 px WebP, under 100 KB</span>
-              </button>
-              <button type="button" data-dismiss onClick={actions.svgFile}>
-                SVG <span>vector, any size</span>
-              </button>
-            </div>
-          </Popover>
-          <Popover label="Copy code" align="end" trigger={<><CodeIcon size={16} /> Code</>}>
-            <div className={styles.menu}>
-              <button type="button" data-dismiss onClick={() => actions.code("svg", "SVG code")}>
-                SVG <span>inline markup</span>
-              </button>
-              <button type="button" data-dismiss onClick={() => actions.code("react", "React")}>
-                React <span>typed TSX component</span>
-              </button>
-              <button type="button" data-dismiss onClick={() => actions.code("flutter", "Flutter")}>
-                Flutter <span>flutter_svg widget</span>
-              </button>
-            </div>
-          </Popover>
-          {actions.shareable ? (
-            <button type="button" className={styles.iconAction} onClick={actions.share} aria-label="Share">
-              <ShareIcon size={16} />
-            </button>
-          ) : null}
-        </div>
-        <button type="button" className={styles.edge} aria-pressed={edge} onClick={() => setEdge((value) => !value)}>
-          <span className={styles.switch} aria-hidden="true" />
-          White outline
-        </button>
-        <p className={styles.hint}>Paste into WhatsApp, iMessage, Telegram, or Slack. GIF export is coming next.</p>
-      </div>
+      <StickerActions svg={svg} title={title} slug={stickerSlug(collection, item)} code={(format) => exportItem(collection, item, values, format)} onCopied={() => setPulse((value) => value + 1)} />
     </div>
   );
 }

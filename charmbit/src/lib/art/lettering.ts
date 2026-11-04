@@ -4,7 +4,9 @@
  */
 import { darken } from "./color.ts";
 import { n, place, svgDocument, type Point } from "./kit.ts";
-import { LETTERING } from "./lettering-glyphs.ts";
+import { LETTERING, type Lettering } from "./lettering-glyphs.ts";
+
+export type { Lettering } from "./lettering-glyphs.ts";
 
 export const LETTER_COLORS = [
   { id: "berry", name: "Berry", hex: "#E8175D" },
@@ -17,10 +19,10 @@ export const LETTER_COLORS = [
 
 export const PHRASES = Object.keys(LETTERING);
 
-/** Traced text centred on `at`, fitted inside `box` (width, height). */
-export function lettering(phrase: string, color: string, at: Point, box: readonly [number, number], rotate = -4): string {
-  const glyphs = LETTERING[phrase];
-  if (!glyphs) return "";
+/** Traced text centred on `at`, fitted inside `box` (width, height). Takes a known phrase or traced glyphs. */
+export function lettering(phrase: string | Lettering, color: string, at: Point, box: readonly [number, number], rotate = -4): string {
+  const glyphs = typeof phrase === "string" ? LETTERING[phrase] : phrase;
+  if (!glyphs || glyphs.w <= 0 || glyphs.h <= 0) return "";
   const k = Math.min(box[0] / glyphs.w, box[1] / glyphs.h);
   const x = at[0] - (glyphs.w * k) / 2;
   const y = at[1] - (glyphs.h * k) / 2;
@@ -41,6 +43,6 @@ export function innerOf(svg: string): string {
 }
 
 /** A sticker with a caption: the art moves up and shrinks a little to make room. */
-export function withCaption(svg: string, phrase: string, color: string): string {
+export function withCaption(svg: string, phrase: string | Lettering, color: string): string {
   return svgDocument("", place(innerOf(svg), [256, 226], 0.8) + lettering(phrase, color, [256, 448], [440, 96]));
 }

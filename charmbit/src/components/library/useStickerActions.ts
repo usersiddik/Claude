@@ -19,7 +19,7 @@ interface Sticker {
 export type CopyState = "idle" | "done" | "error";
 
 /** Copy, download, share, and code export for one sticker, with feedback. */
-export function useStickerActions({ svg, title, slug, code }: Sticker, edge: boolean) {
+export function useStickerActions({ svg, title, slug, code }: Sticker, edge: boolean, onCopied?: () => void) {
   const [state, setState] = useState<CopyState>("idle");
   const [pulse, setPulse] = useState(0);
   const shareable = useSyncExternalStore(subscribeNothing, canShareFiles, () => false);
@@ -27,7 +27,10 @@ export function useStickerActions({ svg, title, slug, code }: Sticker, edge: boo
   const notify = (format: string, ok: boolean, verb?: "Copied" | "Saved") => announceCopy({ title, format, svg, ink: null, ok, verb });
   const flash = (next: CopyState) => {
     setState(next);
-    if (next === "done") setPulse((value) => value + 1);
+    if (next === "done") {
+      setPulse((value) => value + 1);
+      onCopied?.();
+    }
     window.setTimeout(() => setState("idle"), 1600);
   };
 

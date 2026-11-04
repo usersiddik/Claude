@@ -1,3 +1,4 @@
+import { AiChapter } from "@/components/ai/AiChapter";
 import { Collections } from "@/components/home/Collections";
 import { FloatingCta } from "@/components/home/FloatingCta";
 import { Hero } from "@/components/home/Hero";
@@ -42,6 +43,7 @@ export default function HomePage() {
       <SiteHeader />
       <main id="main">
         <Hero total={total} live={live.length} names={names} />
+        <AiChapter />
         <Collections universe={universe} />
         <LibraryChapter icons={iconAssets()} total={total} />
       </main>

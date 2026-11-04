@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { SITE } from "@/lib/site";
 import { libraryHref, stickerPath } from "@/lib/universe/paths";
 import { HERO_STICKERS } from "./hero-stickers";
+import { HeroPrompt } from "./HeroPrompt";
 import { HeroStage } from "./HeroStage";
 import styles from "./Hero.module.css";
 
@@ -83,17 +84,15 @@ export function Hero({ total, live, names }: HeroProps) {
         <p className={styles.kicker}>{SITE.tagline}</p>
         <Headline />
         <p className={styles.lede}>
-          {total} original stickers across {live} collections: characters, festivals, hearts, and the words you send every day. Recolour, copy, paste anywhere.
+          Describe any sticker and AI draws it from our cast, with your words lettered in. Or pick from {total} originals across {live} collections.
         </p>
+        <HeroPrompt />
         <div className={styles.actions}>
-          <a href="#library" className={styles.primary}>
-            Open the library
-            <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <a href="#library" className={styles.textLink}>
+            Or browse the library
+            <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 10h11M11 5l5 5-5 5" />
             </svg>
-          </a>
-          <a href="#collections" className={styles.secondary}>
-            Browse collections
           </a>
         </div>
       </div>
