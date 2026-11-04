@@ -1,25 +1,25 @@
 import { Suspense } from "react";
-import { CharmLibrary } from "@/components/library/CharmLibrary";
-import { LibraryWithUrl } from "@/components/library/LibraryWithUrl";
-import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Workspace } from "@/components/library/Workspace";
+import { WorkspaceWithUrl } from "@/components/library/WorkspaceWithUrl";
 import type { Asset } from "@/lib/assets/types";
-import styles from "./Sections.module.css";
+import styles from "./LibrarySection.module.css";
 
 export function LibrarySection({ assets }: { assets: readonly Asset[] }) {
+  const available = assets.filter((asset) => asset.status === "available").length;
   return (
     <section id="library" className={styles.section} aria-labelledby="library-title">
       <div className="container">
-        <div className={styles.headingGap}>
-          <SectionHeading
-            id="library-title"
-            eyebrow="Library"
-            title="Find it. Color it. Copy it."
-            lede="Charms are characters and expressive objects. Marks are interface icons with a little personality."
-          />
-        </div>
+        <header className={styles.header}>
+          <h2 id="library-title" className={styles.title}>
+            Library
+          </h2>
+          <p className={styles.lede}>
+            {available} assets ready to copy. Click any card to inspect its code, or use the pill to copy in one click.
+          </p>
+        </header>
         {/* Static render shows the full library; URL state applies on the client. */}
-        <Suspense fallback={<CharmLibrary assets={assets} params={null} />}>
-          <LibraryWithUrl assets={assets} />
+        <Suspense fallback={<Workspace assets={assets} params={null} />}>
+          <WorkspaceWithUrl assets={assets} />
         </Suspense>
       </div>
     </section>

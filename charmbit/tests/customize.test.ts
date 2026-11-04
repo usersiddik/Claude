@@ -27,7 +27,8 @@ describe("customisation", () => {
 
   it("falls back to defaults for unknown ids", () => {
     assert.equal(findFill("nope").id, "original");
-    assert.equal(findInk(undefined).id, "ink");
+    assert.equal(findInk(undefined).id, "auto");
+    assert.equal(findInk(undefined).hex, null);
   });
 
   it("carries colour choices into every export", () => {

@@ -2,6 +2,7 @@ import type { Asset, ExportFormat } from "../assets/types.ts";
 import { customizeSvg } from "../customize.ts";
 import { toFlutter } from "./flutter.ts";
 import { toReact } from "./react.ts";
+import { componentName } from "./naming.ts";
 import { toSvg } from "./svg.ts";
 import type { ExportOptions, ExportSource } from "./types.ts";
 
@@ -11,17 +12,50 @@ export { componentName } from "./naming.ts";
 export interface FormatDefinition {
   id: ExportFormat;
   label: string;
-  /** One line for the “How it works” section. */
+  /** Language id for syntax highlighting. */
+  language: "xml" | "tsx" | "dart";
+  /** One line for marketing copy. */
   summary: string;
+  /** Props or attributes a developer can change after copying. */
+  props: readonly string[];
+  fileName: (asset: Pick<Asset, "slug" | "family">) => string;
   build: (asset: ExportSource, options?: ExportOptions) => string;
 }
 
-/** Add a format here and it appears in the Copy as control automatically. */
+/** Add a format here and it appears in every format switcher automatically. */
 export const FORMATS: readonly FormatDefinition[] = [
-  { id: "svg", label: "SVG", summary: "Clean markup with a title and viewBox. Works anywhere.", build: toSvg },
-  { id: "react", label: "React", summary: "A typed component with size, color, and title props.", build: toReact },
-  { id: "flutter", label: "Flutter", summary: "A ready-to-use widget built on the flutter_svg package.", build: toFlutter },
+  {
+    id: "svg",
+    label: "SVG",
+    language: "xml",
+    summary: "Clean markup with a title and viewBox. Works anywhere.",
+    props: ["viewBox", "width", "height", "color"],
+    fileName: (asset) => `${asset.slug}.svg`,
+    build: toSvg,
+  },
+  {
+    id: "react",
+    label: "React",
+    language: "tsx",
+    summary: "A typed TSX component. No extra packages.",
+    props: ["size", "color", "title", "className"],
+    fileName: (asset) => `${componentName(asset.slug, asset.family)}.tsx`,
+    build: toReact,
+  },
+  {
+    id: "flutter",
+    label: "Flutter",
+    language: "dart",
+    summary: "A StatelessWidget built on flutter_svg.",
+    props: ["size", "color", "semanticsLabel"],
+    fileName: (asset) => `${asset.slug.replace(/-/g, "_")}_${asset.family}.dart`,
+    build: toFlutter,
+  },
 ];
+
+export function findFormat(id: string): FormatDefinition {
+  return FORMATS.find((format) => format.id === id) ?? FORMATS[0]!;
+}
 
 export const DEFAULT_FORMAT: ExportFormat = "svg";
 

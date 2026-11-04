@@ -1,10 +1,9 @@
-import { DuosTeaser } from "@/components/sections/DuosTeaser";
-import { Faq } from "@/components/sections/Faq";
+import { Bento } from "@/components/sections/Bento";
 import { Hero } from "@/components/sections/Hero";
-import { HowItWorks } from "@/components/sections/HowItWorks";
 import { LibrarySection } from "@/components/sections/LibrarySection";
 import { SiteFooter } from "@/components/sections/SiteFooter";
 import { SiteHeader } from "@/components/sections/SiteHeader";
+import { CopyIsland } from "@/components/ui/CopyIsland";
 import { loadAssets } from "@/lib/assets/load";
 import { SITE } from "@/lib/site";
 
@@ -47,11 +46,10 @@ export default function HomePage() {
       <main id="main">
         <Hero assets={assets} />
         <LibrarySection assets={assets} />
-        <HowItWorks />
-        <DuosTeaser assets={assets} />
-        <Faq />
+        <Bento assets={assets} />
       </main>
       <SiteFooter />
+      <CopyIsland scope="page" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData(assets) }} />
     </>
   );

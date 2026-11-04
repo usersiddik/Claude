@@ -42,7 +42,7 @@ export function MobileMenu() {
         onClick={() => setOpen((value) => !value)}
       >
         {open ? <CloseIcon size={18} /> : <MenuIcon size={18} />}
-        <span>Menu</span>
+        <span className="sr-only">Menu</span>
       </button>
       <nav id={panelId} aria-label="Mobile" className={styles.panel} hidden={!open}>
         <ul role="list">

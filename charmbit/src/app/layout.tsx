@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Instrument_Sans } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { SITE } from "@/lib/site";
 import "./globals.css";
 
-const instrument = Instrument_Sans({
-  subsets: ["latin"],
-  variable: "--font-instrument",
-  display: "swap",
-});
+// Apple platforms use SF Pro via the system stack; Inter covers everyone else.
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", display: "swap", preload: false });
+
+/** Applies a saved theme before first paint so there is no flash. */
+const THEME_SCRIPT = `try{var t=localStorage.getItem("charmbit-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -33,13 +34,19 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fafaf9",
-  colorScheme: "light",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f5f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
+  colorScheme: "light dark",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={instrument.variable}>
+    <html lang="en" className={`${inter.variable} ${jetbrains.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body>
         <a className="skip-link" href="#main">
           Skip to content

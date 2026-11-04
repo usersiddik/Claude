@@ -2,10 +2,10 @@
 
 import { useSearchParams } from "next/navigation";
 import type { Asset } from "@/lib/assets/types";
-import { CharmLibrary } from "./CharmLibrary";
+import { Workspace } from "./Workspace";
 
 /** Reads URL params. Rendered inside <Suspense> so the page stays static. */
-export function LibraryWithUrl({ assets }: { assets: readonly Asset[] }) {
+export function WorkspaceWithUrl({ assets }: { assets: readonly Asset[] }) {
   const params = useSearchParams();
-  return <CharmLibrary assets={assets} params={params} />;
+  return <Workspace assets={assets} params={params} />;
 }

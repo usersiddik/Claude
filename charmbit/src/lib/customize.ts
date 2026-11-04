@@ -24,21 +24,27 @@ export const FILL_OPTIONS: readonly ColorOption[] = [
   { id: "stone", name: "Stone", hex: "#E6DCCB" },
 ];
 
-export const INK_OPTIONS: readonly (ColorOption & { hex: string })[] = [
+/**
+ * "Auto" keeps currentColor: linework follows the surrounding text colour,
+ * so it reads on light and dark canvases. Any other ink is written into exports.
+ */
+export const INK_OPTIONS: readonly ColorOption[] = [
+  { id: "auto", name: "Auto", hex: null },
   { id: "ink", name: "Ink", hex: PALETTE.ink.hex },
   { id: "indigo", name: "Indigo", hex: "#2B3576" },
   { id: "aubergine", name: "Aubergine", hex: "#4E2A4F" },
   { id: "pine", name: "Pine", hex: "#1F4A3D" },
+  { id: "snow", name: "Snow", hex: "#F5F5F7" },
 ];
 
 export const DEFAULT_FILL_ID = "original";
-export const DEFAULT_INK_ID = "ink";
+export const DEFAULT_INK_ID = "auto";
 
 export function findFill(id: string | null | undefined): ColorOption {
   return FILL_OPTIONS.find((option) => option.id === id) ?? FILL_OPTIONS[0]!;
 }
 
-export function findInk(id: string | null | undefined): ColorOption & { hex: string } {
+export function findInk(id: string | null | undefined): ColorOption {
   return INK_OPTIONS.find((option) => option.id === id) ?? INK_OPTIONS[0]!;
 }
 

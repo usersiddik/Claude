@@ -53,11 +53,17 @@ describe("catalogue", () => {
 describe("filters", () => {
   const assets = loadAssets();
 
-  it("derives counts from data", () => {
+  it("derives counts from data and keeps previews out of copyable views", () => {
     const counts = countByFilter(assets, "");
-    assert.equal(counts.all, assets.length);
-    assert.equal(counts.charms + counts.marks + counts.duos, assets.length);
-    assert.equal(counts.reactions, assets.filter((asset) => asset.tags.includes("reaction")).length);
+    const available = assets.filter((asset) => asset.status === "available");
+    assert.equal(counts.all, available.length);
+    assert.equal(counts.charms + counts.marks, available.length);
+    assert.equal(counts.duos, assets.filter((asset) => asset.family === "duo").length);
+    assert.equal(counts.characters + counts.objects, counts.charms);
+    assert.equal(counts.ui, counts.marks);
+    for (const id of ["all", "charms", "marks", "characters", "objects", "ui", "reactions"] as const) {
+      assert.ok(selectAssets(assets, { query: "", filter: id }).every((asset) => asset.status === "available"), id);
+    }
   });
 
   it("matches every query word", () => {
@@ -70,6 +76,7 @@ describe("filters", () => {
   it("combines filter and query", () => {
     const result = selectAssets(assets, { query: "heart", filter: "marks" });
     assert.deepEqual(result.map((asset) => asset.slug), ["soft-like"]);
+    assert.deepEqual(selectAssets(assets, { query: "weather", filter: "all" }).map((asset) => asset.slug), ["nimbus"]);
     assert.equal(selectAssets(assets, { query: "heart", filter: "duos" }).length, 0);
   });
 });

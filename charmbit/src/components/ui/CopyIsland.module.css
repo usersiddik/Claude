@@ -1,0 +1,75 @@
+.region {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  z-index: 200;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.island {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 24px);
+  padding: 6px 16px 6px 6px;
+  border-radius: 980px;
+  background: rgb(18 18 20 / 0.86);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  color: #f5f5f7;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  box-shadow: 0 12px 32px -8px rgb(0 0 0 / 0.45), inset 0 0 0 0.5px rgb(255 255 255 / 0.12);
+  transform-origin: top center;
+  animation: island-in var(--slow) var(--spring);
+}
+
+.island[data-error] {
+  background: rgb(120 30 20 / 0.92);
+}
+
+.thumb {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #f5f5f7;
+  color: #1d1d1f;
+  flex: none;
+}
+
+.art {
+  width: 22px;
+  height: 22px;
+}
+
+.text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text strong {
+  font-weight: 600;
+}
+
+.check {
+  flex: none;
+  color: #30d158;
+}
+
+@keyframes island-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.4, 0.6) translateY(-6px);
+  }
+
+  60% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: none;
+  }
+}

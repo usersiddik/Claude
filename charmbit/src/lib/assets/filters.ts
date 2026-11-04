@@ -2,24 +2,62 @@ import type { Asset } from "./types.ts";
 
 type Filterable = Pick<
   Asset,
-  "title" | "slug" | "family" | "subject" | "description" | "tags" | "traits" | "relationship" | "palette" | "isNew"
+  "title" | "slug" | "family" | "subject" | "description" | "tags" | "traits" | "relationship" | "palette" | "status"
 >;
 
-export const FILTERS = [
-  { id: "all", label: "All", test: () => true },
-  { id: "charms", label: "Charms", test: (asset: Filterable) => asset.family === "charm" },
-  { id: "marks", label: "Marks", test: (asset: Filterable) => asset.family === "mark" },
-  { id: "duos", label: "Duos", test: (asset: Filterable) => asset.family === "duo" },
-  { id: "reactions", label: "Reactions", test: (asset: Filterable) => asset.tags.includes("reaction") },
-  { id: "new", label: "New", test: (asset: Filterable) => Boolean(asset.isNew) },
-] as const;
+const available = (asset: Filterable) => asset.status === "available";
+const REACTION_TAGS = ["reaction", "celebrate", "onboarding", "welcome", "success", "reward"];
 
-export type FilterId = (typeof FILTERS)[number]["id"];
+export interface FilterDefinition {
+  id: string;
+  label: string;
+  /** Short label for mobile pills. */
+  short: string;
+  icon: "all" | "charm" | "mark" | "duo" | "character" | "object" | "ui" | "reaction";
+  test: (asset: Filterable) => boolean;
+}
+
+/**
+ * Two tiers: collections (what it is) and use cases (what it's for).
+ * Only Duos shows preview assets, so every other view is fully copyable.
+ */
+export const FILTER_GROUPS = [
+  {
+    id: "collections",
+    label: "Collections",
+    filters: [
+      { id: "all", label: "All Assets", short: "All", icon: "all", test: available },
+      { id: "charms", label: "Charms", short: "Charms", icon: "charm", test: (a) => available(a) && a.family === "charm" },
+      { id: "marks", label: "Marks", short: "Marks", icon: "mark", test: (a) => available(a) && a.family === "mark" },
+      { id: "duos", label: "Duos", short: "Duos", icon: "duo", test: (a) => a.family === "duo" },
+    ],
+  },
+  {
+    id: "use-cases",
+    label: "Use cases",
+    filters: [
+      { id: "characters", label: "Characters & Mascots", short: "Characters", icon: "character", test: (a) => available(a) && a.subject === "character" },
+      { id: "objects", label: "Objects & Rewards", short: "Objects", icon: "object", test: (a) => available(a) && a.subject === "object" },
+      { id: "ui", label: "UI & Status Marks", short: "UI marks", icon: "ui", test: (a) => available(a) && a.family === "mark" },
+      { id: "reactions", label: "Reactions & Celebrations", short: "Reactions", icon: "reaction", test: (a) => available(a) && a.tags.some((tag) => REACTION_TAGS.includes(tag)) },
+    ],
+  },
+] as const satisfies readonly { id: string; label: string; filters: readonly FilterDefinition[] }[];
+
+export const FILTERS: readonly FilterDefinition[] = FILTER_GROUPS.flatMap(
+  (group): readonly FilterDefinition[] => group.filters,
+);
+
+export type FilterId = (typeof FILTER_GROUPS)[number]["filters"][number]["id"];
 
 export const DEFAULT_FILTER: FilterId = "all";
 
 export function isFilterId(value: string | null | undefined): value is FilterId {
   return FILTERS.some((filter) => filter.id === value);
+}
+
+export function findFilter(id: string): FilterDefinition {
+  return FILTERS.find((filter) => filter.id === id) ?? FILTERS[0]!;
 }
 
 export function normalizeQuery(query: string): string[] {
@@ -55,9 +93,9 @@ export function matchesQuery(asset: Filterable, query: string): boolean {
 
 export function selectAssets<T extends Filterable>(
   assets: readonly T[],
-  { query, filter }: { query: string; filter: FilterId },
+  { query, filter }: { query: string; filter: string },
 ): T[] {
-  const active = FILTERS.find((candidate) => candidate.id === filter) ?? FILTERS[0];
+  const active = findFilter(filter);
   return assets.filter((asset) => active.test(asset) && matchesQuery(asset, query));
 }
 

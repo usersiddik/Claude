@@ -1,0 +1,76 @@
+.control {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+  min-width: 0;
+  margin: 0;
+  padding: 2px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--fill);
+  isolation: isolate;
+}
+
+.pill {
+  position: absolute;
+  z-index: -1;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: calc((100% - 4px) / var(--count));
+  border-radius: 7px;
+  background: var(--pill);
+  box-shadow: var(--pill-shadow);
+  transform: translateX(calc(var(--index) * 100%));
+  transition: transform var(--med) var(--spring);
+}
+
+.segment {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-radius: 7px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--fast) var(--spring);
+}
+
+.md .segment {
+  min-height: 32px;
+  font-size: 0.8125rem;
+}
+
+.sm .segment {
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 0.75rem;
+}
+
+.segment:has(.input:checked) {
+  font-weight: 600;
+}
+
+.segment:has(.input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.text {
+  line-height: 1;
+}

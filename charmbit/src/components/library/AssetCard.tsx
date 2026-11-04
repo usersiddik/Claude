@@ -2,63 +2,45 @@
 
 import { memo } from "react";
 import { AssetArt } from "@/components/ui/AssetArt";
-import { CheckIcon, CopyIcon } from "@/components/ui/icons";
+import { CopyIcon } from "@/components/ui/icons";
 import type { Asset } from "@/lib/assets/types";
-import { familyLabel } from "./format";
 import styles from "./AssetCard.module.css";
+
+const FAMILY: Record<Asset["family"], string> = { charm: "Charm", mark: "Mark", duo: "Duo" };
 
 interface AssetCardProps {
   asset: Asset;
-  /** The SVG to preview, with the chosen colour applied. */
+  /** Preview SVG with the chosen fill applied. */
   svg: string;
-  ink: string;
+  ink: string | null;
   formatLabel: string;
-  copied: boolean;
+  onOpen: (asset: Asset) => void;
   onCopy: (asset: Asset) => void;
 }
 
-/** One asset. The whole tile is the copy button; Duos that aren't ready are inert. */
-export const AssetCard = memo(function AssetCard({ asset, svg, ink, formatLabel, copied, onCopy }: AssetCardProps) {
+/** Click the card to inspect; the pill copies in one click. */
+export const AssetCard = memo(function AssetCard({ asset, svg, ink, formatLabel, onOpen, onCopy }: AssetCardProps) {
   const available = asset.status === "available";
-  const art = <AssetArt asset={{ sourceSvg: svg }} className={styles.art} />;
-
-  if (!available) {
-    return (
-      <div className={styles.card} data-family={asset.family} data-disabled="">
-        <div className={styles.stage} style={{ color: ink }}>
-          {art}
-        </div>
-        <div className={styles.meta}>
-          <span className={styles.name}>{asset.title}</span>
-          <span className={styles.soon}>Coming soon</span>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <button
-      type="button"
-      className={styles.card}
-      data-family={asset.family}
-      data-copied={copied ? "" : undefined}
-      onClick={() => onCopy(asset)}
-    >
-      <span className={styles.stage} style={{ color: ink }}>
-        {art}
-        <span className={styles.badge} aria-hidden="true">
-          <CopyIcon className={styles.copyIcon} size={15} />
-          <CheckIcon className={styles.checkIcon} size={15} />
-        </span>
-      </span>
-      <span className={styles.meta}>
-        <span className={styles.name}>
-          <span className="sr-only">Copy </span>
-          {asset.title}
-          <span className="sr-only"> as {formatLabel}</span>
-        </span>
-        <span className={styles.kind}>{familyLabel(asset.family)}</span>
-      </span>
-    </button>
+    <article className={styles.card} data-family={asset.family}>
+      <div className={styles.canvas} style={ink ? { color: ink } : undefined}>
+        <AssetArt asset={{ sourceSvg: svg }} className={styles.art} />
+      </div>
+      <div className={styles.footer}>
+        <h3 className={styles.name}>
+          <button type="button" className={styles.open} aria-haspopup="dialog" onClick={() => onOpen(asset)}>
+            {asset.title}
+          </button>
+        </h3>
+        <span className={styles.badge}>{available ? FAMILY[asset.family] : "Preview"}</span>
+      </div>
+      {available ? (
+        <button type="button" className={styles.copy} onClick={() => onCopy(asset)} aria-label={`Copy ${asset.title} as ${formatLabel}`}>
+          <CopyIcon size={14} />
+          <span aria-hidden="true">Copy {formatLabel}</span>
+        </button>
+      ) : null}
+    </article>
   );
 });

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { MobileMenu } from "./MobileMenu";
 import { NAV_LINKS } from "./nav";
@@ -22,7 +23,10 @@ export function SiteHeader() {
             ))}
           </ul>
         </nav>
-        <MobileMenu />
+        <div className={styles.actions}>
+          <ThemeToggle />
+          <MobileMenu />
+        </div>
       </div>
     </header>
   );
