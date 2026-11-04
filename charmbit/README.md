@@ -21,8 +21,9 @@ npm run check      # lint + typecheck + tests + production build
 
 Requires Node 22.6+ (tests use Node's built-in TypeScript type stripping).
 
-Set `NEXT_PUBLIC_SITE_URL` (e.g. `https://example.com`) in production so canonical,
-Open Graph, robots, and sitemap URLs are absolute. It defaults to `http://localhost:3000`.
+Set `NEXT_PUBLIC_SITE_URL` (e.g. `https://example.com`) once you have a custom domain so canonical,
+Open Graph, robots, and sitemap URLs use it. On Vercel it falls back to the project's production domain
+(`VERCEL_PROJECT_PRODUCTION_URL`), then `VERCEL_URL`; locally it defaults to `http://localhost:3000`.
 
 | Script              | What it does                                     |
 | ------------------- | ------------------------------------------------ |
