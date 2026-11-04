@@ -30,7 +30,7 @@
   width: 252px;
   padding: 16px;
   border: 1px solid var(--hairline);
-  border-radius: 16px;
+  border-radius: var(--radius);
   background: var(--card-raised);
   box-shadow: var(--shadow-float);
   transform-origin: top left;

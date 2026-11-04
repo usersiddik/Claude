@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { onCopy, type CopyNotice } from "@/lib/copy-events";
-import { AssetArt } from "./AssetArt";
+import { svgDataUri } from "@/lib/universe/paths";
 import { CheckIcon } from "./icons";
 import styles from "./CopyIsland.module.css";
 
@@ -34,7 +34,8 @@ export function CopyIsland({ scope }: CopyIslandProps) {
       {notice ? (
         <div key={notice.id} className={styles.island} data-error={notice.ok ? undefined : ""}>
           <span className={styles.thumb} style={notice.ink ? { color: notice.ink } : undefined}>
-            <AssetArt asset={{ sourceSvg: notice.svg }} className={styles.art} />
+            {/* eslint-disable-next-line @next/next/no-img-element -- generated SVG thumbnail */}
+            <img src={svgDataUri(notice.svg)} alt="" className={styles.art} />
           </span>
           <span className={styles.text}>
             {notice.ok ? (

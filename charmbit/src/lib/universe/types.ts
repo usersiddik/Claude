@@ -1,0 +1,96 @@
+/**
+ * The sticker universe schema. A collection is data (title, story, groups,
+ * properties, items) plus one `render` function that turns an item and the
+ * visitor's property values into SVG. The UI only ever reads this shape, so a
+ * new collection is one new file and one line in the registry.
+ */
+
+export interface Swatch {
+  id: string;
+  name: string;
+  /** null keeps the artwork's original colours. */
+  hex: string | null;
+}
+
+interface PropertyBase {
+  id: string;
+  label: string;
+}
+
+export interface ColorProperty extends PropertyBase {
+  kind: "color";
+  swatches: readonly Swatch[];
+  default: string | null;
+  /** Offer a free colour picker after the swatches. */
+  custom?: boolean;
+}
+
+export interface ToggleProperty extends PropertyBase {
+  kind: "toggle";
+  default: boolean;
+}
+
+export type Property = ColorProperty | ToggleProperty;
+
+export type Value = string | boolean | null;
+export type Values = Readonly<Record<string, Value>>;
+
+export interface StickerItem {
+  /** Unique within its collection; kebab-case. */
+  id: string;
+  name: string;
+  /** A short line shown with the sticker. */
+  caption: string;
+  /** Group id within the collection. */
+  group: string;
+  /** Property ids that change this sticker. Others are hidden while it's selected. */
+  uses: readonly string[];
+}
+
+export type Family = "characters" | "festivals" | "feelings" | "icons";
+
+export interface CollectionBase {
+  id: string;
+  title: string;
+  /** Singular noun used in file and component names, e.g. "Cat". */
+  noun: string;
+  /** One-line hook for cards. */
+  tagline: string;
+  description: string;
+  /** Discovery filters this collection appears under. */
+  families: readonly Family[];
+  /** Card tint. */
+  accent: string;
+}
+
+export interface LiveCollection extends CollectionBase {
+  status: "live";
+  groups: readonly { id: string; name: string }[];
+  properties: readonly Property[];
+  items: readonly StickerItem[];
+  /** Item ids shown on the collection card, front first. */
+  cover: readonly string[];
+  render: (item: StickerItem, values: Values, options?: { portable?: boolean }) => string;
+}
+
+export interface SoonCollection extends CollectionBase {
+  status: "soon";
+  /** e.g. "December". */
+  arrives: string;
+  /** Finished preview stickers for the card. */
+  preview: () => readonly string[];
+}
+
+export type Collection = LiveCollection | SoonCollection;
+
+/* Value helpers ------------------------------------------------------------------ */
+
+export const colorOf = (values: Values, id: string, fallback: string): string => {
+  const value = values[id];
+  return typeof value === "string" ? value : fallback;
+};
+
+export const flagOf = (values: Values, id: string, fallback: boolean): boolean => {
+  const value = values[id];
+  return typeof value === "boolean" ? value : fallback;
+};

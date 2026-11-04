@@ -1,27 +1,46 @@
-import Link from "next/link";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { SITE } from "@/lib/site";
-import { NAV_LINKS } from "./nav";
 import styles from "./SiteFooter.module.css";
 
+const FORMATS = [
+  { name: "Sticker", detail: "Copy a transparent PNG. Paste into WhatsApp, iMessage, Telegram, Slack." },
+  { name: "WhatsApp", detail: "512 px WebP under 100 KB, ready for sticker packs." },
+  { name: "PNG", detail: "512 or 1024 px, transparent, optional white outline." },
+  { name: "SVG", detail: "Clean vector markup with a title. Scales to billboards." },
+  { name: "React", detail: "A typed TSX component, no packages to install." },
+  { name: "Flutter", detail: "A flutter_svg widget, filter-free so it renders everywhere." },
+  { name: "GIF", detail: "Animated stickers. Coming soon.", soon: true },
+] as const;
+
+/** Chapter 04: formats, then the sign-off. Always dark, like the back cover. */
 export function SiteFooter() {
   return (
-    <footer className={styles.footer}>
-      <div className={`container ${styles.inner}`}>
-        <div className={styles.brand}>
-          <Wordmark />
-          <p>{SITE.tagline}</p>
+    <footer id="formats" className={styles.footer}>
+      <div className="container">
+        <p className={`eyebrow ${styles.eyebrow}`}>
+          <span>Chapter 04 — Formats</span>
+          <span>Free to use in chats and products</span>
+        </p>
+        <h2 className={`display ${styles.title}`} data-reveal="">
+          Copy. Paste.
+          <br />
+          Anywhere.
+        </h2>
+        <ul role="list" className={styles.formats}>
+          {FORMATS.map((format, index) => (
+            <li key={format.name} className={styles.format} data-reveal="" data-soon={"soon" in format ? "" : undefined} style={{ "--i": index } as React.CSSProperties}>
+              <span className={styles.formatName}>{format.name}</span>
+              <span className={styles.formatDetail}>{format.detail}</span>
+            </li>
+          ))}
+        </ul>
+        <div className={styles.bottom}>
+          <a href="#top" className={styles.brand} aria-label="Charmbit, back to top">
+            <Wordmark />
+          </a>
+          <p className={styles.tagline}>{SITE.tagline}</p>
+          <p className={styles.small}>Original artwork. © {new Date().getFullYear()} Charmbit.</p>
         </div>
-        <nav aria-label="Footer">
-          <ul role="list" className={styles.links}>
-            {NAV_LINKS.map((link) => (
-              <li key={link.href}>
-                <Link href={link.href}>{link.label}</Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <p className={styles.small}>© {new Date().getFullYear()} Charmbit. Original SVG artwork. License terms coming soon.</p>
       </div>
     </footer>
   );

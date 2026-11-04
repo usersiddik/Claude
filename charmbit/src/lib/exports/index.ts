@@ -18,7 +18,7 @@ export interface FormatDefinition {
   summary: string;
   /** Props or attributes a developer can change after copying. */
   props: readonly string[];
-  fileName: (asset: Pick<Asset, "slug" | "family">) => string;
+  fileName: (asset: Pick<ExportSource, "slug" | "family">) => string;
   build: (asset: ExportSource, options?: ExportOptions) => string;
 }
 

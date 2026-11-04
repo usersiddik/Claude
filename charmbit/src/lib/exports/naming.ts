@@ -1,6 +1,8 @@
 import type { AssetFamily } from "../assets/types.ts";
 
-const FAMILY_SUFFIX: Record<AssetFamily, string> = { charm: "Charm", mark: "Mark", duo: "Duo" };
+export type ExportFamily = AssetFamily | "sticker";
+
+const FAMILY_SUFFIX: Record<ExportFamily, string> = { charm: "Charm", mark: "Mark", duo: "Duo", sticker: "Sticker" };
 
 function words(value: string): string[] {
   return value.split(/[^a-zA-Z0-9]+/).filter(Boolean);
@@ -14,6 +16,6 @@ export function pascalCase(value: string): string {
 }
 
 /** e.g. `gold-star` + `charm` → `GoldStarCharm`. Shared by React and Flutter. */
-export function componentName(slug: string, family: AssetFamily): string {
+export function componentName(slug: string, family: ExportFamily): string {
   return `${pascalCase(slug)}${FAMILY_SUFFIX[family]}`;
 }

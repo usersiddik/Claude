@@ -1,0 +1,313 @@
+.hero {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: max(640px, calc(100svh - var(--header-h)));
+  max-height: 1040px;
+  padding: 72px var(--gutter) 88px;
+  overflow: clip;
+  isolation: isolate;
+}
+
+/* Stickers ------------------------------------------------------------------ */
+
+.stage {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  --px: 0;
+  --py: 0;
+}
+
+.sticker {
+  position: absolute;
+  left: var(--mx);
+  top: var(--my);
+  width: clamp(64px, calc(var(--msize) * 1vw), 220px);
+  translate: -50% -50%;
+  rotate: var(--r);
+  transform: translate3d(calc(var(--px) * var(--depth) * -26px), calc(var(--py) * var(--depth) * -20px), 0);
+  transition: transform 900ms var(--ease);
+  animation: pop 1000ms var(--ease-spring) both;
+  animation-delay: calc(420ms + var(--i) * 75ms);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.sticker[data-phone="hide"] {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .sticker {
+    left: var(--x);
+    top: var(--y);
+    width: clamp(84px, calc(var(--size) * 1vw), 260px);
+  }
+
+  .sticker[data-phone="hide"] {
+    display: block;
+  }
+}
+
+.drift,
+.float {
+  display: block;
+}
+
+.float {
+  animation: float var(--dur) ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -0.7s);
+}
+
+.float img {
+  width: 100%;
+  height: auto;
+  transition:
+    scale 500ms var(--ease-spring),
+    rotate 500ms var(--ease-spring),
+    filter 300ms var(--ease);
+  -webkit-user-drag: none;
+}
+
+.label {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  translate: -50% 4px;
+  rotate: calc(var(--r) * -1);
+  padding: 4px 10px;
+  border-radius: 980px;
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 240ms var(--ease),
+    translate 400ms var(--ease);
+}
+
+@media (hover: hover) {
+  .sticker:hover {
+    z-index: 2;
+    cursor: pointer;
+  }
+
+  .sticker:hover img {
+    scale: 1.1;
+    rotate: calc(var(--r) * -1);
+    filter: drop-shadow(0 18px 24px rgb(20 19 18 / 0.18));
+  }
+
+  .sticker:hover .label {
+    opacity: 1;
+    translate: -50% 12px;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    scale: 0.4;
+    rotate: calc(var(--r) - 24deg);
+  }
+}
+
+@keyframes float {
+  from {
+    translate: 0 -6px;
+  }
+  to {
+    translate: 0 8px;
+  }
+}
+
+/* Stickers drift up at their own speed as the page scrolls away. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .drift {
+      animation: drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+
+    @keyframes drift {
+      to {
+        transform: translateY(calc(var(--depth) * -180px)) scale(calc(1 - var(--depth) * 0.08));
+      }
+    }
+
+    .copy {
+      animation: recede linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 90vh;
+    }
+
+    @keyframes recede {
+      to {
+        opacity: 0.2;
+        transform: translateY(-60px) scale(0.94);
+      }
+    }
+  }
+}
+
+/* Copy ------------------------------------------------------------------------ */
+
+.copy {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 20px;
+  max-width: 1100px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.copy a {
+  pointer-events: auto;
+}
+
+.kicker {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-2);
+  animation: fade 800ms var(--ease) both;
+}
+
+.title {
+  font-size: clamp(3.4rem, 16vw, 6.5rem);
+  line-height: 0.84;
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: clamp(5rem, 10vw, 10.5rem);
+  }
+}
+
+.line {
+  display: block;
+}
+
+.word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.word + .word {
+  margin-left: 0.22em;
+}
+
+.char {
+  display: inline-block;
+  animation: set 1100ms var(--ease) both;
+  animation-delay: calc(60ms + var(--i) * 32ms);
+}
+
+/* Letters wait grey and tilted, then drop into place in ink. They are never
+   fully transparent, so the headline paints (and counts as loaded) at once. */
+@keyframes set {
+  from {
+    opacity: 0.18;
+    color: var(--text-2);
+    transform: translateY(0.36em) rotate(9deg);
+  }
+  70% {
+    opacity: 1;
+  }
+}
+
+.lede {
+  max-width: 34rem;
+  font-size: clamp(1rem, 1.4vw, 1.125rem);
+  color: var(--text-2);
+  animation: fade 900ms var(--ease) 700ms both;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+  animation: fade 900ms var(--ease) 850ms both;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 980px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    transform 300ms var(--ease-spring),
+    background-color var(--fast) var(--ease),
+    box-shadow 300ms var(--ease);
+}
+
+.primary {
+  background: var(--ink);
+  color: var(--on-ink);
+  box-shadow: 0 10px 24px -12px rgb(20 19 18 / 0.5);
+}
+
+.primary svg {
+  transition: transform 300ms var(--ease-spring);
+}
+
+.secondary {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+}
+
+@media (hover: hover) {
+  .primary:hover,
+  .secondary:hover {
+    transform: translateY(-2px);
+  }
+
+  .primary:hover svg {
+    transform: translateX(3px);
+  }
+}
+
+.primary:active,
+.secondary:active {
+  transform: scale(0.97);
+}
+
+.meta {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  top: 20px;
+  color: var(--text-2);
+  animation: fade 900ms var(--ease) 1000ms both;
+}
+
+@media (max-width: 767px) {
+  .hero {
+    padding-block: 120px 132px;
+  }
+
+  .meta {
+    display: none;
+  }
+}

@@ -3,30 +3,37 @@
 **Tiny charms. Serious code.**
 Original SVG characters, icons, and Duos for products people remember.
 
-Charmbit is a sticker studio and SVG library, for people who send stickers to friends and for developers
-who ship them in products:
+Charmbit is a growing universe of original stickers, for people who send them to friends and for
+developers who ship them in products. The site reads like a magazine in four chapters:
 
-- **Sticker Studio** (the hero): 27 reactions for a cat (and a ghost) in five categories, browsed with a
-  ◀ ▶ carousel:
-  - **Everyday:** Hi, Morning (coffee), Good night, Thank you, Huh?
-  - **Feelings:** Smile, Naughty, LOL, Single tear, Crying, Shy, Shocked, Grumpy, Cool, Fever, plus Boo! for
-    the ghost
-  - **Love:** Love (one classic glowing heart), Kiss, Miss you
-  - **Together:** Hug, Head on shoulder, Cheek to cheek
-  - **Diwali:** Diya, Sparkler, Sparklers together, Diya for two, Diwali hug (matching outfits, string lights)
+1. **The universe** (hero): an editorial headline surrounded by floating stickers from every collection.
+   Letters drop into place, stickers pop in one by one, drift with the pointer and the scroll, and show their
+   name on hover. Clicking one opens it in the library.
+2. **Collections**: a card per collection with three stickers fanned out (they spread on hover), filters for
+   Characters, Festivals, Feelings, and Icons, and cards for festivals that are on the way.
+3. **Library**: pick a collection, filter by group, tap a sticker, change its colours and details, then copy it.
+   On phones the editor opens as a bottom sheet.
+4. **Formats** (footer): every way a sticker leaves the site.
 
-  Any fur and eye colour (presets or a custom picker), partner colours for couples, an outfit colour for festive
-  stickers, and toggles for glass ears, blush, stripes, whiskers, and the sticker edge.
-- **Exports**: copy as a transparent sticker image (256, 512, or 1024 px), download PNG, a WhatsApp-sized
-  WebP, or SVG, or copy SVG, React, or Flutter code. Phones get the system share sheet.
-- **Library**: original charms and interface marks with search, two-tier categories, Fill and Ink colours,
-  an inspector with size previews and code, and one-click copy as a sticker or code.
-- **Bento**: one source to every format, the Fill + Ink model, couples, and the essentials.
+| Collection             | Stickers | What's inside |
+| ---------------------- | -------: | ------------- |
+| Love & Valentine's     | 25 | Glossy, winged, balloon, mended, and happy hearts; roses, tulips, a bouquet, a daisy; sweethearts |
+| Cats                   | 43 | 21 sitting moods, 15 standing poses, 3 couples, 5 festive (kurta, saree, diyas, sparklers) |
+| Diwali                 | 25 | 16 scenes with kids and family (diyas, sparklers, rangoli, kandil, laddoos, aarti, anar), 3 lettered wishes, 6 decor pieces |
+| Ghosts                 | 22 | The full mood set, plus Boo! and festive lights |
+| Everyday Expressions   | 20 | Lettered stickers: Hi!, Good morning, LOL, OMG, Sorry, Miss you, Get well soon… |
+| Frogs, Rabbits, Giraffes | 20 each | The shared mood set on new characters |
+| Charms & Icons         | 14 | The original flat charms and UI marks |
+| Christmas, Eid, Halloween | soon | Preview covers |
 
-All three formats are generated from one source SVG file, with the chosen colors applied.
+Every sticker can be recoloured (fur, eyes, hearts, flowers, outfits, skin tones, lettering) and has
+toggles where they make sense (blush, stripes or spots, whiskers, glass ears, string lights).
 
+- **Exports:** copy as a transparent sticker image, download PNG (512 or 1024 px), a WhatsApp-sized WebP,
+  or SVG, or copy SVG, React, or Flutter code. Phones get the system share sheet. GIF is next.
 - Light and dark themes (system preference, plus a remembered toggle).
-- No database, CMS, auth, analytics, or backend API. The page is fully static.
+- No database, CMS, auth, analytics, or backend API. The site is fully static, including one prerendered
+  SVG file per sticker at `/stickers/<collection>/<sticker>.svg`.
 - Runtime dependencies: `next`, `react`, and `react-dom` only.
 
 ## Getting started
@@ -47,58 +54,69 @@ Open Graph, robots, and sitemap URLs use it. On Vercel it falls back to the proj
 | ------------------- | ------------------------------------------------ |
 | `npm run lint`      | ESLint (Next core-web-vitals + TypeScript rules) |
 | `npm run typecheck` | `tsc --noEmit` in strict mode                    |
-| `npm test`          | `node:test` unit tests (catalogue + exporters)   |
+| `npm test`          | `node:test` unit tests (art, universe, exports)  |
 | `npm run build`     | Static production build                          |
 
 ## Project structure
 
 ```
-assets/svg/                 Source artwork, one file per asset
-  charms/  marks/
+assets/svg/                 Flat charm and mark artwork, one file per asset
+scripts/lettering.cjs       Traces sticker lettering to SVG paths (see "Lettering")
 src/
-  app/                      Routes: page, layout, OG image, icon, robots, sitemap
+  app/                      Page, layout, OG image, icon, robots, sitemap
+    stickers/[collection]/[file]/route.ts   Prerendered SVG for every sticker
   lib/
-    assets/
-      types.ts              Asset schema
-      catalog.ts            Library asset metadata
-      palette.ts            Shared artwork palette
-      load.ts               Build-time loader: joins catalogue + SVG files, validates
-      svg.ts                Pure SVG helpers: optimise, parse, validate, format
-      filters.ts            Search + filter logic and derived counts
-    customize.ts            Color / Ink options and SVG recolouring
-    exports/
-      index.ts              FORMATS registry + buildExport(asset, format, colours)
-      svg.ts react.ts flutter.ts naming.ts
-    site.ts                 Site name, copy, URL
-    characters/             Studio character engine
-      options.ts            Reaction catalogue, categories, colour and outfit presets, StickerSpec
-      draw.ts               Drawing engine: cat and ghost anatomy, faces, poses, props, outfits, pair scenes
-      color.ts              Shading palette from one picked colour
-      export.ts             Studio subjects → SVG / React / Flutter
-    sticker.ts              Sticker rendering (PNG/WebP), image copy, download, share
+    art/                    The drawing engines (pure string building, server or browser)
+      kit.ts                Shared shapes, scene gradients, tapered limbs, composition, silhouettes
+      face.ts               Eyes, brows, mouths, blush, tears, lashes, heart eyes
+      props.ts              Mug, night cap, sunglasses, diya, sparkler, string lights, marigolds…
+      species.ts            Rigs and drawings for cat, ghost, frog, rabbit, giraffe; character()
+      creatures.ts          Reactions (faces + poses + props), couples, drawCreature()
+      kids.ts               Kid rig (skin, hair, kurta/lehenga/saree, poses) and Diwali scenes
+      festive.ts            Rangoli, kandil, anar, fireworks, toran, laddoos, aarti thali, gifts
+      love.ts               Hearts, flowers, love letter, chocolates
+      lettering.ts          Captions with traced lettering; lettering-glyphs.ts is generated
+      seasons.ts            Covers for upcoming festivals
+      color.ts              Shading from one picked colour
+    universe/               The sticker universe: data, separate from the UI
+      types.ts              Collection, StickerItem, Property schema
+      swatches.ts           Colour presets
+      collections/          One file per collection (creatures.ts builds five of them)
+      index.ts              Registry, rendering, naming, and exports
+      paths.ts              Static sticker URLs and library links
+      server.ts             Builds the universe at build time (reads the icon files)
+    assets/                 Flat charm catalogue, loader, SVG helpers
+    customize.ts            Fill and Ink options for flat charms
+    exports/                SVG, React, and Flutter exporters
+    sticker.ts              Bitmap rendering (PNG/WebP), image copy, download, share
     copy-events.ts          Copy notifications (any component announces, the island listens)
   components/
-    ui/                     SegmentedControl, SwatchPicker, Popover, CodeView + highlight,
-                            CopyIsland, ThemeToggle, AssetArt, Wordmark, icons
-    studio/                 Studio (stage, categories, reaction carousel, controls, exports), ColorPicker
-    library/                Workspace (state + URL sync), ControlBar, CategoryNav, AssetCard,
-                            Inspector (dialog), StickerPanel, copy action, URL state
-    sections/               Header, Hero (+ Studio), LibrarySection, Bento + FillInkDemo, Footer
+    home/                   Hero (+ stage, sticker layout), Collections (+ grid), LibraryChapter,
+                            FloatingCta, Reveal (scroll reveal and in-place library links)
+    library/                Library (rail, groups, grid, phone sheet), Editor, Fields,
+                            useStickerActions, LibrarySection (URL sync)
+    sections/               Header, mobile menu, footer
+    ui/                     Popover, CopyIsland, ThemeToggle, Wordmark, icons
 tests/                      node:test suites
 ```
 
 Styling uses CSS Modules and design tokens (custom properties) in `src/app/globals.css`. No Tailwind.
 
-- **Type:** the system font (SF Pro on Apple platforms) with Inter as the fallback. Code uses SF Mono or JetBrains Mono.
-- **Surfaces:** canvas `#F5F5F7` / `#000`, cards `#FFF` / `#1C1C1E`, and hairline borders. Glass appears only
-  where content scrolls beneath it (header and control bar).
-- **Radii:** 10px controls, 20px cards, 24px panels.
-- **Motion:** one spring curve (`cubic-bezier(0.22, 1, 0.36, 1)`), animating transform and opacity only.
-  Everything decorative turns off under `prefers-reduced-motion`.
-- **Accessible color:** light mode uses `#6E6E73` for secondary text and `#0066CC` for text links, both at
-  least 4.5:1. Code tokens are tuned for contrast on the dark code surface.
-- **Art surface:** artwork is drawn for light surfaces, so the default preview canvas stays light in both themes.
-  Dark and Grid canvases are there for contrast testing.
+- **Type:** Instrument Serif in capitals for display (editorial, a little playful), Inter for everything else.
+- **Surfaces:** a warm paper canvas (`#F2F0EB` / `#0F0E0D`), white sheets, hairline borders. Colour comes from the
+  stickers; each collection has a soft accent tint for its cards and previews.
+- **Radii:** 4–6px on cards, tiles, and sheets; pills for chips and buttons.
+- **Chapters:** small corner labels ("Chapter 02 — Collections") give the page a magazine rhythm.
+- **Motion:** transform and opacity only, two curves (`--ease` and a gentle overshoot `--ease-spring`):
+  - Hero: letters set one by one; stickers pop in with a stagger, float idly, follow the pointer by depth
+    (one listener, two CSS variables), and drift up with the scroll (CSS scroll-driven animations).
+  - Collections: cards rise in sequence; fanned stickers spread on hover.
+  - Library: the section is a sheet that rises and straightens as it enters; tiles cascade in on every
+    collection or group change; the preview floats; copying plays a small "peel and stick" and the button
+    morphs to "Copied".
+  - Under `prefers-reduced-motion`, all of it is removed and nothing is hidden waiting for a reveal.
+- **Performance:** stickers on the page are static SVG files (lazy-loaded, cached). The library only renders
+  stickers in the browser once you change a colour.
 
 ## Asset schema
 
@@ -126,31 +144,51 @@ Defined in `src/lib/assets/types.ts`. You author `AssetMeta` and the loader adds
 The loader derives `number`, `sourceSvg` (optimised), `viewBox`, `width`, and `height`.
 Every count in the UI (chips, hero facts, results) is computed from this data.
 
-## Sticker Studio and the drawing engine
+## Adding to the universe
 
-Studio stickers aren't stored as files. `src/lib/characters/draw.ts` draws them as SVG from a
-`StickerSpec` (species, reaction, colours, outfit, toggles), so every reaction works in every colour.
+A collection is data plus one `render(item, values)` function (`src/lib/universe/types.ts`):
 
-- **Characters** are drawn in their own 512 × 512 space. The cat has cheek tufts, solid ears with pink insides
-  (or optional glass ears), eyes with an eyeliner wing, a :3 mouth, whiskers, a soft face glow, a body with chest
-  fluff, paws, and a curled tail. The ghost shares the same face system.
-- **Faces** are combinations of eyes (open, happy, wink, closed, teary, wide, angry, droopy, up, side, laugh),
-  mouths, brows, blush levels, and tears (single, streams, joy). See the `FACES` table.
-- **Poses** move the arms (wave, hold, together, chin, cheeks, kiss, sparkler, crossed, up) and stack props between
-  the body and the paws, so held items sit naturally in the paws.
-- **Props:** classic glowing heart, mug, thermometer, ice pack, pillow and blanket, night cap, sunglasses, anger and
-  question marks, Zz, sweat drops, diya, sparkler, Diwali string lights, and marigolds.
-- **Outfits:** a kurta and a saree drape in one shared colour, so couples always match.
-- **Pair scenes** place two full characters with one transform each (hug arms are drawn across both).
-- **Adding a reaction:** add it to `REACTIONS` in `options.ts` (category, caption, species), give it a face in
-  `FACES`, and compose its pose and props in `single()` or `pair()` in `draw.ts`. The tests render every reaction
-  for every species and check that all references resolve.
-- **Ids** are namespaced with a hash of the spec, so many variants can share a page.
-- **Portable mode** drops SVG filters. It's used for Flutter exports, the OG image, and carousel thumbnails.
-- `silhouetteOf()` removes whiskers so the die-cut edge follows the body, not the whisker tips.
+| Field | Notes |
+| ----- | ----- |
+| `id`, `title`, `noun` | `noun` names files and components, e.g. `Cat` → `cat-hi.svg`, `CatHiSticker` |
+| `tagline`, `description` | Card and library copy |
+| `families` | Discovery filters it appears under: `characters`, `festivals`, `feelings`, `icons` |
+| `accent` | Card and preview tint |
+| `groups` | Sub-filters inside the collection |
+| `properties` | `color` (swatches, default, optional custom picker) or `toggle` |
+| `items` | `{ id, name, caption, group, uses }`; `uses` lists the properties that change it, and only those show in the editor |
+| `cover` | Three item ids for the card |
+| `status: "soon"` | Instead of items: `arrives` and a `preview()` cover |
 
-**Size** sets the exported pixel size (256, 512, or 1024 px). The WhatsApp download is always 512 px WebP.
-Exported stickers have no drop shadow and no outline by default, so they look clean on any chat background.
+- **A new sticker in an existing collection:** add a scene (for example to `DIWALI_SCENES` in `kids.ts` or
+  `LOVE_SCENES` in `love.ts`) or a reaction (to `REACTIONS` and `FACES` in `creatures.ts`, then compose it in
+  `single()`). It appears in the library, the static files, and the counts.
+- **A new character:** add a rig and drawing to `SPECIES` in `species.ts` (face anchors, shoulders, prop anchors,
+  head, body, feet), then call `creatureCollection()` in `collections/creatures.ts`. Every reaction works on it.
+- **A new collection:** write `collections/<name>.ts` and list it in `GENERATED` in `universe/index.ts`.
+- **Bringing a festival out of "soon":** replace its `SoonCollection` with a live one.
+
+`npm test` renders every sticker in every collection, every reaction for every species and stance, and checks
+that the SVG is safe, every `url(#…)` reference resolves, portable output has no filters, groups and properties
+are consistent, and live collections have at least 15 stickers (Cats at least 40).
+
+### The drawing engines
+
+- **Creatures** share one rig: the same eyes, blush, brows, mouths, and tears; tapered arms that grow out of the
+  body and end in proper paws (pads show when a paw faces you); and anchors for props, so "Good night" puts a cap
+  on any head and "Love" puts a heart in any paws. Cats can sit or stand.
+- **Kids** use the same face system at a smaller scale with skin tones, hairstyles (short, curly, long, bun with
+  a jasmine gajra, braid, pigtails), outfits (kurta with churidar and juttis, lehenga with dupatta, saree), bangles,
+  and poses (hold, raise, wave, namaste, hands over ears, point, hug).
+- **Ids** are namespaced with a hash of the options, so many variants can share a page.
+- **Portable mode** drops SVG filters. It's used for Flutter, the OG image, and library thumbnails.
+- `silhouetteOf()` removes whiskers, glows, string lights, and sparks so the die-cut edge follows the body.
+
+### Lettering
+
+Lettering is traced to SVG paths from Baloo 2 ExtraBold (SIL Open Font License), so it renders the same in
+every browser, in the PNG export, and in flutter_svg, with no font to load. To add a phrase, run
+`scripts/lettering.cjs` with every phrase (see the comment at the top of the script).
 
 ## Sticker output
 
@@ -163,10 +201,10 @@ Exported stickers have no drop shadow and no outline by default, so they look cl
 - **White outline** adds an optional die-cut edge that follows only the solid parts of the art (not glows, lights,
   or sparks). It's off by default, so stickers paste cleanly into chats.
 
-## Adding a Charm, Mark, or Duo
+## Adding a flat Charm or Mark
 
 1. **Draw** the artwork and export a plain SVG.
-   - Charms and Duos use a `0 0 96 96` viewBox. Marks use `0 0 24 24`.
+   - Charms use a `0 0 96 96` viewBox. Marks use `0 0 24 24`.
    - Use `stroke="currentColor"` / `fill="currentColor"` for ink linework so it can be recoloured.
    - Use palette hex values for fills (the test suite rejects off-palette colours; add new ones to `palette.ts`).
    - Paint the main body with the colour you list **first** in `palette`, so the Color control can recolour it.
@@ -192,8 +230,6 @@ Exported stickers have no drop shadow and no outline by default, so they look cl
    },
    ```
 
-   For a **Duo**, use `family: "duo"`, `subject: "pair"`, and add a `relationship`
-   with the `memberIds` of the characters it pairs.
 4. Run `npm test`. It checks that every catalogue entry has a file, there are no orphan
    files, ids, slugs, and references are valid, the SVG is safe, colours are on-palette, and the
    main fill is present so recolouring works.
@@ -230,44 +266,29 @@ To add a format (for example Vue or SwiftUI):
 1. Create `src/lib/exports/<format>.ts` exporting `to<Format>(asset: ExportSource, options?: ExportOptions): string`.
 2. Add the id to `ExportFormat` in `src/lib/assets/types.ts`.
 3. Register it in `FORMATS` in `src/lib/exports/index.ts` with a label and one-line summary.
-4. Give it a `language` for highlighting, the `props` to show in the inspector, and a `fileName`.
+4. Give it a `language`, the `props` a developer can change, and a `fileName`.
 5. Add tests in `tests/exports.test.ts`.
 
-The format switchers (control bar, hero, inspector) and the bento diagram pick up new formats automatically.
-
-## Categories
-
-`src/lib/assets/filters.ts` defines two tiers in `FILTER_GROUPS`:
-
-- **Collections:** All Assets, Charms, Marks
-- **Use cases:** Characters & Mascots, Objects & Rewards, UI & Status Marks, Reactions & Celebrations
-
-Each filter is a predicate over asset data, and counts are always derived. Assets with
-`status: "comingSoon"` never appear in these views, so everything shown can be copied.
+Add the new format to the Code menu in `src/components/library/Editor.tsx`.
 
 ## URL state
 
-| Param    | Example         | Effect                     |
-| -------- | --------------- | -------------------------- |
-| `q`      | `?q=happy`      | Search query               |
-| `filter` | `?filter=marks` | `charms`, `marks`, `characters`, `objects`, `ui`, `reactions` |
-| `color`  | `?color=sky`    | Main fill (a `FILL_OPTIONS` id) |
-| `ink`    | `?ink=indigo`   | Linework (an `INK_OPTIONS` id)  |
-| `as`     | `?as=react`     | Copy as: `sticker` (default), `svg`, `react`, `flutter` |
-| `border` | `?border=on`    | Adds the optional white outline to sticker output |
-| `canvas` | `?canvas=dark`  | Preview canvas: `light`, `dark`, `grid` |
-| `asset`  | `?asset=wisp`   | Opens that asset in the inspector |
+| Param | Example | Effect |
+| ----- | ------- | ------ |
+| `c`   | `?c=diwali` | Opens the library at a collection |
+| `s`   | `?c=cats&s=smitten-standing` | Selects a sticker |
 
-Defaults are left out of the URL, so a customised view can be shared as a link.
+Every sticker has a link. Hero stickers and collection cards update the URL and scroll to the library without a
+reload. Colour changes stay on the page. Older `?asset=<slug>` links open that charm in Charms & Icons.
 
 ## Accessibility notes
 
-- Card names are buttons that open the inspector, and the copy pill is a separate button with its own label
-  ("Copy Mochi as React"). On touch devices the pill is always visible.
-- The inspector is a native modal `<dialog>`. Focus starts on the title, Escape or a backdrop click closes it,
-  and focus returns to the card.
+- Collection pills, group filters, tiles, and toggles are buttons with `aria-pressed`; swatches are native radio
+  groups (arrow keys work), with a labelled custom colour well.
+- The headline is read as one sentence; its animated letters are hidden from screen readers. Hero stickers are
+  decorative shortcuts (out of the tab order); the same stickers are reachable in the library.
+- On phones the editor is a native modal `<dialog>`: Escape, the close button, or a backdrop tap closes it.
 - Popovers close on Escape or an outside click and return focus to their trigger.
-- Categories, format switchers, canvas toggles, and swatches are native radio groups (arrow keys work).
-- ⌘K / Ctrl K or `/` focuses search; Escape clears it.
 - Copy results are announced through a polite live region (the copy island).
-- With `prefers-reduced-motion`, all decorative motion is removed.
+- Contrast is at least 4.5:1 for text in both themes; axe reports no violations in light, dark, or phone layouts.
+- With `prefers-reduced-motion`, all decorative and scroll-linked motion is removed.

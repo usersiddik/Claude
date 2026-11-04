@@ -1,59 +1,67 @@
 /*
  * Charmbit design system.
- * Light and dark themes, hairline borders, glass only where content scrolls beneath.
- * Motion uses one spring-like curve and animates transform/opacity only.
+ * Warm paper canvas, ink type, an editorial serif for display, small radii.
+ * Colour comes from the stickers. Motion animates transform and opacity only.
  */
 
 :root {
   color-scheme: light;
 
-  --canvas: #f5f5f7;
-  --card: #ffffff;
-  --card-raised: #ffffff;
-  --glass: rgb(255 255 255 / 0.78);
-  --hairline: rgb(0 0 0 / 0.06);
-  --hairline-strong: rgb(0 0 0 / 0.12);
-  --text: #1d1d1f;
-  /* Apple's #86868B is below 4.5:1 on light surfaces; #6E6E73 keeps small text legible. */
-  --text-2: #6e6e73;
-  --fill: rgb(118 118 128 / 0.12);
-  --fill-hover: rgb(118 118 128 / 0.18);
-  --pill: #ffffff;
-  --pill-shadow: 0 3px 8px rgb(0 0 0 / 0.12), 0 3px 1px rgb(0 0 0 / 0.04);
-  /* Text links use the deeper blue (≥4.5:1); filled buttons use the brighter one with white text. */
-  --accent: #0066cc;
-  --accent-fill: #0071e3;
-  --tile: #f5f5f7;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04);
-  --shadow-lift: 0 12px 32px -12px rgb(0 0 0 / 0.18), 0 2px 6px rgb(0 0 0 / 0.04);
-  --shadow-float: 0 24px 64px -24px rgb(0 0 0 / 0.28), 0 4px 12px rgb(0 0 0 / 0.06);
+  --canvas: #f2f0eb;
+  --surface: #ffffff;
+  --surface-2: #f7f6f2;
+  --ink: #141312;
+  --text: #141312;
+  /* ≥ 4.5:1 on canvas and surface. */
+  --text-2: #625e57;
+  --hairline: rgb(20 19 18 / 0.1);
+  --hairline-strong: rgb(20 19 18 / 0.18);
+  --fill: rgb(20 19 18 / 0.06);
+  --fill-hover: rgb(20 19 18 / 0.1);
+  --focus: #2563eb;
+  --on-ink: #f2f0eb;
+  --glass: rgb(242 240 235 / 0.78);
+  --shadow-lift: 0 18px 40px -18px rgb(20 19 18 / 0.28), 0 2px 6px rgb(20 19 18 / 0.06);
+  --shadow-float: 0 30px 70px -30px rgb(20 19 18 / 0.4), 0 6px 16px rgb(20 19 18 / 0.08);
+  --tile: #f7f6f2;
+  --tile-hover: #efede7;
 
-  /* Code surfaces stay dark in both themes */
-  --code-bg: #1c1c1e;
-  --code-text: #e5e5ea;
-  --code-dim: #8e8e93;
+  /* Compatibility names used by shared controls. */
+  --card: var(--surface);
+  --card-raised: var(--surface);
+  --pill: var(--surface);
+  --pill-shadow: 0 2px 6px rgb(20 19 18 / 0.12);
+  --accent: #1d4ed8;
+  --accent-fill: var(--ink);
+  --canvas-light: #f7f6f2;
+  --canvas-dark: #1a1917;
+  --art-surface: #f7f6f2;
+  --shadow-card: none;
+  --code-bg: #1a1917;
+  --code-text: #ece9e3;
+  --code-dim: #9a958c;
   --code-line: rgb(255 255 255 / 0.08);
 
-  /* Preview canvases. Artwork is drawn for light surfaces, so the default stays light in both themes. */
-  --canvas-light: #f5f5f7;
-  --canvas-dark: #1c1c1e;
-  --art-surface: #f5f5f7;
+  --font: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-display: var(--font-serif), "Times New Roman", Georgia, serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", var(--font-inter), "Segoe UI", system-ui, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, var(--font-jetbrains), Menlo, Consolas, monospace;
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-control: 6px;
+  --radius-card: 6px;
+  --radius-panel: 6px;
 
-  --radius-control: 10px;
-  --radius-card: 20px;
-  --radius-panel: 24px;
-
-  --spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --spring: var(--ease);
   --fast: 180ms;
-  --med: 320ms;
-  --slow: 520ms;
+  --med: 360ms;
+  --slow: 720ms;
 
-  --gutter: 20px;
-  --container: 1200px;
-  --header-h: 52px;
+  --gutter: 16px;
+  --container: 1280px;
+  --header-h: 56px;
 }
 
 @media (min-width: 768px) {
@@ -62,59 +70,62 @@
   }
 }
 
-/* Dark theme: system preference unless the visitor chose light. */
+@media (min-width: 1280px) {
+  :root {
+    --gutter: 48px;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --canvas: #000000;
-    --card: #1c1c1e;
-    --card-raised: #2c2c2e;
-    --glass: rgb(22 22 23 / 0.72);
-    --hairline: rgb(255 255 255 / 0.08);
-    --hairline-strong: rgb(255 255 255 / 0.16);
-    --text: #f5f5f7;
-    --text-2: #86868b;
-    --fill: rgb(118 118 128 / 0.24);
-    --fill-hover: rgb(118 118 128 / 0.32);
-    --pill: #636366;
-    --pill-shadow: 0 3px 8px rgb(0 0 0 / 0.3);
-    --accent: #2997ff;
-    --accent-fill: #0071e3;
-    --tile: #2c2c2e;
-    --shadow-card: none;
-    --shadow-lift: 0 16px 40px -16px rgb(0 0 0 / 0.8);
-    --shadow-float: 0 24px 64px -24px rgb(0 0 0 / 0.9);
-    --code-bg: #0e0e10;
-    --canvas-dark: #000000;
-    --canvas-light: #e8e8ed;
-    --art-surface: #e8e8ed;
+    --canvas: #0f0e0d;
+    --surface: #1a1917;
+    --surface-2: #211f1d;
+    --ink: #f2f0eb;
+    --text: #f2f0eb;
+    --text-2: #a8a399;
+    --hairline: rgb(255 255 255 / 0.1);
+    --hairline-strong: rgb(255 255 255 / 0.2);
+    --fill: rgb(255 255 255 / 0.07);
+    --fill-hover: rgb(255 255 255 / 0.12);
+    --focus: #7aa7ff;
+    --on-ink: #0f0e0d;
+    --glass: rgb(15 14 13 / 0.72);
+    --shadow-lift: 0 18px 40px -18px rgb(0 0 0 / 0.8);
+    --shadow-float: 0 30px 70px -30px rgb(0 0 0 / 0.9);
+    --tile: #211f1d;
+    --tile-hover: #292724;
+    --accent: #8fb4ff;
+    --pill-shadow: 0 2px 6px rgb(0 0 0 / 0.4);
+    --canvas-light: #e9e6df;
+    --art-surface: #e9e6df;
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --canvas: #000000;
-  --card: #1c1c1e;
-  --card-raised: #2c2c2e;
-  --glass: rgb(22 22 23 / 0.72);
-  --hairline: rgb(255 255 255 / 0.08);
-  --hairline-strong: rgb(255 255 255 / 0.16);
-  --text: #f5f5f7;
-  --text-2: #86868b;
-  --fill: rgb(118 118 128 / 0.24);
-  --fill-hover: rgb(118 118 128 / 0.32);
-  --pill: #636366;
-  --pill-shadow: 0 3px 8px rgb(0 0 0 / 0.3);
-  --accent: #2997ff;
-  --accent-fill: #0071e3;
-  --tile: #2c2c2e;
-  --shadow-card: none;
-  --shadow-lift: 0 16px 40px -16px rgb(0 0 0 / 0.8);
-  --shadow-float: 0 24px 64px -24px rgb(0 0 0 / 0.9);
-  --code-bg: #0e0e10;
-  --canvas-dark: #000000;
-  --canvas-light: #e8e8ed;
-  --art-surface: #e8e8ed;
+  --canvas: #0f0e0d;
+  --surface: #1a1917;
+  --surface-2: #211f1d;
+  --ink: #f2f0eb;
+  --text: #f2f0eb;
+  --text-2: #a8a399;
+  --hairline: rgb(255 255 255 / 0.1);
+  --hairline-strong: rgb(255 255 255 / 0.2);
+  --fill: rgb(255 255 255 / 0.07);
+  --fill-hover: rgb(255 255 255 / 0.12);
+  --focus: #7aa7ff;
+  --on-ink: #0f0e0d;
+  --glass: rgb(15 14 13 / 0.72);
+  --shadow-lift: 0 18px 40px -18px rgb(0 0 0 / 0.8);
+  --shadow-float: 0 30px 70px -30px rgb(0 0 0 / 0.9);
+  --tile: #211f1d;
+  --tile-hover: #292724;
+  --accent: #8fb4ff;
+  --pill-shadow: 0 2px 6px rgb(0 0 0 / 0.4);
+  --canvas-light: #e9e6df;
+  --art-surface: #e9e6df;
 }
 
 *,
@@ -126,7 +137,13 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  scroll-padding-top: calc(var(--header-h) + 80px);
+  scroll-padding-top: calc(var(--header-h) + 16px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -135,11 +152,12 @@ body {
   background: var(--canvas);
   color: var(--text);
   font-family: var(--font);
-  font-size: 1.0625rem;
-  line-height: 1.47;
-  letter-spacing: -0.01em;
+  font-size: 1rem;
+  line-height: 1.5;
+  letter-spacing: -0.006em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
 }
 
 h1,
@@ -150,8 +168,15 @@ ul,
 ol,
 dl,
 dd,
-figure {
+figure,
+fieldset {
   margin: 0;
+}
+
+fieldset {
+  padding: 0;
+  border: 0;
+  min-width: 0;
 }
 
 ul[role="list"],
@@ -163,9 +188,8 @@ ol[role="list"] {
 h1,
 h2,
 h3 {
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.08;
+  font-weight: 600;
+  line-height: 1.1;
   text-wrap: balance;
 }
 
@@ -199,8 +223,13 @@ svg {
   display: block;
 }
 
+img {
+  display: block;
+  max-width: 100%;
+}
+
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -218,6 +247,30 @@ svg {
   max-width: calc(var(--container) + var(--gutter) * 2);
   margin-inline: auto;
   padding-inline: var(--gutter);
+}
+
+/* Editorial display type: big serif capitals. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.9;
+}
+
+/* Small corner labels, like chapter marks in a magazine. */
+.eyebrow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
+.eyebrow > :last-child {
+  color: var(--text-2);
 }
 
 .sr-only {
@@ -239,19 +292,19 @@ svg {
   z-index: 100;
   padding: 8px 14px;
   border-radius: 980px;
-  background: var(--text);
-  color: var(--canvas);
+  background: var(--ink);
+  color: var(--on-ink);
   font-size: 0.875rem;
   text-decoration: none;
   transform: translateY(-200%);
-  transition: transform var(--fast) var(--spring);
+  transition: transform var(--fast) var(--ease);
 }
 
 .skip-link:focus-visible {
   transform: none;
 }
 
-/* Preview canvases. Ink follows the canvas unless a custom ink is chosen. */
+/* Preview canvases. */
 [data-canvas],
 [data-canvas="light"] {
   --art-bg: var(--canvas-light);
@@ -264,8 +317,22 @@ svg {
 }
 
 [data-canvas="grid"] {
-  --art-bg: repeating-conic-gradient(#e8e8ed 0 25%, #ffffff 0 50%) 0 0 / 16px 16px;
+  --art-bg: repeating-conic-gradient(#e6e3dc 0 25%, #ffffff 0 50%) 0 0 / 16px 16px;
   --art-ink: #1d1d1f;
+}
+
+/* Scroll reveal: elements start hidden only when JS has marked the page as ready. */
+:root[data-motion] [data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 700ms var(--ease) calc(var(--i, 0) * 70ms),
+    transform 900ms var(--ease) calc(var(--i, 0) * 70ms);
+}
+
+:root[data-motion] [data-reveal][data-shown] {
+  opacity: 1;
+  transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -274,7 +341,8 @@ svg {
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+    transition-delay: 0ms !important;
   }
 }

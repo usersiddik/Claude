@@ -3,7 +3,7 @@ export const SITE = {
   tagline: "Tiny charms. Serious code.",
   supportingLine: "Original SVG characters, icons, and Duos for products people remember.",
   description:
-    "Charmbit is a library of original SVG characters and interface marks. Copy any asset as raw SVG, a typed React component, or a Flutter widget.",
+    "Charmbit is a growing universe of original stickers: cats, ghosts, frogs, rabbits, giraffes, Diwali kids, hearts, and lettered expressions. Recolour any sticker, paste it into a chat, or export it as SVG, React, or Flutter.",
   /** Canonical origin for metadata, OG, robots and sitemap URLs. */
   url: resolveSiteUrl(),
 } as const;

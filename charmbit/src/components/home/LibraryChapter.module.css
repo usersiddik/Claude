@@ -1,0 +1,71 @@
+.chapter {
+  position: relative;
+  z-index: 1;
+  margin-top: -64px;
+}
+
+.sheet {
+  padding: 40px 0 120px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: var(--surface);
+  box-shadow: 0 -24px 60px -40px rgb(20 19 18 / 0.35);
+  transform-origin: 50% 0;
+}
+
+/* Like a page being laid down: it rises and straightens as it enters. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .sheet {
+      animation: lay-down linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+
+    @keyframes lay-down {
+      from {
+        transform: translateY(120px) rotate(-2.4deg) scale(0.97);
+      }
+    }
+  }
+}
+
+.head {
+  display: grid;
+  gap: 24px;
+  align-items: end;
+  margin: 24px 0 36px;
+}
+
+@media (min-width: 900px) {
+  .head {
+    grid-template-columns: 1.3fr 1fr;
+    gap: 48px;
+  }
+}
+
+.title {
+  font-size: clamp(3rem, 8vw, 7.5rem);
+}
+
+.steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 1.0625rem;
+}
+
+.steps li {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.steps span {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+}
