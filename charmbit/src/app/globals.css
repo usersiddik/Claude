@@ -59,6 +59,17 @@
   --med: 360ms;
   --slow: 720ms;
 
+  /* Spacing scale: every gap and margin on the site comes from here. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --section-y: clamp(80px, 9vw, 128px);
+
   --gutter: 16px;
   --container: 1280px;
   --header-h: 56px;
@@ -261,12 +272,17 @@ img {
 /* Small corner labels, like chapter marks in a magazine. */
 .eyebrow {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-1) var(--space-4);
   font-size: 0.8125rem;
   font-weight: 500;
   letter-spacing: 0;
   color: var(--text);
+}
+
+.eyebrow > * {
+  white-space: nowrap;
 }
 
 .eyebrow > :last-child {

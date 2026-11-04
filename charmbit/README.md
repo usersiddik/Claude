@@ -124,6 +124,9 @@ Styling uses CSS Modules and design tokens (custom properties) in `src/app/globa
 - **Surfaces:** a warm paper canvas (`#F2F0EB` / `#0F0E0D`), white sheets, hairline borders. Colour comes from the
   stickers; each collection has a soft accent tint for its cards and previews.
 - **Radii:** 4–6px on cards, tiles, and sheets; pills for chips and buttons.
+- **Spacing:** one scale (`--space-1` to `--space-8`: 4, 8, 12, 16, 24, 32, 48, 64px) plus `--section-y` for
+  the gap between chapters. Chapter label to headline is 32px, headline to content 48px, form fields 24px apart
+  with 12px from label to control, and swatches 12px apart so the selection ring never crowds a neighbour.
 - **Chapters:** small corner labels ("Chapter 02 — Collections") give the page a magazine rhythm.
 - **Motion:** transform and opacity only, two curves (`--ease` and a gentle overshoot `--ease-spring`):
   - Hero: letters set one by one; stickers pop in with a stagger, float idly, follow the pointer by depth
@@ -216,8 +219,9 @@ every browser, in the PNG export, and in flutter_svg, with no font to load. To a
   isn't supported, it downloads the PNG instead.
 - **PNG** and **WhatsApp WebP** downloads. WebP is used when the browser can encode it, otherwise PNG.
 - **Share** opens the system share sheet on devices that support sharing files.
-- **White outline** adds an optional die-cut edge that follows only the solid parts of the art (not glows, lights,
-  or sparks). It's off by default, so stickers paste cleanly into chats.
+- **Outline** sets a white die-cut edge in five widths (None, Thin, Medium, Thick, Extra). It follows only the
+  solid parts of the art (not glows, lights, or sparks), the preview shows the exact bitmap that will be copied,
+  and the choice carries across stickers. It's off by default, so stickers paste cleanly into chats.
 
 ## Adding a flat Charm or Mark
 

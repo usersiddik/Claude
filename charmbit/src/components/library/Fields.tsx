@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { normalizeHex } from "@/lib/art/color";
+import { STROKES, type StrokeId } from "@/lib/sticker";
 import type { ColorProperty, Swatch, ToggleProperty } from "@/lib/universe";
 import styles from "./Library.module.css";
 
@@ -61,5 +62,27 @@ export function ToggleField({ property, value, onChange }: { property: TogglePro
       <span className={styles.switch} aria-hidden="true" />
       {property.label}
     </button>
+  );
+}
+
+/** Outline width presets as a segmented radio group. Each option previews its own thickness. */
+export function StrokeField({ name, value, onChange }: { name: string; value: StrokeId; onChange: (value: StrokeId) => void }) {
+  const current = STROKES.find((stroke) => stroke.id === value) ?? STROKES[0];
+  return (
+    <fieldset className={styles.field}>
+      <legend className={styles.fieldLabel}>
+        Outline
+        <span>{current.id === "none" ? "None" : `${current.name} white edge`}</span>
+      </legend>
+      <div className={styles.strokes}>
+        {STROKES.map((stroke) => (
+          <label key={stroke.id} className={styles.stroke} style={{ "--edge": `${Math.round(stroke.width * 100)}px` } as CSSProperties}>
+            <input type="radio" name={name} checked={value === stroke.id} onChange={() => onChange(stroke.id)} className={styles.radio} />
+            <span className={styles.strokeDot} aria-hidden="true" data-none={stroke.id === "none" ? "" : undefined} />
+            {stroke.name}
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }

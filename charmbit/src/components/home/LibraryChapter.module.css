@@ -5,7 +5,7 @@
 }
 
 .sheet {
-  padding: 40px 0 120px;
+  padding: var(--space-7) 0 var(--section-y);
   border-radius: var(--radius) var(--radius) 0 0;
   background: var(--surface);
   box-shadow: 0 -24px 60px -40px rgb(20 19 18 / 0.35);
@@ -33,7 +33,7 @@
   display: grid;
   gap: 24px;
   align-items: end;
-  margin: 24px 0 36px;
+  margin: var(--space-6) 0 var(--space-7);
 }
 
 @media (min-width: 900px) {

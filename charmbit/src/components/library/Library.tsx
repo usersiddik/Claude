@@ -7,6 +7,7 @@ import { iconsCollection } from "@/lib/universe/collections/icons";
 import { stickerPath, svgDataUri } from "@/lib/universe/paths";
 import { buildSearchIndex, POPULAR_SEARCHES, search } from "@/lib/universe/search";
 import { CopyIsland } from "@/components/ui/CopyIsland";
+import type { StrokeId } from "@/lib/sticker";
 import { Editor } from "./Editor";
 import { SEARCH_EVENT } from "./search-events";
 import styles from "./Library.module.css";
@@ -36,6 +37,9 @@ export function Library({ icons, selection, onSelect, initialQuery = "" }: Libra
   const universe: LiveCollection[] = useMemo(() => [...GENERATED, iconsCollection(icons)], [icons]);
   const collection = universe.find((candidate) => candidate.id === selection.collection) ?? universe[0]!;
   const item = findItem(collection, selection.sticker);
+
+  // The outline width carries across stickers and collections.
+  const [stroke, setStroke] = useState<StrokeId>("none");
 
   // Customisations are remembered per collection while you browse.
   const [edits, setEdits] = useState<Record<string, Values>>({});
@@ -132,6 +136,8 @@ export function Library({ icons, selection, onSelect, initialQuery = "" }: Libra
     onReset: reset,
     onStep: step,
     changed,
+    stroke,
+    onStroke: setStroke,
   };
 
   return (

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { CheckIcon, CodeIcon, CopyIcon, DownloadIcon, ShareIcon } from "@/components/ui/icons";
 import { Popover } from "@/components/ui/Popover";
 import type { ExportFormat } from "@/lib/assets/types";
@@ -12,14 +11,15 @@ interface StickerActionsProps {
   title: string;
   slug: string;
   code: (format: ExportFormat) => string;
+  /** Outline width as a share of the sticker size (0 = none). */
+  stroke: number;
   /** Called after a successful copy, e.g. to play a little animation. */
   onCopied?: () => void;
 }
 
 /** Copy, download, code, and share for one sticker. Used by the library editor. */
-export function StickerActions({ svg, title, slug, code, onCopied }: StickerActionsProps) {
-  const [edge, setEdge] = useState(false);
-  const actions = useStickerActions({ svg, title, slug, code }, edge, onCopied);
+export function StickerActions({ svg, title, slug, code, stroke, onCopied }: StickerActionsProps) {
+  const actions = useStickerActions({ svg, title, slug, code }, stroke, onCopied);
 
   return (
     <div className={styles.actions}>
@@ -69,10 +69,6 @@ export function StickerActions({ svg, title, slug, code, onCopied }: StickerActi
           </button>
         ) : null}
       </div>
-      <button type="button" className={styles.edge} aria-pressed={edge} onClick={() => setEdge((value) => !value)}>
-        <span className={styles.switch} aria-hidden="true" />
-        White outline
-      </button>
       <p className={styles.hint}>Paste into WhatsApp, iMessage, Telegram, or Slack. GIF export is coming next.</p>
     </div>
   );

@@ -1,11 +1,15 @@
 /**
  * Sticker output: renders an asset's SVG to a transparent bitmap (512×512 by
  * default, the size messaging apps use for stickers) with an optional white
- * die-cut outline (off by default), then copies, downloads, or shares it. Browser-only.
+ * die-cut outline of any width (off by default), then copies, downloads, or
+ * shares it. Browser-only.
  */
 
 export interface StickerOptions {
   size?: number;
+  /** White die-cut outline width as a share of the sticker size (0 = none). */
+  stroke?: number;
+  /** Shorthand for the classic thin outline. */
   border?: boolean;
   /** Colour for currentColor linework (images have no surrounding text colour). */
   ink?: string;
@@ -15,6 +19,22 @@ export interface StickerOptions {
 }
 
 export const STICKER_SIZE = 512;
+
+/** Outline presets, as a share of the sticker size (2.2% is the classic die-cut). */
+export const STROKES = [
+  { id: "none", name: "None", width: 0 },
+  { id: "thin", name: "Thin", width: 0.016 },
+  { id: "medium", name: "Medium", width: 0.026 },
+  { id: "thick", name: "Thick", width: 0.04 },
+  { id: "extra", name: "Extra", width: 0.056 },
+] as const;
+
+export type StrokeId = (typeof STROKES)[number]["id"];
+
+export const strokeWidth = (id: StrokeId) => STROKES.find((stroke) => stroke.id === id)?.width ?? 0;
+
+/** Empty space around the art: WhatsApp's ~16px margin at 512px, plus room for the outline. */
+export const paddingFor = (stroke: number) => 0.04 + stroke * 1.1;
 const DEFAULT_INK = "#1D1D1F";
 
 /** Gives the SVG explicit pixel dimensions and resolves currentColor. */
@@ -45,10 +65,10 @@ function toBlob(canvas: HTMLCanvasElement, type: string): Promise<Blob> {
 
 export async function renderSticker(svg: string, options: StickerOptions = {}): Promise<Blob> {
   const size = options.size ?? STICKER_SIZE;
-  const border = options.border ?? false;
+  const stroke = options.stroke ?? (options.border ? 0.022 : 0);
+  const border = stroke > 0;
   const ink = options.ink ?? DEFAULT_INK;
-  // WhatsApp asks for ~16px of margin at 512px; the border lives inside that margin.
-  const padding = Math.round(size * (border ? 0.07 : 0.04));
+  const padding = Math.round(size * paddingFor(stroke));
   const art = size - padding * 2;
   const toUrl = (source: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(prepareSvg(source, art, ink))}`;
   const image = await loadImage(toUrl(svg));
@@ -78,10 +98,16 @@ export async function renderSticker(svg: string, options: StickerOptions = {}): 
     for (let index = 3; index < pixels.data.length; index += 4) pixels.data[index] = pixels.data[index]! > 170 ? 255 : 0;
     solid.putImageData(pixels, 0, 0);
 
-    const radius = size * 0.022;
-    for (let angle = 0; angle < 360; angle += 15) {
-      const radians = (angle * Math.PI) / 180;
-      ring.drawImage(mask, Math.cos(radians) * radius, Math.sin(radians) * radius);
+    // Stamp the shape around circles of decreasing radius: a smooth, even
+    // outline at any width, with no gaps between stamps on thick strokes.
+    const radius = size * stroke;
+    for (const share of [1, 0.66, 0.33]) {
+      const r = radius * share;
+      const steps = Math.min(72, Math.max(16, Math.ceil((2 * Math.PI * r) / 3)));
+      for (let step = 0; step < steps; step += 1) {
+        const radians = (step / steps) * Math.PI * 2;
+        ring.drawImage(mask, Math.cos(radians) * r, Math.sin(radians) * r);
+      }
     }
     ring.globalCompositeOperation = "source-in";
     ring.fillStyle = "#FFFFFF";

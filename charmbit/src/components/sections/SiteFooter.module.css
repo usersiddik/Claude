@@ -1,7 +1,7 @@
 .footer {
   position: relative;
   z-index: 1;
-  padding: 96px 0 40px;
+  padding: var(--section-y) 0 var(--space-6);
   background: #0f0e0d;
   color: #f2f0eb;
   --text: #f2f0eb;
@@ -16,7 +16,7 @@
 }
 
 .title {
-  margin: 28px 0 56px;
+  margin: var(--space-6) 0 var(--space-7);
   font-size: clamp(3.4rem, 12vw, 11rem);
 }
 
@@ -54,7 +54,7 @@
   display: grid;
   gap: 8px;
   justify-items: center;
-  margin-top: 96px;
+  margin-top: var(--space-8);
   text-align: center;
 }
 
