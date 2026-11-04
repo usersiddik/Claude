@@ -74,3 +74,8 @@
   font-size: 0.8125rem;
   color: var(--text-2);
 }
+
+.small a {
+  color: inherit;
+  text-underline-offset: 3px;
+}

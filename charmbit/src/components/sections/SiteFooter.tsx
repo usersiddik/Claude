@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { SITE } from "@/lib/site";
 import styles from "./SiteFooter.module.css";
@@ -39,7 +40,9 @@ export function SiteFooter() {
             <Wordmark />
           </a>
           <p className={styles.tagline}>{SITE.tagline}</p>
-          <p className={styles.small}>Original artwork. © {new Date().getFullYear()} Charmbit.</p>
+          <p className={styles.small}>
+            Original artwork. © {new Date().getFullYear()} Charmbit. <Link href="/privacy">Privacy</Link>
+          </p>
         </div>
       </div>
     </footer>
