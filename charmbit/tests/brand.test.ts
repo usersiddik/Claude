@@ -20,7 +20,7 @@ test("brand config derives every form of the name", async () => {
   assert.equal(brandKey("theme"), `${BRAND.id}:theme`);
 });
 
-test("NEXT_PUBLIC_BRAND_NAME overrides the working name", async () => {
+test("NEXT_PUBLIC_BRAND_NAME overrides the brand name", async () => {
   process.env.NEXT_PUBLIC_BRAND_NAME = "  Testname ";
   try {
     // A query string gives a fresh module instance that reads the variable again.
@@ -34,7 +34,7 @@ test("NEXT_PUBLIC_BRAND_NAME overrides the working name", async () => {
   }
 });
 
-test("the working name appears only in the brand config", async () => {
+test("the brand name appears only in the brand config", async () => {
   const { BRAND } = await import("../src/lib/brand.ts");
   const name = new RegExp(BRAND.name, "i");
   const offenders = files(SRC)

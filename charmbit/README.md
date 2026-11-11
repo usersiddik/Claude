@@ -1,7 +1,7 @@
-# Sticker universe (working name)
+# Kitemuse
 
-> **The brand name is not decided yet.** "Charmbit" is only a working name. It lives in one place,
-> `src/lib/brand.ts`, and nowhere else in `src/` (a test enforces this). See [Brand name](#brand-name).
+> The brand name lives in one place, `src/lib/brand.ts`, and nowhere else in `src/` (a test enforces this).
+> See [Brand name](#brand-name). It was previously developed under the working name "Charmbit".
 
 **Original art, made to share.**
 
@@ -46,15 +46,15 @@ toggles where they make sense (blush, stripes or spots, whiskers, glass ears, st
 Everything people see (header wordmark, placeholder monogram, favicon, page title, social tags,
 JSON-LD, footer, Flutter export comments) reads from `src/lib/brand.ts`.
 
-- **Try a name without touching code:** set `NEXT_PUBLIC_BRAND_NAME=Kitemuse` in `.env.local` or in
+- **Try another name without touching code:** set `NEXT_PUBLIC_BRAND_NAME=Example` in `.env.local` or in
   Vercel's environment variables, then rebuild or redeploy.
-- **Adopt the final name:** change `WORKING_NAME` in `src/lib/brand.ts`.
+- **Change the name for good:** edit `BRAND_NAME` in `src/lib/brand.ts`.
 - **Internal identifier:** storage keys, events and cookies use `BRAND.id` (`"studio"`), which is separate
   from the display name, so a rename doesn't sign anyone out or lose saved settings.
 - **Logo:** the mark is a placeholder monogram (the brand initial on a yellow tile) until a real logo is
   designed. Replace `LogoMark` in `src/components/ui/Wordmark.tsx` and `src/app/icon.tsx`.
 - **Not yet renamed:** the project folder (`charmbit/`, which Vercel's root directory setting points at) and
-  the Vercel project and domain (`claude-charmbit.vercel.app`). Rename those together once the name is final.
+  the Vercel project and domain (`claude-charmbit.vercel.app`). Renaming them changes the live address and the Google sign-in redirect address, so do them together.
 
 ## Getting started
 

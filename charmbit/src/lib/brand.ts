@@ -1,17 +1,16 @@
 /**
  * Brand identity. This is the only file that knows what the product is called.
  *
- * The public name is still a working name: the final brand has not been chosen.
- * To try another name, set NEXT_PUBLIC_BRAND_NAME (in .env.local or on Vercel)
- * and rebuild, or change WORKING_NAME below. Nothing else needs editing:
+ * To change the name, edit BRAND_NAME below, or set NEXT_PUBLIC_BRAND_NAME
+ * (in .env.local or on Vercel) and rebuild. Nothing else needs editing:
  * header, footer, metadata, social image, favicon, JSON-LD and exports all
  * read from here.
  */
 
-/** Placeholder until the brand decision. Not an approved name. */
-const WORKING_NAME = "Charmbit";
+/** The chosen brand name. Trademark and social-handle checks are still pending. */
+const BRAND_NAME = "Kitemuse";
 
-const name = process.env.NEXT_PUBLIC_BRAND_NAME?.trim() || WORKING_NAME;
+const name = process.env.NEXT_PUBLIC_BRAND_NAME?.trim() || BRAND_NAME;
 
 export const BRAND = {
   /** Display name, as written in sentences and metadata. */
