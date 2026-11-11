@@ -37,7 +37,7 @@ export function buildPack(definition: PackDefinition, fileNames: readonly string
       return file ? [{ id: look.id, name: look.name, swatch: look.swatch, src: packPath(definition.id, file) } satisfies StickerVariant] : [];
     });
     const main = found.find((variant) => variant.id === definition.looks[0]?.id);
-    if (sticker.premium) {
+    if (sticker.premium && definition.lockPremium) {
       premium.push({ sticker, src: main?.src });
       continue;
     }

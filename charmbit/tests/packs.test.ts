@@ -30,8 +30,8 @@ describe("image packs", () => {
 
   it("a pack with no files is not shown", () => {
     assert.equal(buildPack(sheru, []), null);
-    // Premium art alone does not publish a pack.
-    assert.equal(buildPack(sheru, ["crown.webp"]), null);
+    // With the lock on, premium art alone does not publish a pack.
+    assert.equal(buildPack({ ...sheru, lockPremium: true }, ["crown.webp"]), null);
   });
 
   it("only free stickers with a default-look file appear, with their other looks", () => {
@@ -47,16 +47,22 @@ describe("image packs", () => {
     assert.equal(stickerSrc(pack, chai), "/packs/sheru/chai-sip.webp");
   });
 
-  it("premium stickers are locked tiles, kept out of the usable stickers", () => {
+  it("every sticker is free while the premium lock is off", () => {
+    assert.equal(sheru.lockPremium, false);
     const pack = buildPack(sheru, ["boss-point.webp", "crown.webp"])!;
+    assert.deepEqual(pack.items.map((item) => item.id), ["boss-point", "crown"]);
+    assert.deepEqual(pack.locked, []);
+    assert.equal(buildPack(sheru, sheru.stickers.map((sticker) => `${sticker.id}.webp`))!.items.length, 40);
+  });
+
+  it("with the lock on, premium stickers are locked tiles kept out of the usable stickers", () => {
+    const pack = buildPack({ ...sheru, lockPremium: true }, ["boss-point.webp", "crown.webp"])!;
     assert.deepEqual(pack.items.map((item) => item.id), ["boss-point"]);
     assert.equal(pack.locked?.length, 20);
     assert.ok(pack.locked!.every((item) => item.locked && item.image?.src));
-    // Its own art when it exists, otherwise a free sticker's (it is only ever shown blurred).
     assert.equal(pack.locked!.find((item) => item.id === "crown")!.image!.src, "/packs/sheru/crown.webp");
     assert.equal(pack.locked!.find((item) => item.id === "wink")!.image!.src, "/packs/sheru/boss-point.webp");
-    const index = buildSearchIndex([pack]);
-    assert.equal(search(index, "crown").length, 0);
+    assert.equal(search(buildSearchIndex([pack]), "crown").length, 0);
   });
 
   it("packs with files sit ahead of the drawn collections, each in its category", () => {

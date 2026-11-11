@@ -17,7 +17,7 @@ export interface PackSticker {
   tags: string;
   /** What to ask the image generator for: pose, expression, props. */
   scene: string;
-  /** Shown locked (blurred, with a gold lock) until a paid plan exists. */
+  /** Planned for the premium plan. Only locked while the pack's `lockPremium` is on. */
   premium?: boolean;
 }
 
@@ -49,6 +49,11 @@ export interface PackDefinition {
   looks: readonly PackLook[];
   groups: readonly { id: string; name: string }[];
   stickers: readonly PackSticker[];
+  /**
+   * Show `premium` stickers as blurred, locked tiles. Off for now: every
+   * sticker is free and appears as soon as its file exists.
+   */
+  lockPremium?: boolean;
   /** Sticker ids for the collection card, front first. */
   cover: readonly string[];
 }

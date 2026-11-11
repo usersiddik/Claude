@@ -2,7 +2,8 @@ import type { PackDefinition } from "./types.ts";
 
 /**
  * Sheru Bhai: a white lion in an all-white suit and gold. One fixed identity,
- * 40 reactions. The first 20 are free; the 20 marked `premium` show locked.
+ * 40 reactions, all free for now. The 20 marked `premium` are the ones planned
+ * for a paid plan; set `lockPremium: true` to show them locked again.
  */
 export const sheru: PackDefinition = {
   id: "sheru",
@@ -26,6 +27,7 @@ export const sheru: PackDefinition = {
     { id: "feels", name: "Reactions" },
     { id: "life", name: "Everyday" },
   ],
+  lockPremium: false,
   cover: ["boss-point", "shades-off", "chai-sip"],
   stickers: [
     { id: "boss-point", name: "Boss point", caption: "Listen to me.", group: "boss", tags: "point boss attitude listen you", scene: "leaning slightly forward, pointing one furry white index finger directly at the camera with a calm, dominant boss expression" },
@@ -48,7 +50,7 @@ export const sheru: PackDefinition = {
     { id: "on-call", name: "On a call", caption: "Baad mein.", group: "life", tags: "busy call phone later meeting", scene: "holding a gold smartphone to his ear, the other hand raised palm-out toward the camera in a wait gesture, serious focused expression" },
     { id: "clap", name: "Slow clap", caption: "Waah.", group: "boss", tags: "clap applause wah bravo well done sarcastic", scene: "slow clapping with both furry hands at chest level, one eyebrow raised, an impressed half-smile" },
     { id: "party", name: "Party", caption: "Aaj party meri taraf se.", group: "rich", tags: "party celebrate birthday congrats yay cheers", scene: "raising a crystal glass of sparkling juice high in a toast, a huge open-mouthed grin, gold confetti falling around his shoulders" },
-    // Premium: shown locked until a paid plan exists.
+    // Planned for premium. Free while `lockPremium` is off.
     { id: "count-cash", name: "Counting cash", caption: "Ek, do, teen...", group: "rich", tags: "money count cash rich salary payday", premium: true, scene: "wearing black sunglasses, counting a thick fan of cash bills with both furry hands, a satisfied smirk" },
     { id: "gold-bars", name: "Gold bars", caption: "Small savings.", group: "rich", tags: "gold rich wealth flex bars", premium: true, scene: "holding a shining gold bar in each furry hand at shoulder height, chin raised, proud smile" },
     { id: "crown", name: "The king", caption: "Bow.", group: "boss", tags: "king crown royal boss raja", premium: true, scene: "wearing a gold crown set with white stones, arms crossed over his chest, a regal unimpressed stare" },

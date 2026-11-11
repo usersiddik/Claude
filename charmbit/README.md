@@ -82,17 +82,17 @@ A tab with nothing in it shows "Soon" and an honest empty message.
 **WhatsApp stickers (image packs)**, starting with **Sheru Bhai**, a white lion in white and gold:
 
 - **Definition:** `src/lib/universe/packs/sheru.ts` lists his fixed identity, outfits, groups and 40 stickers
-  (20 free, 20 marked `premium`), each with the scene to generate.
+  (all free for now; 20 are marked `premium` for later), each with the scene to generate.
 - **Prompts:** `docs/sheru-prompts.md` (regenerate with `node --experimental-strip-types scripts/prompts.ts sheru`).
   Attach the reference image to every prompt so the face stays the same.
 - **Adding a sticker:** `python3 scripts/add-sticker.py <image> sheru <sticker-id> [look] [--border N]` removes
   the flat background, optionally shaves a baked-in white border, trims, squares and saves a 1024 px WebP.
   Needs Pillow. A free sticker appears once its file exists.
 - **Outfits:** a file named `<sticker>.<look>.webp` (e.g. `chai-sip.black.webp`) adds that outfit.
-- **Premium:** stickers marked `premium` show as blurred tiles with a gold lock. Clicking one opens a
-  "coming soon" note; there is no payment code. They are kept out of search, counts and the editor.
-  **This is a visual lock only:** a premium image placed in `public/packs` can still be opened by its
-  address, so keep premium art out of the repo until real payments and access checks exist.
+- **Premium (switched off):** all 40 stickers are free for now. Setting `lockPremium: true` in the pack shows
+  the ones marked `premium` as blurred tiles with a gold lock and a "coming soon" note. That lock is visual
+  only: a premium image in `public/packs` can still be opened by its address, so real payments and access
+  checks are needed before relying on it.
 
 **GIFs:** put a `.gif` in `public/packs/gifs/` and it appears. The file name becomes its name and search
 words (`cat-drinking-water.gif` is "Cat drinking water"), so use lowercase words joined by hyphens. To set a
