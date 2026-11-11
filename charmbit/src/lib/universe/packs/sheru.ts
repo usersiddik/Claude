@@ -7,6 +7,7 @@ import type { PackDefinition } from "./types.ts";
  */
 export const sheru: PackDefinition = {
   id: "sheru",
+  kind: "image",
   title: "Sheru",
   noun: "Sheru",
   tagline: "The boss. Always in white, always in gold.",

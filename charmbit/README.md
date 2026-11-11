@@ -67,24 +67,32 @@ JSON-LD, footer, Flutter export comments) reads from `src/lib/brand.ts`.
 - Exports: PNG and WebP at 256, 512 and 1024 px, SVG, a WhatsApp sticker (512 px WebP kept under 100 KB)
   and a Telegram sticker (512 px PNG), plus SVG, React and Flutter code.
 
-## Image packs and the archive
+## Three kinds of sticker
 
-The new direction is character packs made of image files, starting with **Sheru** (a white lion in white and gold).
+The library has three tabs. A collection's `media` decides which one it is in.
 
-- **Definition:** `src/lib/universe/packs/sheru.ts` lists the character's fixed identity, outfits, groups and
-  16 stickers, each with the scene to generate.
+| Tab | What it is | Where it lives | What people can do |
+|---|---|---|---|
+| **WhatsApp stickers** | High-quality still images | `public/packs/<pack>/*.webp` | Copy as PNG, download PNG/WebP, WhatsApp and Telegram files, outline or no outline |
+| **Colour stickers** | Drawn in code, recolourable | `src/lib/universe/collections/` | Everything above, plus colours, SVG and React/Flutter code |
+| **GIFs** | Animated files | `public/packs/gifs/*.gif` | Download or share the original file |
+
+A tab with nothing in it shows "Soon" and an honest empty message.
+
+**WhatsApp stickers (image packs)**, starting with **Sheru**, a white lion in white and gold:
+
+- **Definition:** `src/lib/universe/packs/sheru.ts` lists his fixed identity, outfits, groups and 16 stickers,
+  each with the scene to generate.
 - **Prompts:** `docs/sheru-prompts.md` (regenerate with `node --experimental-strip-types scripts/prompts.ts sheru`).
   Generate one master image first, then attach it to every sticker prompt so the face stays the same.
 - **Adding a sticker:** `python3 scripts/add-sticker.py <image> sheru <sticker-id> [look]` removes the green
-  background, trims, squares and saves a 1024 px WebP in `public/packs/sheru/`. Needs Pillow.
-- **Outfits:** a file named `<sticker>.<look>.webp` (e.g. `coffee.black.webp`) adds that outfit to the sticker.
-- **Publishing rule:** a sticker appears once its default-look file exists. As soon as any pack has a sticker,
-  the older code-drawn collections are hidden. They are archived, not deleted: `buildArchive` in
-  `src/lib/universe/index.ts` still holds them, and `buildUniverse(icons, files, true)` shows both.
-- **Image stickers** export PNG, WebP, WhatsApp and Telegram files and can be copied. They have no SVG or
-  code exports and no live recolouring.
-- **Animated stickers later:** `StickerImage.animated` is reserved for GIF or animated WebP files. Nothing
-  reads it yet.
+  background, trims, squares and saves a 1024 px WebP. Needs Pillow. A sticker appears once its file exists.
+- **Outfits:** a file named `<sticker>.<look>.webp` (e.g. `coffee.black.webp`) adds that outfit.
+
+**GIFs:** put a `.gif` in `public/packs/gifs/` and it appears. The file name becomes its name and search
+words (`cat-drinking-water.gif` is "Cat drinking water"), so use lowercase words joined by hyphens. To set a
+nicer name or caption, list it in `src/lib/universe/packs/gifs.ts`. Browsers cannot copy a moving image to
+the clipboard, so GIFs are downloaded or shared. Keep files small; they load in the grid.
 
 ## Getting started
 

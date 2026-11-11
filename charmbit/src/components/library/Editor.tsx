@@ -49,7 +49,9 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
   const title = stickerTitle(collection, item);
   const properties = propertiesFor(collection, item);
   const prefix = `${variant}-${collection.id}`;
-  const width = strokeWidth(stroke);
+  // GIFs are sent as they are: no outline, no redrawing.
+  const animated = Boolean(item.image?.animated);
+  const width = animated ? 0 : strokeWidth(stroke);
 
   // With an outline on, preview the exact bitmap that will be copied.
   const [rendered, setRendered] = useState<{ key: string; url: string } | null>(null);
@@ -150,7 +152,7 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
             </div>
           </fieldset>
         ) : null}
-        <StrokeField name={`${variant}-stroke`} value={stroke} onChange={onStroke} />
+        {animated ? null : <StrokeField name={`${variant}-stroke`} value={stroke} onChange={onStroke} />}
         {properties.length > 0 ? (
           <div className={styles.fieldActions}>
             <button type="button" className={styles.surprise} onClick={onRandom}>
@@ -166,7 +168,7 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
         ) : null}
       </div>
 
-      <StickerActions stroke={width} svg={svg} image={file} title={title} slug={stickerSlug(collection, item)} code={item.image ? undefined : (format) => exportItem(collection, item, values, format)} onCopied={() => setPulse((value) => value + 1)} />
+      <StickerActions stroke={width} svg={svg} image={file} animated={animated} title={title} slug={stickerSlug(collection, item)} code={item.image ? undefined : (format) => exportItem(collection, item, values, format)} onCopied={() => setPulse((value) => value + 1)} />
     </div>
   );
 }

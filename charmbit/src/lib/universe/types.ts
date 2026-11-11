@@ -65,7 +65,7 @@ export interface StickerImage {
   src: string;
   /** Looks that have a file for this sticker, default first. Empty when there is only one. */
   variants: readonly StickerVariant[];
-  /** Reserved for animated stickers (GIF or animated WebP). Nothing sets it yet. */
+  /** True for GIFs: shown and downloaded as they are, never redrawn. */
   animated?: boolean;
 }
 
@@ -93,8 +93,11 @@ export interface LiveCollection extends CollectionBase {
   /** Item ids shown on the collection card, front first. */
   cover: readonly string[];
   render: (item: StickerItem, values: Values, options?: { portable?: boolean }) => string;
-  /** "image" collections are files in `public/packs`; they have no SVG or code exports. */
-  media?: "vector" | "image";
+  /**
+   * How the stickers are made. "vector" (the default) is drawn in code and can be
+   * recoloured; "image" is a still image file; "animated" is a GIF.
+   */
+  media?: "vector" | "image" | "animated";
 }
 
 export interface SoonCollection extends CollectionBase {
@@ -106,6 +109,19 @@ export interface SoonCollection extends CollectionBase {
 }
 
 export type Collection = LiveCollection | SoonCollection;
+
+/* Categories ---------------------------------------------------------------------- */
+
+/** The three kinds of sticker on the site, in display order. */
+export const CATEGORIES = [
+  { id: "whatsapp", name: "WhatsApp stickers", short: "WhatsApp", blurb: "High-quality stickers, ready to copy into a chat. With or without a white outline.", empty: "The first WhatsApp stickers are on their way." },
+  { id: "colour", name: "Colour stickers", short: "Colour", blurb: "Stickers you can recolour: fur, eyes, outfits and more.", empty: "No colour stickers yet." },
+  { id: "gif", name: "GIFs", short: "GIFs", blurb: "Animated stickers to download and send.", empty: "The first GIFs are on their way." },
+] as const;
+
+export type CategoryId = (typeof CATEGORIES)[number]["id"];
+
+export const categoryOf = (collection: { media?: "vector" | "image" | "animated" }): CategoryId => (collection.media === "image" ? "whatsapp" : collection.media === "animated" ? "gif" : "colour");
 
 /* Value helpers ------------------------------------------------------------------ */
 

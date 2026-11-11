@@ -118,6 +118,29 @@ export function useStickerActions({ svg, image, title, slug, code }: Sticker, st
         notify(label, false);
       }
     },
+    /** GIFs: save the original file, untouched. */
+    async gif() {
+      if (!image) return;
+      try {
+        const response = await fetch(image);
+        if (!response.ok) throw new Error("Could not load the GIF.");
+        download(await response.blob(), `${slug}.gif`);
+        notify("GIF", true, "Saved");
+        flash("done");
+      } catch {
+        notify("GIF", false);
+        flash("error");
+      }
+    },
+    async shareGif() {
+      if (!image) return;
+      try {
+        const response = await fetch(image);
+        await shareSticker(new Blob([await response.blob()], { type: "image/gif" }), `${slug}.gif`, title);
+      } catch {
+        // Closing the share sheet rejects; nothing to report.
+      }
+    },
     async share() {
       try {
         await shareSticker(await renderSticker(art, { ...options, size: 512 }), `${slug}.png`, title);

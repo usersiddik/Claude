@@ -1,4 +1,4 @@
-import { FAMILIES, findItem, isLive, stickerSrc, type Collection } from "@/lib/universe";
+import { CATEGORIES, categoryOf, findItem, isLive, stickerSrc, type Collection } from "@/lib/universe";
 import { coverPath, libraryHref } from "@/lib/universe/paths";
 import { CollectionsGrid, type CardData } from "./CollectionsGrid";
 import styles from "./Collections.module.css";
@@ -12,6 +12,8 @@ export function Collections({ universe }: { universe: readonly Collection[] }) {
           tagline: collection.tagline,
           accent: collection.accent,
           families: collection.families,
+          category: categoryOf(collection),
+          animated: collection.media === "animated",
           status: "live",
           count: collection.items.length,
           covers: collection.cover.map((id) => stickerSrc(collection, findItem(collection, id))),
@@ -23,6 +25,7 @@ export function Collections({ universe }: { universe: readonly Collection[] }) {
           tagline: collection.tagline,
           accent: collection.accent,
           families: collection.families,
+          category: "colour",
           status: "soon",
           arrives: collection.arrives,
           covers: [coverPath(collection.id)],
@@ -30,10 +33,9 @@ export function Collections({ universe }: { universe: readonly Collection[] }) {
   );
   const live = cards.filter((card) => card.status === "live").length;
   // Only filters that have something in them; none at all when there is a single choice.
-  const filters = FAMILIES.map((family) => ({
-    ...family,
-    count: family.id === "all" ? cards.length : cards.filter((card) => card.families.includes(family.id as never)).length,
-  })).filter((family) => family.count > 0);
+  const filters = [{ id: "all" as const, name: "All" }, ...CATEGORIES.map((entry) => ({ id: entry.id, name: entry.name }))]
+    .map((filter) => ({ ...filter, count: filter.id === "all" ? cards.length : cards.filter((card) => card.category === filter.id).length }))
+    .filter((filter) => filter.count > 0);
 
   return (
     <section id="collections" className={styles.section} aria-labelledby="collections-title">
@@ -51,7 +53,7 @@ export function Collections({ universe }: { universe: readonly Collection[] }) {
             collection.
           </h2>
           <p className={styles.lede} data-reveal="" style={{ "--i": 2 } as React.CSSProperties}>
-            Every collection is a cast with its own moods and colours. New ones land every season; the library grows, nothing gets replaced.
+            Three kinds of sticker: high-quality ones made for WhatsApp, ones you can recolour, and GIFs. Every collection is a cast with its own moods.
           </p>
         </div>
         <CollectionsGrid cards={cards} filters={filters} />

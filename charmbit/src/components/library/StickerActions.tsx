@@ -11,6 +11,8 @@ interface StickerActionsProps {
   svg: string;
   /** File URL for image stickers, which have no SVG or code exports. */
   image?: string;
+  /** GIFs are downloaded or shared as the original file. */
+  animated?: boolean;
   title: string;
   slug: string;
   code?: (format: ExportFormat) => string;
@@ -21,7 +23,7 @@ interface StickerActionsProps {
 }
 
 /** Copy, download, code, and share for one sticker. Used by the library editor. */
-export function StickerActions({ svg, image, title, slug, code, stroke, onCopied }: StickerActionsProps) {
+export function StickerActions({ svg, image, animated, title, slug, code, stroke, onCopied }: StickerActionsProps) {
   const actions = useStickerActions({ svg, image, title, slug, code }, stroke, onCopied);
   // Browsing and customising are open to all; taking a sticker away needs a sign-in.
   const { locked, requireSignIn } = useAuth();
@@ -31,6 +33,31 @@ export function StickerActions({ svg, image, title, slug, code, stroke, onCopied
       if (locked) requireSignIn();
       else void run(...args);
     };
+
+  if (animated) {
+    return (
+      <div className={styles.actions}>
+        <button type="button" className={styles.copy} data-state={actions.state} onClick={gate(actions.gif)}>
+          <span className={styles.copyIdle}>
+            <DownloadIcon size={18} />
+            Download GIF
+          </span>
+          <span className={styles.copyDone} aria-hidden={actions.state !== "done"}>
+            <CheckIcon size={18} />
+            Saved
+          </span>
+        </button>
+        {actions.shareable ? (
+          <div className={styles.secondaryActions}>
+            <button type="button" className={styles.shareWide} onClick={gate(actions.shareGif)}>
+              <ShareIcon size={16} /> Share
+            </button>
+          </div>
+        ) : null}
+        <p className={styles.hint}>Download the GIF, then attach it in WhatsApp, Telegram or any chat. Browsers can&rsquo;t copy a moving image to the clipboard.</p>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.actions}>

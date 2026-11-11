@@ -16,7 +16,7 @@ import type { Collection, Family, LiveCollection, Property, StickerItem, Values 
 
 export type * from "./types.ts";
 export type { IconAsset } from "./collections/icons.ts";
-export { colorOf, flagOf } from "./types.ts";
+export { CATEGORIES, categoryOf, colorOf, flagOf } from "./types.ts";
 
 /** Generated collections (everything except the file-based icons). */
 export const GENERATED: readonly LiveCollection[] = [love, cats, diwali, ghosts, everyday, frogs, rabbits, giraffes];
@@ -30,22 +30,17 @@ export const FAMILIES: readonly { id: Family | "all"; name: string }[] = [
   { id: "icons", name: "Icons" },
 ];
 
-/**
- * The archive: every collection drawn in code. Nothing here is deleted; it is
- * simply not shown once an image pack has stickers.
- */
+/** Every collection drawn in code: the recolourable "Colour stickers". */
 export function buildArchive(icons: readonly IconAsset[]): Collection[] {
   return [...GENERATED, iconsCollection(icons), ...UPCOMING];
 }
 
 /**
- * What visitors see. Image packs come first. As soon as any pack has a
- * sticker, the archive is hidden; until then the archive stays visible so the
- * site is never empty. Set `showArchive` to bring it back alongside the packs.
+ * What visitors see: image and GIF packs first (those that have files), then
+ * the drawn collections. Each collection's `media` decides its category.
  */
-export function buildUniverse(icons: readonly IconAsset[], files: PackFiles = {}, showArchive = false): Collection[] {
-  const packs = buildPacks(files);
-  return packs.length > 0 && !showArchive ? packs : [...packs, ...buildArchive(icons)];
+export function buildUniverse(icons: readonly IconAsset[], files: PackFiles = {}): Collection[] {
+  return [...buildPacks(files), ...buildArchive(icons)];
 }
 
 /** Image URL for a sticker in its default look: the file for image stickers, the prerendered SVG otherwise. */

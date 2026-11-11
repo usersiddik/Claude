@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { CloseIcon, HeartGlyph, SearchIcon } from "@/components/ui/icons";
-import { buildUniverse, defaultValues, findItem, isLive, randomValues, renderItem, stickerSrc, stickerTitle, type IconAsset, type LiveCollection, type StickerItem, type Value, type Values } from "@/lib/universe";
+import { buildUniverse, CATEGORIES, categoryOf, defaultValues, findItem, isLive, randomValues, renderItem, stickerSrc, stickerTitle, type IconAsset, type LiveCollection, type CategoryId, type StickerItem, type Value, type Values } from "@/lib/universe";
 import type { PackFiles } from "@/lib/universe/packs";
 import { svgDataUri } from "@/lib/universe/paths";
 import { buildSearchIndex, popularSearches, search } from "@/lib/universe/search";
@@ -112,6 +112,11 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [results]);
 
+  // Three kinds of sticker. The tab follows the open collection unless an empty tab was chosen.
+  const [emptyTab, setEmptyTab] = useState<CategoryId | null>(null);
+  const category = emptyTab ?? categoryOf(collection);
+  const inCategory = (id: CategoryId) => universe.filter((candidate) => categoryOf(candidate) === id);
+
   // Saved stickers live in this browser; no account needed.
   const favourites = useFavourites();
   const [showSaved, setShowSaved] = useState(false);
@@ -145,11 +150,11 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
   // Group filter resets when the collection changes.
   const [groupFor, setGroupFor] = useState({ collection: collection.id, group: "all" });
   const group = groupFor.collection === collection.id ? groupFor.group : "all";
-  const mode = results ? "search" : showSaved ? "saved" : "browse";
+  const mode = results ? "search" : showSaved ? "saved" : emptyTab ? "empty" : "browse";
   const visible: Entry[] = useMemo(() => {
-    const list = results ?? (showSaved ? savedEntries : collection.items.filter((candidate) => group === "all" || candidate.group === group).map((candidate) => ({ collection, item: candidate })));
+    const list = results ?? (showSaved ? savedEntries : emptyTab ? [] : collection.items.filter((candidate) => group === "all" || candidate.group === group).map((candidate) => ({ collection, item: candidate })));
     return sort === "az" ? [...list].sort((a, b) => a.item.name.localeCompare(b.item.name)) : list;
-  }, [results, showSaved, savedEntries, collection, group, sort]);
+  }, [results, showSaved, savedEntries, emptyTab, collection, group, sort]);
   const position = Math.max(0, visible.findIndex((entry) => entry.collection.id === collection.id && entry.item.id === item.id));
 
   // Tiles use the prerendered files until a colour changes, then render live.
@@ -182,11 +187,23 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
   const browse = (next: LiveCollection) => {
     setQuery("");
     setShowSaved(false);
+    setEmptyTab(null);
     select(next);
   };
   const openSaved = () => {
     setQuery("");
     setShowSaved(true);
+  };
+  const openCategory = (id: CategoryId) => {
+    const first = inCategory(id)[0];
+    if (first) {
+      // Stay put when the open collection is already in this category.
+      browse(categoryOf(collection) === id ? collection : first);
+    } else {
+      setQuery("");
+      setShowSaved(false);
+      setEmptyTab(id);
+    }
   };
   const random = () => setEdits((previous) => ({ ...previous, [collection.id]: { ...previous[collection.id], ...randomValues(collection, item) } }));
   const itemKey = `${collection.id}/${item.id}`;
@@ -255,13 +272,26 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
         )}
       </form>
 
+      <div className={styles.tabs} role="group" aria-label="Sticker type">
+        {CATEGORIES.map((entry) => {
+          const count = inCategory(entry.id).reduce((total, candidate) => total + candidate.items.length, 0);
+          return (
+            <button key={entry.id} type="button" className={styles.tab} aria-pressed={(mode === "browse" || mode === "empty") && category === entry.id} onClick={() => openCategory(entry.id)}>
+              <b className={styles.tabFull}>{entry.name}</b>
+              <b className={styles.tabShort} aria-hidden="true">{entry.short}</b>
+              <span>{count > 0 ? count : "Soon"}</span>
+            </button>
+          );
+        })}
+      </div>
+
       <div ref={rail} className={styles.rail} role="group" aria-label="Collections">
         <button type="button" className={`${styles.pill} ${styles.savedPill}`} aria-pressed={mode === "saved"} onClick={openSaved}>
           <HeartGlyph size={18} />
           Saved
           <span>{savedEntries.length}</span>
         </button>
-        {universe.map((candidate) => (
+        {inCategory(category).map((candidate) => (
           <button key={candidate.id} type="button" className={styles.pill} aria-pressed={mode === "browse" && candidate.id === collection.id} onClick={() => browse(candidate)}>
             {/* eslint-disable-next-line @next/next/no-img-element -- static SVG sticker */}
             <img src={stickerSrc(candidate, findItem(candidate, candidate.cover[0]))} alt="" width={28} height={28} loading="lazy" decoding="async" />
@@ -289,6 +319,15 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
                     {suggestion}
                   </button>
                 ))}
+              </div>
+            </div>
+          ) : mode === "empty" ? (
+            <div className={styles.browserHead}>
+              <div>
+                <h3 className={styles.collectionTitle}>{CATEGORIES.find((entry) => entry.id === category)!.name}</h3>
+                <p className={styles.collectionText}>
+                  {CATEGORIES.find((entry) => entry.id === category)!.empty} {CATEGORIES.find((entry) => entry.id === category)!.blurb}
+                </p>
               </div>
             </div>
           ) : mode === "saved" ? (
@@ -349,7 +388,7 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
                 <li key={`${entry.collection.id}/${entry.item.id}`} style={{ "--i": Math.min(order, 24) } as CSSProperties} className={styles.cell}>
                   <button type="button" className={styles.tile} aria-pressed={selected} aria-label={title} onClick={() => openTile(entry)}>
                     {/* eslint-disable-next-line @next/next/no-img-element -- static or generated SVG */}
-                    <img src={tiles.get(`${entry.collection.id}/${entry.item.id}`)} alt="" width={160} height={160} loading="lazy" decoding="async" draggable={false} />
+                    <img src={tiles.get(`${entry.collection.id}/${entry.item.id}`)} alt="" width={160} height={160} loading="lazy" decoding="async" draggable={false} data-animated={entry.item.image?.animated ? "" : undefined} />
                     <span className={styles.tileName}>{mode === "browse" ? entry.item.name : title}</span>
                   </button>
                   {favourites.list.includes(`${entry.collection.id}/${entry.item.id}`) ? <HeartGlyph size={14} className={styles.tileSaved} aria-label="Saved" /> : null}

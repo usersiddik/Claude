@@ -1,11 +1,12 @@
 import type { LiveCollection, StickerItem, StickerVariant } from "../types.ts";
+import { gifs } from "./gifs.ts";
 import { sheru } from "./sheru.ts";
 import type { PackDefinition, PackLook, PackSticker } from "./types.ts";
 
 export type { PackDefinition, PackLook, PackSticker } from "./types.ts";
 
 /** Image packs, in display order. Add a character by adding its definition here. */
-export const PACKS: readonly PackDefinition[] = [sheru];
+export const PACKS: readonly PackDefinition[] = [sheru, gifs];
 
 /** File names found in each pack's folder, keyed by pack id. Plain data, safe to send to the browser. */
 export type PackFiles = Readonly<Record<string, readonly string[]>>;
@@ -26,6 +27,7 @@ function fileFor(files: ReadonlySet<string>, stickerId: string, look: PackLook, 
  * published a few stickers at a time. Returns null while it has none.
  */
 export function buildPack(definition: PackDefinition, fileNames: readonly string[]): LiveCollection | null {
+  if (definition.kind === "animated") return buildAnimatedPack(definition, fileNames);
   const files = new Set(fileNames);
   const items: StickerItem[] = [];
   for (const sticker of definition.stickers) {
@@ -63,6 +65,46 @@ export function buildPack(definition: PackDefinition, fileNames: readonly string
     items,
     cover: cover.length > 0 ? cover : items.slice(0, 3).map((item) => item.id),
     // Image stickers are files; this wrapper exists only to satisfy code that expects SVG.
+    render: (item) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><image href="${item.image?.src ?? ""}" width="512" height="512"/></svg>`,
+  };
+}
+
+const sentence = (words: string) => words.charAt(0).toUpperCase() + words.slice(1);
+
+/** A GIF pack: one sticker per `.gif` file, described by its file name unless the definition says more. */
+function buildAnimatedPack(definition: PackDefinition, fileNames: readonly string[]): LiveCollection | null {
+  const items: StickerItem[] = fileNames
+    .filter((name) => /^[a-z0-9]+(-[a-z0-9]+)*\.gif$/.test(name))
+    .sort()
+    .map((name) => {
+      const id = name.replace(/\.gif$/, "");
+      const words = id.replace(/-/g, " ");
+      const listed = definition.stickers.find((sticker) => sticker.id === id);
+      return {
+        id,
+        name: listed?.name ?? sentence(words),
+        caption: listed?.caption ?? sentence(words),
+        group: listed?.group ?? "all",
+        tags: `${words} gif animated ${listed?.tags ?? ""}`,
+        uses: [],
+        image: { src: packPath(definition.id, name), variants: [], animated: true },
+      };
+    });
+  if (items.length === 0) return null;
+  return {
+    status: "live",
+    media: "animated",
+    id: definition.id,
+    title: definition.title,
+    noun: definition.noun,
+    tagline: definition.tagline,
+    description: definition.description,
+    families: definition.families,
+    accent: definition.accent,
+    groups: definition.groups.filter((group) => items.some((item) => item.group === group.id)),
+    properties: [],
+    items,
+    cover: items.slice(0, 3).map((item) => item.id),
     render: (item) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><image href="${item.image?.src ?? ""}" width="512" height="512"/></svg>`,
   };
 }

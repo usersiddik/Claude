@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
-import type { Family } from "@/lib/universe";
+import type { CategoryId, Family } from "@/lib/universe";
 import styles from "./Collections.module.css";
 
 export interface CardData {
@@ -10,6 +10,9 @@ export interface CardData {
   tagline: string;
   accent: string;
   families: readonly Family[];
+  category: CategoryId;
+  /** Covers are GIFs: show them whole, not fanned. */
+  animated?: boolean;
   status: "live" | "soon";
   count?: number;
   arrives?: string;
@@ -19,7 +22,7 @@ export interface CardData {
 
 interface CollectionsGridProps {
   cards: readonly CardData[];
-  filters: readonly { id: Family | "all"; name: string; count: number }[];
+  filters: readonly { id: CategoryId | "all"; name: string; count: number }[];
 }
 
 function Fan({ covers }: { covers: readonly string[] }) {
@@ -35,8 +38,8 @@ function Fan({ covers }: { covers: readonly string[] }) {
 
 /** Collection cards with family filters. Adding a collection adds a card. */
 export function CollectionsGrid({ cards, filters }: CollectionsGridProps) {
-  const [family, setFamily] = useState<Family | "all">("all");
-  const visible = cards.filter((card) => family === "all" || card.families.includes(family));
+  const [family, setFamily] = useState<CategoryId | "all">("all");
+  const visible = cards.filter((card) => family === "all" || card.category === family);
 
   return (
     <>

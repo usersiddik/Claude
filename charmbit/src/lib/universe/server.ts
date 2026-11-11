@@ -14,7 +14,7 @@ export function packFiles(): PackFiles {
   return Object.fromEntries(
     PACKS.map((pack) => {
       const folder = join(process.cwd(), "public", "packs", pack.id);
-      return [pack.id, existsSync(folder) ? readdirSync(folder).filter((name) => /\.(webp|png)$/.test(name)).sort() : []];
+      return [pack.id, existsSync(folder) ? readdirSync(folder).filter((name) => /\.(webp|png|gif)$/.test(name)).sort() : []];
     }),
   );
 }

@@ -29,6 +29,12 @@ export interface PackLook {
 
 export interface PackDefinition {
   id: string;
+  /**
+   * "image" packs list their stickers below and use PNG or WebP files.
+   * "animated" packs are GIFs: every `.gif` in the folder becomes a sticker,
+   * named after its file (`cat-sad.gif` is "Cat sad"), so adding one needs no code.
+   */
+  kind: "image" | "animated";
   title: string;
   noun: string;
   tagline: string;
