@@ -8,10 +8,10 @@
 This is a growing universe of original stickers, for people who send them to friends and for
 developers who ship them in products. The site reads like a magazine in four chapters:
 
-1. **The universe** (hero): an editorial headline surrounded by floating stickers from every collection, with
-   a sticker search as the main action ("kiss", "love", "good morning") and popular keywords as chips. Letters
-   drop into place, stickers pop in one by one, drift with the pointer and the scroll, and show their name on
-   hover. Clicking one opens it in the library.
+1. **The universe** (hero): the headline, search and two calls to action on the left; on the right, a
+   sticker sheet drawn from the real collections. The big sticker changes colour (on its own until you pick
+   one), and the others peel up on hover and open in the library. The sheet is set in
+   `src/components/home/Hero.tsx` (`FEATURED` and `SHEET`).
 2. **Collections**: a card per collection with three stickers fanned out (they spread on hover), filters for
    Characters, Festivals, Feelings, and Icons, and cards for festivals that are on the way.
 3. **Library**: search every collection or pick one, filter by group, tap a sticker, change its colours and details, then copy it.

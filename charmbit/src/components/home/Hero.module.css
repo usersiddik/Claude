@@ -1,197 +1,71 @@
 .hero {
   position: relative;
-  display: grid;
-  place-items: center;
-  min-height: max(640px, calc(100svh - var(--header-h)));
-  max-height: 1040px;
-  padding: 72px var(--gutter) 88px;
+  padding: clamp(40px, 6vw, 88px) 0 clamp(96px, 10vw, 140px);
   overflow: clip;
-  isolation: isolate;
 }
 
-/* Stickers ------------------------------------------------------------------ */
-
-.stage {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  --px: 0;
-  --py: 0;
+.inner {
+  display: grid;
+  gap: 56px;
+  align-items: center;
 }
 
-.sticker {
-  position: absolute;
-  left: var(--mx);
-  top: var(--my);
-  width: clamp(64px, calc(var(--msize) * 1vw), 220px);
-  translate: -50% -50%;
-  rotate: var(--r);
-  transform: translate3d(calc(var(--px) * var(--depth) * -26px), calc(var(--py) * var(--depth) * -20px), 0);
-  transition: transform 900ms var(--ease);
-  animation: pop 1000ms var(--ease-spring) both;
-  animation-delay: calc(420ms + var(--i) * 75ms);
-  -webkit-tap-highlight-color: transparent;
-  -webkit-user-drag: none;
-  user-select: none;
-}
-
-.sticker[data-phone="hide"] {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .sticker {
-    left: var(--x);
-    top: var(--y);
-    width: clamp(84px, calc(var(--size) * 1vw), 260px);
-  }
-
-  .sticker[data-phone="hide"] {
-    display: block;
-  }
-}
-
-.drift,
-.float {
-  display: block;
-}
-
-.float {
-  animation: float var(--dur) ease-in-out infinite alternate;
-  animation-delay: calc(var(--i) * -0.7s);
-}
-
-.float img {
-  width: 100%;
-  height: auto;
-  transition:
-    scale 500ms var(--ease-spring),
-    rotate 500ms var(--ease-spring),
-    filter 300ms var(--ease);
-  -webkit-user-drag: none;
-}
-
-.label {
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  translate: -50% 4px;
-  rotate: calc(var(--r) * -1);
-  padding: 4px 10px;
-  border-radius: 980px;
-  background: var(--ink);
-  color: var(--on-ink);
-  font-size: 0.75rem;
-  font-weight: 500;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity 240ms var(--ease),
-    translate 400ms var(--ease);
-}
-
-@media (hover: hover) {
-  .sticker:hover {
-    z-index: 2;
-    cursor: pointer;
-  }
-
-  .sticker:hover img {
-    scale: 1.1;
-    rotate: calc(var(--r) * -1);
-    filter: drop-shadow(0 18px 24px rgb(20 19 18 / 0.18));
-  }
-
-  .sticker:hover .label {
-    opacity: 1;
-    translate: -50% 12px;
-  }
-}
-
-@keyframes pop {
-  from {
-    opacity: 0;
-    scale: 0.4;
-    rotate: calc(var(--r) - 24deg);
-  }
-}
-
-@keyframes float {
-  from {
-    translate: 0 -6px;
-  }
-  to {
-    translate: 0 8px;
-  }
-}
-
-/* Stickers drift up at their own speed as the page scrolls away. */
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: scroll()) {
-    .drift {
-      animation: drift linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 100vh;
-    }
-
-    @keyframes drift {
-      to {
-        transform: translateY(calc(var(--depth) * -180px)) scale(calc(1 - var(--depth) * 0.08));
-      }
-    }
-
-    .copy {
-      animation: recede linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 90vh;
-    }
-
-    @keyframes recede {
-      to {
-        opacity: 0.2;
-        transform: translateY(-60px) scale(0.94);
-      }
-    }
+@media (min-width: 1024px) {
+  .inner {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    gap: clamp(40px, 5vw, 88px);
+    min-height: min(720px, calc(100svh - var(--header-h) - 160px));
   }
 }
 
 /* Copy ------------------------------------------------------------------------ */
 
 .copy {
-  position: relative;
   display: grid;
-  justify-items: center;
+  justify-items: start;
   gap: 20px;
-  max-width: 1100px;
-  text-align: center;
-  pointer-events: none;
-}
-
-.copy a {
-  pointer-events: auto;
+  min-width: 0;
 }
 
 .kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-2);
   animation: fade 800ms var(--ease) both;
 }
 
+.kickerMark {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f6d673;
+  box-shadow:
+    0 0 0 3px var(--surface),
+    0 2px 6px rgb(20 19 18 / 0.2);
+  rotate: -8deg;
+}
+
 .title {
-  font-size: clamp(3.4rem, 16vw, 6.5rem);
-  line-height: 0.84;
+  font-size: clamp(3.5rem, 17vw, 6.5rem);
+  line-height: 0.86;
 }
 
 @media (min-width: 768px) {
   .title {
-    font-size: clamp(5rem, 10vw, 10.5rem);
+    font-size: clamp(5.5rem, 8.6vw, 9.25rem);
   }
 }
 
 .line {
   display: block;
+}
+
+/* The middle line steps in: a little asymmetry, like hand-set type. */
+.line:nth-child(3) {
+  padding-left: 0.42em;
 }
 
 .word {
@@ -223,8 +97,8 @@
 }
 
 .lede {
-  max-width: 34rem;
-  font-size: clamp(1rem, 1.4vw, 1.125rem);
+  max-width: 30rem;
+  font-size: clamp(1rem, 1.4vw, 1.1875rem);
   color: var(--text-2);
   animation: fade 900ms var(--ease) 700ms both;
 }
@@ -232,9 +106,7 @@
 .actions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: 10px;
-  margin-top: 6px;
   animation: fade 900ms var(--ease) 850ms both;
 }
 
@@ -245,85 +117,254 @@
   }
 }
 
-.primary,
-.secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 48px;
-  padding: 0 22px;
-  border-radius: 980px;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition:
-    transform 300ms var(--ease-spring),
-    background-color var(--fast) var(--ease),
-    box-shadow 300ms var(--ease);
+/* Sticker sheet ------------------------------------------------------------------ */
+
+.sheetWrap {
+  position: relative;
+  width: min(100%, 520px);
+  justify-self: center;
+  animation: sheet-in 1100ms var(--ease) 250ms both;
 }
 
-.primary {
+@media (min-width: 1024px) {
+  .sheetWrap {
+    justify-self: end;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(40px) rotate(5deg);
+  }
+}
+
+/* A second sheet peeks out behind the first. */
+.sheetWrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: var(--sheet-back);
+  rotate: -4deg;
+  translate: -10px 8px;
+  box-shadow: 0 20px 40px -28px rgb(20 19 18 / 0.5);
+}
+
+.sheet {
+  --sheet-paper: #e7e0d2;
+  --sheet-dot: rgb(20 19 18 / 0.1);
+  position: relative;
+  display: grid;
+  gap: 14px;
+  padding: 18px 18px 16px;
+  border-radius: 14px;
+  background:
+    radial-gradient(var(--sheet-dot) 1px, transparent 1.4px) 0 0 / 16px 16px,
+    var(--sheet-paper);
+  box-shadow:
+    inset 0 0 0 1px rgb(20 19 18 / 0.08),
+    0 34px 60px -34px rgb(20 19 18 / 0.55);
+  rotate: 1.6deg;
+}
+
+.sheetWrap {
+  --sheet-back: #d9d0bf;
+}
+
+:root[data-theme="dark"] .sheet {
+  --sheet-paper: #262320;
+  --sheet-dot: rgb(255 255 255 / 0.08);
+}
+
+:root[data-theme="dark"] .sheetWrap {
+  --sheet-back: #1c1a18;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .sheet {
+    --sheet-paper: #262320;
+    --sheet-dot: rgb(255 255 255 / 0.08);
+  }
+
+  :root:not([data-theme="light"]) .sheetWrap {
+    --sheet-back: #1c1a18;
+  }
+}
+
+.sheetHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sheetGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+/* Every sticker on the sheet is die-cut: a white edge and a soft lift. */
+.peel {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  rotate: var(--r, 0deg);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.peel img {
+  width: 88%;
+  height: auto;
+  filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(0 3px 3px rgb(20 19 18 / 0.22));
+  transition:
+    transform 500ms var(--ease-spring),
+    filter 300ms var(--ease);
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.peel:not(.featured) {
+  animation: stick 700ms var(--ease-spring) both;
+  animation-delay: calc(700ms + var(--i) * 90ms);
+}
+
+@keyframes stick {
+  from {
+    opacity: 0;
+    scale: 1.3;
+  }
+}
+
+.featured {
+  grid-column: span 2;
+  grid-row: span 2;
+  rotate: -3deg;
+}
+
+/* Colour variants are stacked; only the chosen one shows. */
+.featured img {
+  grid-area: 1 / 1;
+  width: 90%;
+  opacity: 0;
+  transition:
+    opacity 450ms var(--ease),
+    transform 500ms var(--ease-spring);
+}
+
+.featured img[data-on] {
+  opacity: 1;
+}
+
+.peelName {
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  translate: -50% 0;
+  rotate: calc(var(--r, 0deg) * -1);
+  padding: 3px 9px;
+  border-radius: 980px;
   background: var(--ink);
   color: var(--on-ink);
-  box-shadow: 0 10px 24px -12px rgb(20 19 18 / 0.5);
-}
-
-.primary svg {
-  transition: transform 300ms var(--ease-spring);
-}
-
-.secondary {
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 200ms var(--ease),
+    translate 300ms var(--ease);
 }
 
 @media (hover: hover) {
-  .primary:hover,
-  .secondary:hover {
-    transform: translateY(-2px);
+  .peel:hover {
+    z-index: 2;
   }
 
-  .primary:hover svg {
-    transform: translateX(3px);
+  /* Peeling: the sticker lifts off the sheet and its shadow grows. */
+  .peel:hover img {
+    transform: translateY(-8px) rotate(4deg) scale(1.08);
+    filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(0 16px 14px rgb(20 19 18 / 0.3));
+  }
+
+  .peel:hover .peelName {
+    opacity: 1;
+    translate: -50% 6px;
   }
 }
 
-.primary:active,
-.secondary:active {
-  transform: scale(0.97);
+.peel:active img {
+  transform: scale(0.95);
 }
 
-.meta {
+.sheetFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+  padding-top: 12px;
+  border-top: 1px dashed rgb(128 120 105 / 0.5);
+}
+
+.dots {
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--swatch);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.16);
+  transition: transform 300ms var(--ease-spring);
+}
+
+/* A comfortable touch target around a small dot. */
+.dot::after {
+  content: "";
   position: absolute;
-  left: var(--gutter);
-  right: var(--gutter);
-  top: 20px;
-  color: var(--text-2);
-  animation: fade 900ms var(--ease) 1000ms both;
+  inset: -7px -3px;
 }
 
-@media (max-width: 767px) {
-  /* Room above and below the copy so the floating stickers frame it instead of covering it. */
-  .hero {
-    padding-block: 168px 200px;
-  }
+.dot:hover {
+  transform: scale(1.12);
+}
 
-  .chip:nth-child(n + 7) {
-    display: none;
-  }
+.dot[aria-checked="true"] {
+  box-shadow:
+    inset 0 0 0 1px rgb(0 0 0 / 0.16),
+    0 0 0 2px var(--sheet-paper),
+    0 0 0 4px var(--ink);
+}
 
-  .meta {
-    display: none;
-  }
+.sheetNote {
+  color: var(--text-2);
+  font-size: 0.8125rem;
+}
+
+.sheetNote strong {
+  color: var(--text);
+  font-weight: 600;
 }
 
 /* Search ---------------------------------------------------------------------------- */
 
 .searchBlock {
   display: grid;
-  justify-items: center;
+  justify-items: start;
   gap: 14px;
-  width: min(600px, 100%);
+  width: min(560px, 100%);
   margin-top: 8px;
   animation: fade 900ms var(--ease) 800ms both;
 }
@@ -339,7 +380,6 @@
   box-shadow:
     inset 0 0 0 1px var(--hairline-strong),
     0 18px 40px -22px rgb(20 19 18 / 0.45);
-  pointer-events: auto;
   transition: box-shadow 300ms var(--ease);
 }
 
@@ -400,9 +440,7 @@
 .chips {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: var(--space-2);
-  pointer-events: auto;
 }
 
 .chip {
@@ -426,31 +464,6 @@
   transform: translateY(-2px);
 }
 
-.textLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 40px;
-  padding: 0 4px;
-  color: var(--text-2);
-  font-size: 0.9375rem;
-  font-weight: 500;
-  text-decoration: none;
-  pointer-events: auto;
-}
-
-.textLink:hover {
-  color: var(--text);
-}
-
-.textLink svg {
-  transition: transform 300ms var(--ease-spring);
-}
-
-.textLink:hover svg {
-  transform: translateX(3px);
-}
-
 @media (max-width: 480px) {
   .searchButton {
     padding: 0 16px;
@@ -471,7 +484,6 @@
   font-size: 0.9375rem;
   font-weight: 600;
   text-decoration: none;
-  pointer-events: auto;
   transition: transform 300ms var(--ease-spring);
 }
 

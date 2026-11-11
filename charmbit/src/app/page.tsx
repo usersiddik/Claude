@@ -7,7 +7,7 @@ import { Reveal } from "@/components/home/Reveal";
 import { SiteFooter } from "@/components/sections/SiteFooter";
 import { SiteHeader } from "@/components/sections/SiteHeader";
 import { CopyIsland } from "@/components/ui/CopyIsland";
-import { countStickers, isLive, stickerTitle, type Collection } from "@/lib/universe";
+import { countStickers, isLive, type Collection } from "@/lib/universe";
 import { getUniverse, iconAssets } from "@/lib/universe/server";
 import { SITE } from "@/lib/site";
 
@@ -36,13 +36,12 @@ export default function HomePage() {
   const universe = getUniverse();
   const live = universe.filter(isLive);
   const total = countStickers(universe);
-  const names = Object.fromEntries(live.flatMap((collection) => collection.items.map((item) => [`${collection.id}/${item.id}`, stickerTitle(collection, item)])));
 
   return (
     <AuthProvider>
       <SiteHeader />
       <main id="main">
-        <Hero total={total} live={live.length} names={names} />
+        <Hero total={total} live={live.length} />
         <Collections universe={universe} />
         <LibraryChapter icons={iconAssets()} total={total} />
       </main>
