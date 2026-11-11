@@ -108,7 +108,7 @@ export function buildSearchIndex(collections: readonly LiveCollection[]): Search
     const collectionTerms = terms(`${collection.title} ${collection.noun}`);
     for (const item of collection.items) {
       const idWords = item.id.split("-");
-      const tags = idWords.map((word) => TAGS[word] ?? "").join(" ");
+      const tags = `${idWords.map((word) => TAGS[word] ?? "").join(" ")} ${item.tags ?? ""}`;
       entries.push({
         collection,
         item,
@@ -158,4 +158,9 @@ export function search(index: SearchIndex, query: string, limit = 60): SearchRes
 }
 
 /** Popular searches, shown as chips. */
-export const POPULAR_SEARCHES = ["love", "kiss", "hug", "good morning", "flowers", "diwali", "sorry", "lol"] as const;
+export const POPULAR_SEARCHES = ["love", "kiss", "hug", "good morning", "flowers", "diwali", "sorry", "lol", "thanks", "cool", "angry", "sleepy"] as const;
+
+/** The popular searches that find something in these collections, so no chip leads to an empty page. */
+export function popularSearches(index: SearchIndex, limit = 8): string[] {
+  return POPULAR_SEARCHES.filter((query) => search(index, query, 1).length > 0).slice(0, limit);
+}

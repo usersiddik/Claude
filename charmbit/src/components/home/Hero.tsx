@@ -1,28 +1,29 @@
 import type { CSSProperties } from "react";
 import { SITE } from "@/lib/site";
-import { defaultValues, findItem, GENERATED, renderItem, stickerTitle, type ColorProperty } from "@/lib/universe";
-import { libraryHref, stickerPath, svgDataUri } from "@/lib/universe/paths";
+import { defaultValues, findItem, renderItem, stickerSrc, stickerTitle, type ColorProperty, type LiveCollection } from "@/lib/universe";
+import { libraryHref, svgDataUri } from "@/lib/universe/paths";
+import { buildSearchIndex, popularSearches } from "@/lib/universe/search";
 import { HeroSearch } from "./HeroSearch";
 import { HeroSheet, type SheetSticker, type SheetVariant } from "./HeroSheet";
 import styles from "./Hero.module.css";
 
 const LINES = [["Stickers"], ["for", "every"], ["feeling."]] as const;
 
-/** The sticker that shows off recolouring, and the property it changes. */
+/** Drawn collections: the sticker that shows off recolouring, and the others on the sheet. */
 const FEATURED = { collection: "cats", item: "hi", property: "fur", colours: 6 } as const;
-
-/** The smaller stickers on the sheet: [collection, sticker, tilt]. */
 const SHEET = [
-  ["love", "glossy-heart", 8],
-  ["diwali", "diya-girl", -5],
-  ["frogs", "yay", 6],
-  ["everyday", "lol", -7],
-  ["ghosts", "boo", 5],
+  ["love", "glossy-heart"],
+  ["diwali", "diya-girl"],
+  ["frogs", "yay"],
+  ["everyday", "lol"],
+  ["ghosts", "boo"],
 ] as const;
+const TILTS = [8, -5, 6, -7, 5] as const;
 
 interface HeroProps {
   total: number;
-  live: number;
+  /** The collections visitors can see, in display order. */
+  collections: readonly LiveCollection[];
 }
 
 /** Letters rise one by one, like type being set. */
@@ -48,26 +49,37 @@ function Headline() {
   );
 }
 
-/** Everything the sheet shows is drawn from the real collections. */
-function sheetData() {
-  const find = (id: string) => GENERATED.find((collection) => collection.id === id)!;
-  const collection = find(FEATURED.collection);
+/** Everything the sheet shows comes from the collections visitors can see. */
+function sheetData(collections: readonly LiveCollection[]) {
+  const pack = collections.find((collection) => collection.media === "image");
+  if (pack) {
+    // An image pack leads: its first sticker is featured, with its outfits as the colour dots.
+    const [first, ...rest] = pack.items;
+    const variants: SheetVariant[] = (first!.image?.variants.length ? first!.image.variants : [{ name: pack.title, swatch: pack.accent, src: first!.image!.src }]).map((variant) => ({ name: variant.name, hex: variant.swatch, src: variant.src }));
+    const stickers: SheetSticker[] = rest.slice(0, 5).map((item, index) => ({ href: libraryHref(pack.id, item.id), src: stickerSrc(pack, item), name: stickerTitle(pack, item), rotate: TILTS[index] ?? 0 }));
+    return { featured: { name: stickerTitle(pack, first!), href: libraryHref(pack.id, first!.id), label: "Outfit" }, variants, stickers };
+  }
+  const find = (id: string) => collections.find((collection) => collection.id === id);
+  const collection = find(FEATURED.collection) ?? collections[0]!;
   const item = findItem(collection, FEATURED.item);
-  const property = collection.properties.find((candidate): candidate is ColorProperty => candidate.id === FEATURED.property && candidate.kind === "color")!;
+  const property = collection.properties.find((candidate): candidate is ColorProperty => candidate.id === FEATURED.property && candidate.kind === "color");
   const defaults = defaultValues(collection);
-  const variants: SheetVariant[] = property.swatches
-    .filter((swatch): swatch is typeof swatch & { hex: string } => typeof swatch.hex === "string")
-    .slice(0, FEATURED.colours)
-    .map((swatch) => ({ name: swatch.name, hex: swatch.hex, src: svgDataUri(renderItem(collection, item, { ...defaults, [property.id]: swatch.hex }, true)) }));
-  const stickers: SheetSticker[] = SHEET.map(([collectionId, itemId, rotate]) => {
+  const variants: SheetVariant[] = property
+    ? property.swatches
+        .filter((swatch): swatch is typeof swatch & { hex: string } => typeof swatch.hex === "string")
+        .slice(0, FEATURED.colours)
+        .map((swatch) => ({ name: swatch.name, hex: swatch.hex, src: svgDataUri(renderItem(collection, item, { ...defaults, [property.id]: swatch.hex }, true)) }))
+    : [{ name: collection.title, hex: collection.accent, src: stickerSrc(collection, item) }];
+  const stickers: SheetSticker[] = SHEET.flatMap(([collectionId, itemId], index) => {
     const owner = find(collectionId);
-    return { href: libraryHref(collectionId, itemId), src: stickerPath(collectionId, itemId), name: stickerTitle(owner, findItem(owner, itemId)), rotate };
+    return owner ? [{ href: libraryHref(collectionId, itemId), src: stickerSrc(owner, findItem(owner, itemId)), name: stickerTitle(owner, findItem(owner, itemId)), rotate: TILTS[index] ?? 0 }] : [];
   });
-  return { featured: { name: stickerTitle(collection, item), href: libraryHref(collection.id, item.id), label: property.label }, variants, stickers };
+  return { featured: { name: stickerTitle(collection, item), href: libraryHref(collection.id, item.id), label: property?.label ?? "Colour" }, variants, stickers };
 }
 
-export function Hero({ total, live }: HeroProps) {
-  const sheet = sheetData();
+export function Hero({ total, collections }: HeroProps) {
+  const sheet = sheetData(collections);
+  const live = collections.length;
   return (
     <section className={styles.hero} id="top" aria-labelledby="hero-title">
       <div className={`container ${styles.inner}`}>
@@ -78,9 +90,9 @@ export function Hero({ total, live }: HeroProps) {
           </p>
           <Headline />
           <p className={styles.lede}>
-            {total} original stickers across {live} collections. Find one you love, make it yours, use it anywhere.
+            {total} original stickers{live > 1 ? ` across ${live} collections` : ""}. Find one you love, make it yours, use it anywhere.
           </p>
-          <HeroSearch />
+          <HeroSearch suggestions={popularSearches(buildSearchIndex(collections))} />
           <div className={styles.actions}>
             <a href="#collections" className={styles.cta}>
               Explore stickers

@@ -65,16 +65,25 @@ function toBlob(canvas: HTMLCanvasElement, type: string, quality = 0.9): Promise
   });
 }
 
-export async function renderSticker(svg: string, options: StickerOptions = {}): Promise<Blob> {
+/** What to render: SVG markup, or an image file by URL. */
+export type Art = string | { url: string };
+
+export async function renderSticker(source: Art, options: StickerOptions = {}): Promise<Blob> {
   const size = options.size ?? STICKER_SIZE;
   const stroke = options.stroke ?? (options.border ? 0.022 : 0);
   const border = stroke > 0;
   const ink = options.ink ?? DEFAULT_INK;
   const padding = Math.round(size * paddingFor(stroke));
   const art = size - padding * 2;
-  const toUrl = (source: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(prepareSvg(source, art, ink))}`;
-  const image = await loadImage(toUrl(svg));
+  const toUrl = (markup: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(prepareSvg(markup, art, ink))}`;
+  const image = await loadImage(typeof source === "string" ? toUrl(source) : source.url);
   const shape = options.silhouette ? await loadImage(toUrl(options.silhouette)) : image;
+  // Image files keep their own proportions, centred in the art area.
+  const scale = Math.min(art / (image.naturalWidth || art), art / (image.naturalHeight || art));
+  const width = typeof source === "string" ? art : Math.round((image.naturalWidth || art) * scale);
+  const height = typeof source === "string" ? art : Math.round((image.naturalHeight || art) * scale);
+  const left = Math.round((size - width) / 2);
+  const top = Math.round((size - height) / 2);
 
   const canvas = document.createElement("canvas");
   canvas.width = size;
@@ -95,7 +104,7 @@ export async function renderSticker(svg: string, options: StickerOptions = {}): 
     mask.height = size;
     const solid = mask.getContext("2d");
     if (!solid) throw new Error("Canvas is unavailable.");
-    solid.drawImage(shape, padding, padding, art, art);
+    solid.drawImage(shape, left, top, width, height);
     const pixels = solid.getImageData(0, 0, size, size);
     for (let index = 3; index < pixels.data.length; index += 4) pixels.data[index] = pixels.data[index]! > 170 ? 255 : 0;
     solid.putImageData(pixels, 0, 0);
@@ -120,7 +129,7 @@ export async function renderSticker(svg: string, options: StickerOptions = {}): 
     context.drawImage(outline, 0, 0);
   }
 
-  context.drawImage(image, padding, padding, art, art);
+  context.drawImage(image, left, top, width, height);
   return toBlob(canvas, options.type ?? "image/png", options.quality);
 }
 
@@ -164,7 +173,7 @@ export interface WhatsAppSticker {
  * steps down until the file fits. Browsers that cannot encode WebP get a PNG,
  * reported as not valid so the UI can say so.
  */
-export async function renderForWhatsApp(svg: string, options: StickerOptions = {}): Promise<WhatsAppSticker> {
+export async function renderForWhatsApp(svg: Art, options: StickerOptions = {}): Promise<WhatsAppSticker> {
   let blob = await renderSticker(svg, { ...options, size: STICKER_SIZE, type: "image/webp", quality: 0.9 });
   if (blob.type !== "image/webp") return { blob, extension: "png", valid: false };
   for (const quality of [0.8, 0.7, 0.6, 0.5, 0.4]) {
@@ -175,7 +184,7 @@ export async function renderForWhatsApp(svg: string, options: StickerOptions = {
 }
 
 /** WebP at any size, or null when this browser cannot encode WebP. */
-export async function renderWebp(svg: string, options: StickerOptions = {}): Promise<Blob | null> {
+export async function renderWebp(svg: Art, options: StickerOptions = {}): Promise<Blob | null> {
   const blob = await renderSticker(svg, { ...options, type: "image/webp" });
   return blob.type === "image/webp" ? blob : null;
 }

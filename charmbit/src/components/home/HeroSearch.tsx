@@ -3,11 +3,10 @@
 import { useState, type FormEvent } from "react";
 import { searchLibrary } from "@/components/library/search-events";
 import { SearchIcon } from "@/components/ui/icons";
-import { POPULAR_SEARCHES } from "@/lib/universe/search";
 import styles from "./Hero.module.css";
 
 /** The hero's main action: search every collection by keyword. */
-export function HeroSearch() {
+export function HeroSearch({ suggestions }: { suggestions: readonly string[] }) {
   const [value, setValue] = useState("");
 
   function run(query: string) {
@@ -19,7 +18,7 @@ export function HeroSearch() {
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    run(value || "love");
+    run(value || suggestions[0] || "love");
   }
 
   return (
@@ -37,7 +36,7 @@ export function HeroSearch() {
           className={styles.searchField}
           value={value}
           onChange={(event) => setValue(event.target.value)}
-          placeholder="Search stickers: kiss, love, good morning…"
+          placeholder={`Search stickers: ${suggestions.slice(0, 3).join(", ")}…`}
           maxLength={60}
           autoComplete="off"
           enterKeyHint="search"
@@ -47,7 +46,7 @@ export function HeroSearch() {
         </button>
       </form>
       <div className={styles.chips} role="group" aria-label="Popular searches">
-        {POPULAR_SEARCHES.map((query, index) => (
+        {suggestions.map((query, index) => (
           <button key={query} type="button" className={styles.chip} style={{ "--i": index } as React.CSSProperties} onClick={() => run(query)}>
             {query}
           </button>

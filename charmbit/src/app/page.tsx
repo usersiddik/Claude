@@ -8,7 +8,7 @@ import { SiteFooter } from "@/components/sections/SiteFooter";
 import { SiteHeader } from "@/components/sections/SiteHeader";
 import { CopyIsland } from "@/components/ui/CopyIsland";
 import { countStickers, isLive, type Collection } from "@/lib/universe";
-import { getUniverse, iconAssets } from "@/lib/universe/server";
+import { getUniverse, iconAssets, packFiles } from "@/lib/universe/server";
 import { SITE } from "@/lib/site";
 
 function structuredData(universe: readonly Collection[]) {
@@ -41,9 +41,9 @@ export default function HomePage() {
     <AuthProvider>
       <SiteHeader />
       <main id="main">
-        <Hero total={total} live={live.length} />
+        <Hero total={total} collections={live} />
         <Collections universe={universe} />
-        <LibraryChapter icons={iconAssets()} total={total} />
+        <LibraryChapter icons={iconAssets()} packs={packFiles()} total={total} />
       </main>
       <SiteFooter />
       <FloatingCta />

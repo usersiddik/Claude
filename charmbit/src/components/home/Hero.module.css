@@ -516,3 +516,7 @@
     font-size: 0.875rem;
   }
 }
+
+.sheetFoot[hidden] {
+  display: none;
+}

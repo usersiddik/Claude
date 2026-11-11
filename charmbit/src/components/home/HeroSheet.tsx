@@ -66,7 +66,7 @@ export function HeroSheet({ featured, variants, stickers, total }: HeroSheetProp
           ))}
         </div>
 
-        <div className={styles.sheetFoot}>
+        <div className={styles.sheetFoot} hidden={variants.length < 2}>
           <div className={styles.dots} role="radiogroup" aria-label={`${featured.label} colour`}>
             {variants.map((variant, order) => (
               <button

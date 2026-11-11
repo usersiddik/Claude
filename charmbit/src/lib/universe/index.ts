@@ -11,6 +11,7 @@ import { everyday } from "./collections/everyday.ts";
 import { iconsCollection, type IconAsset } from "./collections/icons.ts";
 import { love } from "./collections/love.ts";
 import { christmas, eid, halloween } from "./collections/soon.ts";
+import { buildPacks, type PackFiles } from "./packs/index.ts";
 import type { Collection, Family, LiveCollection, Property, StickerItem, Values } from "./types.ts";
 
 export type * from "./types.ts";
@@ -29,10 +30,26 @@ export const FAMILIES: readonly { id: Family | "all"; name: string }[] = [
   { id: "icons", name: "Icons" },
 ];
 
-/** Every collection, in display order: live first, then what's coming. */
-export function buildUniverse(icons: readonly IconAsset[]): Collection[] {
+/**
+ * The archive: every collection drawn in code. Nothing here is deleted; it is
+ * simply not shown once an image pack has stickers.
+ */
+export function buildArchive(icons: readonly IconAsset[]): Collection[] {
   return [...GENERATED, iconsCollection(icons), ...UPCOMING];
 }
+
+/**
+ * What visitors see. Image packs come first. As soon as any pack has a
+ * sticker, the archive is hidden; until then the archive stays visible so the
+ * site is never empty. Set `showArchive` to bring it back alongside the packs.
+ */
+export function buildUniverse(icons: readonly IconAsset[], files: PackFiles = {}, showArchive = false): Collection[] {
+  const packs = buildPacks(files);
+  return packs.length > 0 && !showArchive ? packs : [...packs, ...buildArchive(icons)];
+}
+
+/** Image URL for a sticker in its default look: the file for image stickers, the prerendered SVG otherwise. */
+export const stickerSrc = (collection: LiveCollection, item: StickerItem) => item.image?.src ?? `/stickers/${collection.id}/${item.id}.svg`;
 
 export const isLive = (collection: Collection): collection is LiveCollection => collection.status === "live";
 

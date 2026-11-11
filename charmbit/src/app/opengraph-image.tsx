@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { countStickers, defaultValues, findItem, isLive } from "@/lib/universe";
-import { getUniverse } from "@/lib/universe/server";
+import { getArchive, getUniverse } from "@/lib/universe/server";
 import { SITE } from "@/lib/site";
 
 export const alt = `${SITE.name}: stickers for every feeling`;
@@ -21,7 +21,8 @@ const PICKS = [
 
 export default function OpenGraphImage() {
   const universe = getUniverse();
-  const live = universe.filter(isLive);
+  // Drawn stickers only: the image renderer cannot embed WebP files.
+  const live = getArchive().filter(isLive);
   // The OG renderer doesn't support SVG filters, so use the portable drawings.
   const stickers = PICKS.map(([collectionId, itemId, width, x, y, rotate]) => {
     const collection = live.find((candidate) => candidate.id === collectionId)!;

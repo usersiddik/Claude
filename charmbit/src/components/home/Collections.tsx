@@ -1,5 +1,5 @@
-import { FAMILIES, isLive, type Collection } from "@/lib/universe";
-import { coverPath, libraryHref, stickerPath } from "@/lib/universe/paths";
+import { FAMILIES, findItem, isLive, stickerSrc, type Collection } from "@/lib/universe";
+import { coverPath, libraryHref } from "@/lib/universe/paths";
 import { CollectionsGrid, type CardData } from "./CollectionsGrid";
 import styles from "./Collections.module.css";
 
@@ -14,7 +14,7 @@ export function Collections({ universe }: { universe: readonly Collection[] }) {
           families: collection.families,
           status: "live",
           count: collection.items.length,
-          covers: collection.cover.map((id) => stickerPath(collection.id, id)),
+          covers: collection.cover.map((id) => stickerSrc(collection, findItem(collection, id))),
           href: libraryHref(collection.id),
         }
       : {
@@ -29,10 +29,11 @@ export function Collections({ universe }: { universe: readonly Collection[] }) {
         },
   );
   const live = cards.filter((card) => card.status === "live").length;
+  // Only filters that have something in them; none at all when there is a single choice.
   const filters = FAMILIES.map((family) => ({
     ...family,
     count: family.id === "all" ? cards.length : cards.filter((card) => card.families.includes(family.id as never)).length,
-  }));
+  })).filter((family) => family.count > 0);
 
   return (
     <section id="collections" className={styles.section} aria-labelledby="collections-title">
@@ -40,7 +41,7 @@ export function Collections({ universe }: { universe: readonly Collection[] }) {
         <p className="eyebrow">
           <span>Chapter 02 — Collections</span>
           <span>
-            {live} live · {cards.length - live} on the way
+            {live} live{cards.length > live ? ` · ${cards.length - live} on the way` : ""}
           </span>
         </p>
         <div className={styles.head}>

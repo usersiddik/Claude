@@ -1,5 +1,5 @@
 import { defaultValues, findItem, isLive } from "@/lib/universe";
-import { getUniverse } from "@/lib/universe/server";
+import { getArchive } from "@/lib/universe/server";
 
 /**
  * Every sticker in its default colours, prerendered as a static SVG file so
@@ -9,14 +9,14 @@ export const dynamic = "force-static";
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return getUniverse().flatMap((collection) =>
+  return getArchive().flatMap((collection) =>
     isLive(collection) ? collection.items.map((item) => ({ collection: collection.id, file: `${item.id}.svg` })) : [{ collection: collection.id, file: "cover.svg" }],
   );
 }
 
 export async function GET(_request: Request, { params }: { params: Promise<{ collection: string; file: string }> }) {
   const { collection: collectionId, file } = await params;
-  const collection = getUniverse().find((candidate) => candidate.id === collectionId);
+  const collection = getArchive().find((candidate) => candidate.id === collectionId);
   const id = file.replace(/\.svg$/, "");
   let svg: string | undefined;
   if (collection && isLive(collection)) {

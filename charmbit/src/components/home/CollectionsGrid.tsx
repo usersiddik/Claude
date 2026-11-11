@@ -40,14 +40,16 @@ export function CollectionsGrid({ cards, filters }: CollectionsGridProps) {
 
   return (
     <>
-      <div className={styles.filters} role="group" aria-label="Filter collections">
-        {filters.map((filter) => (
-          <button key={filter.id} type="button" className={styles.filter} aria-pressed={family === filter.id} onClick={() => setFamily(filter.id)}>
-            {filter.name}
-            <span>{filter.count}</span>
-          </button>
-        ))}
-      </div>
+      {filters.length > 2 ? (
+        <div className={styles.filters} role="group" aria-label="Filter collections">
+          {filters.map((filter) => (
+            <button key={filter.id} type="button" className={styles.filter} aria-pressed={family === filter.id} onClick={() => setFamily(filter.id)}>
+              {filter.name}
+              <span>{filter.count}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
       <ul role="list" className={styles.grid} key={family}>
         {visible.map((card, index) => {
           const style = { "--accent": card.accent, "--i": index } as CSSProperties;

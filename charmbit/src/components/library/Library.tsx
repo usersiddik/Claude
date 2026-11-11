@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { CloseIcon, HeartGlyph, SearchIcon } from "@/components/ui/icons";
-import { defaultValues, findItem, GENERATED, randomValues, renderItem, stickerTitle, type IconAsset, type LiveCollection, type StickerItem, type Value, type Values } from "@/lib/universe";
-import { iconsCollection } from "@/lib/universe/collections/icons";
-import { stickerPath, svgDataUri } from "@/lib/universe/paths";
-import { buildSearchIndex, POPULAR_SEARCHES, search } from "@/lib/universe/search";
+import { buildUniverse, defaultValues, findItem, isLive, randomValues, renderItem, stickerSrc, stickerTitle, type IconAsset, type LiveCollection, type StickerItem, type Value, type Values } from "@/lib/universe";
+import type { PackFiles } from "@/lib/universe/packs";
+import { svgDataUri } from "@/lib/universe/paths";
+import { buildSearchIndex, popularSearches, search } from "@/lib/universe/search";
 import { CopyIsland } from "@/components/ui/CopyIsland";
 import type { StrokeId } from "@/lib/sticker";
 import { BEFORE_SIGN_IN } from "@/components/auth/AuthProvider";
@@ -22,6 +22,8 @@ export interface Selection {
 
 interface LibraryProps {
   icons: readonly IconAsset[];
+  /** Image files present in each pack folder. */
+  packs: PackFiles;
   selection: Selection;
   onSelect: (next: { collection: string; sticker: string }) => void;
   /** Search to start with (from `?q=`). */
@@ -60,8 +62,8 @@ interface Entry {
 const isPhone = () => window.matchMedia("(max-width: 1023px)").matches;
 
 /** Browse a collection, pick a sticker, make it yours, copy it. */
-export function Library({ icons, selection, onSelect, initialQuery = "", restore = false }: LibraryProps) {
-  const universe: LiveCollection[] = useMemo(() => [...GENERATED, iconsCollection(icons)], [icons]);
+export function Library({ icons, packs, selection, onSelect, initialQuery = "", restore = false }: LibraryProps) {
+  const universe: LiveCollection[] = useMemo(() => buildUniverse(icons, packs).filter(isLive), [icons, packs]);
   const collection = universe.find((candidate) => candidate.id === selection.collection) ?? universe[0]!;
   const item = findItem(collection, selection.sticker);
 
@@ -78,6 +80,7 @@ export function Library({ icons, selection, onSelect, initialQuery = "", restore
   const [query, setQuery] = useState(() => initialQuery || (restore && takeSaved()?.query) || "");
   const index = useMemo(() => buildSearchIndex(universe), [universe]);
   const results = useMemo(() => (query.trim() ? search(index, query) : null), [index, query]);
+  const suggestions = useMemo(() => popularSearches(index), [index]);
   useEffect(() => {
     const onSearch = (event: Event) => {
       const text = (event as CustomEvent<string>).detail;
@@ -156,7 +159,8 @@ export function Library({ icons, selection, onSelect, initialQuery = "", restore
       const base = defaultValues(entry.collection);
       const current = { ...base, ...edits[entry.collection.id] };
       const custom = entry.item.uses.some((use) => current[use] !== base[use]);
-      map.set(`${entry.collection.id}/${entry.item.id}`, custom ? svgDataUri(renderItem(entry.collection, entry.item, current, true)) : stickerPath(entry.collection.id, entry.item.id));
+      const look = entry.item.image?.variants.find((variant) => variant.id === current.look)?.src;
+      map.set(`${entry.collection.id}/${entry.item.id}`, look ?? (custom ? svgDataUri(renderItem(entry.collection, entry.item, current, true)) : stickerSrc(entry.collection, entry.item)));
     }
     return map;
   }, [visible, edits]);
@@ -235,7 +239,7 @@ export function Library({ icons, selection, onSelect, initialQuery = "", restore
           className={styles.searchField}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder={`Search all ${universe.reduce((total, entry) => total + entry.items.length, 0)} stickers: kiss, hug, diwali…`}
+          placeholder={`Search all ${universe.reduce((total, entry) => total + entry.items.length, 0)} stickers: ${suggestions.slice(0, 3).join(", ")}…`}
           maxLength={60}
           autoComplete="off"
           enterKeyHint="search"
@@ -260,7 +264,7 @@ export function Library({ icons, selection, onSelect, initialQuery = "", restore
         {universe.map((candidate) => (
           <button key={candidate.id} type="button" className={styles.pill} aria-pressed={mode === "browse" && candidate.id === collection.id} onClick={() => browse(candidate)}>
             {/* eslint-disable-next-line @next/next/no-img-element -- static SVG sticker */}
-            <img src={stickerPath(candidate.id, candidate.cover[0] ?? candidate.items[0]!.id)} alt="" width={28} height={28} loading="lazy" decoding="async" />
+            <img src={stickerSrc(candidate, findItem(candidate, candidate.cover[0]))} alt="" width={28} height={28} loading="lazy" decoding="async" />
             {candidate.title}
             <span>{candidate.items.length}</span>
           </button>
@@ -280,7 +284,7 @@ export function Library({ icons, selection, onSelect, initialQuery = "", restore
                 </p>
               </div>
               <div className={styles.groups} role="group" aria-label="Popular searches">
-                {POPULAR_SEARCHES.map((suggestion) => (
+                {suggestions.map((suggestion) => (
                   <button key={suggestion} type="button" className={styles.group} aria-pressed={query.trim().toLowerCase() === suggestion} onClick={() => setQuery(suggestion)}>
                     {suggestion}
                   </button>

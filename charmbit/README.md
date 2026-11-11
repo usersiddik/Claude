@@ -67,6 +67,25 @@ JSON-LD, footer, Flutter export comments) reads from `src/lib/brand.ts`.
 - Exports: PNG and WebP at 256, 512 and 1024 px, SVG, a WhatsApp sticker (512 px WebP kept under 100 KB)
   and a Telegram sticker (512 px PNG), plus SVG, React and Flutter code.
 
+## Image packs and the archive
+
+The new direction is character packs made of image files, starting with **Sheru** (a white lion in white and gold).
+
+- **Definition:** `src/lib/universe/packs/sheru.ts` lists the character's fixed identity, outfits, groups and
+  16 stickers, each with the scene to generate.
+- **Prompts:** `docs/sheru-prompts.md` (regenerate with `node --experimental-strip-types scripts/prompts.ts sheru`).
+  Generate one master image first, then attach it to every sticker prompt so the face stays the same.
+- **Adding a sticker:** `python3 scripts/add-sticker.py <image> sheru <sticker-id> [look]` removes the green
+  background, trims, squares and saves a 1024 px WebP in `public/packs/sheru/`. Needs Pillow.
+- **Outfits:** a file named `<sticker>.<look>.webp` (e.g. `coffee.black.webp`) adds that outfit to the sticker.
+- **Publishing rule:** a sticker appears once its default-look file exists. As soon as any pack has a sticker,
+  the older code-drawn collections are hidden. They are archived, not deleted: `buildArchive` in
+  `src/lib/universe/index.ts` still holds them, and `buildUniverse(icons, files, true)` shows both.
+- **Image stickers** export PNG, WebP, WhatsApp and Telegram files and can be copied. They have no SVG or
+  code exports and no live recolouring.
+- **Animated stickers later:** `StickerImage.animated` is reserved for GIF or animated WebP files. Nothing
+  reads it yet.
+
 ## Getting started
 
 ```bash

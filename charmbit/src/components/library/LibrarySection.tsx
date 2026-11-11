@@ -3,14 +3,16 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import type { IconAsset } from "@/lib/universe";
+import type { PackFiles } from "@/lib/universe/packs";
 import { Library } from "./Library";
 
 /** The library driven by `?c=collection&s=sticker`, so every sticker has a link. */
-function LibraryWithUrl({ icons }: { icons: readonly IconAsset[] }) {
+function LibraryWithUrl({ icons, packs }: { icons: readonly IconAsset[]; packs: PackFiles }) {
   const params = useSearchParams();
   return (
     <Library
       icons={icons}
+      packs={packs}
       initialQuery={params.get("q") ?? ""}
       restore
       // Older links used ?asset=<slug> for the icon library.
@@ -27,10 +29,10 @@ function LibraryWithUrl({ icons }: { icons: readonly IconAsset[] }) {
 }
 
 /** Static HTML shows the default selection; the URL takes over once loaded. */
-export function LibraryBlock({ icons }: { icons: readonly IconAsset[] }) {
+export function LibraryBlock({ icons, packs }: { icons: readonly IconAsset[]; packs: PackFiles }) {
   return (
-    <Suspense fallback={<Library icons={icons} selection={{}} onSelect={() => {}} />}>
-      <LibraryWithUrl icons={icons} />
+    <Suspense fallback={<Library icons={icons} packs={packs} selection={{}} onSelect={() => {}} />}>
+      <LibraryWithUrl icons={icons} packs={packs} />
     </Suspense>
   );
 }

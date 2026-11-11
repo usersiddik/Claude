@@ -45,6 +45,28 @@ export interface StickerItem {
   group: string;
   /** Property ids that change this sticker. Others are hidden while it's selected. */
   uses: readonly string[];
+  /** Extra search words, space separated. */
+  tags?: string;
+  /** Set for stickers that are image files rather than drawings made in code. */
+  image?: StickerImage;
+}
+
+/** One look of an image sticker, e.g. an outfit. */
+export interface StickerVariant {
+  id: string;
+  name: string;
+  /** Dot colour for the picker. */
+  swatch: string;
+  src: string;
+}
+
+export interface StickerImage {
+  /** The default file, e.g. `/packs/sheru/coffee.webp`. */
+  src: string;
+  /** Looks that have a file for this sticker, default first. Empty when there is only one. */
+  variants: readonly StickerVariant[];
+  /** Reserved for animated stickers (GIF or animated WebP). Nothing sets it yet. */
+  animated?: boolean;
 }
 
 export type Family = "characters" | "festivals" | "feelings" | "icons";
@@ -71,6 +93,8 @@ export interface LiveCollection extends CollectionBase {
   /** Item ids shown on the collection card, front first. */
   cover: readonly string[];
   render: (item: StickerItem, values: Values, options?: { portable?: boolean }) => string;
+  /** "image" collections are files in `public/packs`; they have no SVG or code exports. */
+  media?: "vector" | "image";
 }
 
 export interface SoonCollection extends CollectionBase {

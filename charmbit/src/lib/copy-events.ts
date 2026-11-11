@@ -7,6 +7,8 @@ export interface CopyNotice {
   format: string;
   /** Customised SVG for the mini preview. */
   svg: string;
+  /** Image URL for the mini preview; used instead of `svg` for image stickers. */
+  image?: string;
   ink: string | null;
   ok: boolean;
   /** Defaults to "Copied". */

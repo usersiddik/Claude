@@ -9,9 +9,11 @@ import styles from "./Library.module.css";
 
 interface StickerActionsProps {
   svg: string;
+  /** File URL for image stickers, which have no SVG or code exports. */
+  image?: string;
   title: string;
   slug: string;
-  code: (format: ExportFormat) => string;
+  code?: (format: ExportFormat) => string;
   /** Outline width as a share of the sticker size (0 = none). */
   stroke: number;
   /** Called after a successful copy, e.g. to play a little animation. */
@@ -19,8 +21,8 @@ interface StickerActionsProps {
 }
 
 /** Copy, download, code, and share for one sticker. Used by the library editor. */
-export function StickerActions({ svg, title, slug, code, stroke, onCopied }: StickerActionsProps) {
-  const actions = useStickerActions({ svg, title, slug, code }, stroke, onCopied);
+export function StickerActions({ svg, image, title, slug, code, stroke, onCopied }: StickerActionsProps) {
+  const actions = useStickerActions({ svg, image, title, slug, code }, stroke, onCopied);
   // Browsing and customising are open to all; taking a sticker away needs a sign-in.
   const { locked, requireSignIn } = useAuth();
   const gate =
@@ -62,9 +64,11 @@ export function StickerActions({ svg, title, slug, code, stroke, onCopied }: Sti
                 </button>
               ))}
             </div>
-            <button type="button" data-dismiss onClick={gate(actions.svgFile)}>
-              SVG <span>vector, any size</span>
-            </button>
+            {code ? (
+              <button type="button" data-dismiss onClick={gate(actions.svgFile)}>
+                SVG <span>vector, any size</span>
+              </button>
+            ) : null}
             <p className={styles.menuLabel}>Messaging</p>
             <button type="button" data-dismiss onClick={gate(actions.whatsapp)}>
               WhatsApp sticker <span>512 px WebP, under 100 KB</span>
@@ -74,6 +78,7 @@ export function StickerActions({ svg, title, slug, code, stroke, onCopied }: Sti
             </button>
           </div>
         </Popover>
+        {code ? (
         <Popover label="Copy code" align="end" trigger={<><CodeIcon size={16} /> Code</>}>
           <div className={styles.menu}>
             <button type="button" data-dismiss onClick={gate(() => actions.code("svg", "SVG code"))}>
@@ -87,6 +92,7 @@ export function StickerActions({ svg, title, slug, code, stroke, onCopied }: Sti
             </button>
           </div>
         </Popover>
+        ) : null}
         {actions.shareable ? (
           <button type="button" className={styles.iconAction} onClick={gate(actions.share)} aria-label="Share">
             <ShareIcon size={16} />

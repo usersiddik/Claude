@@ -42,7 +42,10 @@ const CANVASES: readonly { id: Canvas; label: string }[] = [
 export function Editor({ collection, item, values, position, onChange, onReset, onRandom, saved, onToggleSaved, onStep, variant, onClose, changed, stroke, onStroke }: EditorProps) {
   const [canvas, setCanvas] = useState<Canvas>("light");
   const [pulse, setPulse] = useState(0);
-  const svg = useMemo(() => renderItem(collection, item, values), [collection, item, values]);
+  // Image stickers are files; the chosen look (e.g. an outfit) picks which one.
+  const looks = item.image?.variants ?? [];
+  const file = item.image ? (looks.find((look) => look.id === values.look)?.src ?? item.image.src) : undefined;
+  const svg = useMemo(() => (item.image ? "" : renderItem(collection, item, values)), [collection, item, values]);
   const title = stickerTitle(collection, item);
   const properties = propertiesFor(collection, item);
   const prefix = `${variant}-${collection.id}`;
@@ -50,23 +53,23 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
 
   // With an outline on, preview the exact bitmap that will be copied.
   const [rendered, setRendered] = useState<{ key: string; url: string } | null>(null);
-  const renderKey = `${width}:${svg}`;
+  const renderKey = `${width}:${file ?? svg}`;
   useEffect(() => {
     if (width === 0) return;
     let live = true;
     let url = "";
-    renderSticker(svg, { stroke: width, silhouette: silhouetteOf(svg), size: 768 })
+    renderSticker(file ? { url: file } : svg, file ? { stroke: width, size: 768 } : { stroke: width, silhouette: silhouetteOf(svg), size: 768 })
       .then((blob) => {
         if (!live) return;
         url = URL.createObjectURL(blob);
-        setRendered({ key: `${width}:${svg}`, url });
+        setRendered({ key: `${width}:${file ?? svg}`, url });
       })
       .catch(() => {});
     return () => {
       live = false;
       if (url) URL.revokeObjectURL(url);
     };
-  }, [svg, width]);
+  }, [svg, file, width]);
   const outlined = width > 0 && rendered?.key === renderKey ? rendered.url : null;
   // The bitmap has margins for the outline; scale it so the art stays the same size.
   const scale = outlined ? 1 / (1 - 2 * paddingFor(width)) : 1;
@@ -76,7 +79,7 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
       <div className={styles.preview} data-canvas={canvas}>
         <div key={`${item.id}-${pulse}`} className={styles.previewArt} data-pulse={pulse > 0 ? "" : undefined}>
           {/* eslint-disable-next-line @next/next/no-img-element -- generated SVG; an image keeps its ids isolated */}
-          <img src={outlined ?? svgDataUri(svg)} alt={title} className={styles.previewSvg} style={{ "--scale": scale } as CSSProperties} draggable={false} />
+          <img src={outlined ?? file ?? svgDataUri(svg)} alt={title} className={styles.previewSvg} style={{ "--scale": scale } as CSSProperties} draggable={false} />
         </div>
         <div className={styles.canvasPicker} role="group" aria-label="Preview background">
           {CANVASES.map((option) => (
@@ -131,6 +134,22 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
             )}
           </div>
         ) : null}
+        {looks.length > 1 ? (
+          <fieldset className={styles.field}>
+            <legend className={styles.fieldLabel}>
+              Outfit
+              <span>{(looks.find((look) => look.id === values.look) ?? looks[0]!).name}</span>
+            </legend>
+            <div className={styles.swatches}>
+              {looks.map((look, order) => (
+                <label key={look.id} className={styles.swatch} style={{ "--swatch": look.swatch } as CSSProperties} title={look.name}>
+                  <input type="radio" name={`${prefix}-look`} checked={values.look ? values.look === look.id : order === 0} onChange={() => onChange("look", look.id)} className={styles.radio} />
+                  <span className="sr-only">{look.name}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ) : null}
         <StrokeField name={`${variant}-stroke`} value={stroke} onChange={onStroke} />
         {properties.length > 0 ? (
           <div className={styles.fieldActions}>
@@ -147,7 +166,7 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
         ) : null}
       </div>
 
-      <StickerActions stroke={width} svg={svg} title={title} slug={stickerSlug(collection, item)} code={(format) => exportItem(collection, item, values, format)} onCopied={() => setPulse((value) => value + 1)} />
+      <StickerActions stroke={width} svg={svg} image={file} title={title} slug={stickerSlug(collection, item)} code={item.image ? undefined : (format) => exportItem(collection, item, values, format)} onCopied={() => setPulse((value) => value + 1)} />
     </div>
   );
 }
