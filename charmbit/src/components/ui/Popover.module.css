@@ -53,3 +53,13 @@
     transform: scale(0.94) translateY(-4px);
   }
 }
+
+.panel[data-side="top"] {
+  top: auto;
+  bottom: calc(100% + 8px);
+  transform-origin: bottom left;
+}
+
+.panel[data-side="top"][data-align="end"] {
+  transform-origin: bottom right;
+}

@@ -14,6 +14,8 @@ export interface StickerOptions {
   /** Colour for currentColor linework (images have no surrounding text colour). */
   ink?: string;
   type?: "image/png" | "image/webp";
+  /** Encoder quality for WebP, 0 to 1. */
+  quality?: number;
   /** Optional SVG used only for the die-cut edge (e.g. without whiskers). */
   silhouette?: string;
 }
@@ -57,9 +59,9 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-function toBlob(canvas: HTMLCanvasElement, type: string): Promise<Blob> {
+function toBlob(canvas: HTMLCanvasElement, type: string, quality = 0.9): Promise<Blob> {
   return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Could not encode the sticker."))), type, 0.9);
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Could not encode the sticker."))), type, quality);
   });
 }
 
@@ -119,7 +121,7 @@ export async function renderSticker(svg: string, options: StickerOptions = {}): 
   }
 
   context.drawImage(image, padding, padding, art, art);
-  return toBlob(canvas, options.type ?? "image/png");
+  return toBlob(canvas, options.type ?? "image/png", options.quality);
 }
 
 /** True when this browser can put an image on the clipboard. */
@@ -147,10 +149,35 @@ export function download(blob: Blob, fileName: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-/** WebP when the browser can encode it (WhatsApp's sticker format), PNG otherwise. */
-export async function renderForWhatsApp(svg: string, options: StickerOptions = {}): Promise<{ blob: Blob; extension: string }> {
+/** WhatsApp's limit for a static sticker file. */
+export const WHATSAPP_MAX_BYTES = 100 * 1024;
+
+export interface WhatsAppSticker {
+  blob: Blob;
+  extension: "webp" | "png";
+  /** True when the file is 512 px WebP within WhatsApp's size limit. */
+  valid: boolean;
+}
+
+/**
+ * A static WhatsApp sticker: 512 × 512 transparent WebP under 100 KB. Quality
+ * steps down until the file fits. Browsers that cannot encode WebP get a PNG,
+ * reported as not valid so the UI can say so.
+ */
+export async function renderForWhatsApp(svg: string, options: StickerOptions = {}): Promise<WhatsAppSticker> {
+  let blob = await renderSticker(svg, { ...options, size: STICKER_SIZE, type: "image/webp", quality: 0.9 });
+  if (blob.type !== "image/webp") return { blob, extension: "png", valid: false };
+  for (const quality of [0.8, 0.7, 0.6, 0.5, 0.4]) {
+    if (blob.size <= WHATSAPP_MAX_BYTES) break;
+    blob = await renderSticker(svg, { ...options, size: STICKER_SIZE, type: "image/webp", quality });
+  }
+  return { blob, extension: "webp", valid: blob.size <= WHATSAPP_MAX_BYTES };
+}
+
+/** WebP at any size, or null when this browser cannot encode WebP. */
+export async function renderWebp(svg: string, options: StickerOptions = {}): Promise<Blob | null> {
   const blob = await renderSticker(svg, { ...options, type: "image/webp" });
-  return blob.type === "image/webp" ? { blob, extension: "webp" } : { blob, extension: "png" };
+  return blob.type === "image/webp" ? blob : null;
 }
 
 export function canShareFiles(): boolean {

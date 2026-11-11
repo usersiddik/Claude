@@ -49,6 +49,20 @@ export function propertiesFor(collection: LiveCollection, item: StickerItem): Pr
   return collection.properties.filter((property) => item.uses.includes(property.id));
 }
 
+/**
+ * Random values for the properties a sticker uses: any swatch for a colour,
+ * a coin flip for a toggle. `random` is injectable so tests are repeatable.
+ */
+export function randomValues(collection: LiveCollection, item: StickerItem, random: () => number = Math.random): Record<string, string | boolean | null> {
+  return Object.fromEntries(
+    propertiesFor(collection, item).map((property) => {
+      if (property.kind === "toggle") return [property.id, random() < 0.5];
+      const swatch = property.swatches[Math.floor(random() * property.swatches.length)] ?? property.swatches[0];
+      return [property.id, swatch ? swatch.hex : property.default];
+    }),
+  );
+}
+
 export function stickerTitle(collection: LiveCollection, item: StickerItem): string {
   return item.name.toLowerCase().startsWith(collection.noun.toLowerCase()) ? item.name : `${collection.noun} ${item.name}`;
 }

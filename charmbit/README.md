@@ -56,6 +56,17 @@ JSON-LD, footer, Flutter export comments) reads from `src/lib/brand.ts`.
 - **Not yet renamed:** the project folder (`charmbit/`, which Vercel's root directory setting points at) and
   the Vercel project and domain (`claude-charmbit.vercel.app`). Renaming them changes the live address and the Google sign-in redirect address, so do them together.
 
+## Pages and launch features
+
+- `/` home: hero with search and two calls to action, collections, the library with its editor.
+- `/developers`: how to use the SVG, React and Flutter exports. The code shown is real exporter output.
+- `/license`: usage terms. **Owner to confirm the wording before launch** (`src/app/license/page.tsx`).
+- `/privacy`, and a not-found page.
+- Library: search (press `/`), collections, groups, A–Z sort, and Saved stickers kept in the browser.
+- Editor: swatches, hex input, toggles, outline, Surprise me, Reset to original.
+- Exports: PNG and WebP at 256, 512 and 1024 px, SVG, a WhatsApp sticker (512 px WebP kept under 100 KB)
+  and a Telegram sticker (512 px PNG), plus SVG, React and Flutter code.
+
 ## Getting started
 
 ```bash

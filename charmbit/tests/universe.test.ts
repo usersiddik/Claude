@@ -79,3 +79,23 @@ describe("collection registry", () => {
     assert.equal(stickerSlug(diwali, findItem(diwali, "diya-girl")), "diwali-diya-girl");
   });
 });
+
+it("randomValues only touches the properties a sticker uses, with valid choices", async () => {
+  const { GENERATED, propertiesFor, randomValues } = await import("../src/lib/universe/index.ts");
+  let seed = 7;
+  const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+  for (const collection of GENERATED) {
+    for (const item of collection.items) {
+      const values = randomValues(collection, item, random);
+      const used = propertiesFor(collection, item);
+      assert.deepEqual(Object.keys(values).sort(), used.map((property) => property.id).sort());
+      for (const property of used) {
+        const value = values[property.id];
+        if (property.kind === "toggle") assert.equal(typeof value, "boolean");
+        else assert.ok(property.swatches.some((swatch) => swatch.hex === value), `${collection.id}/${item.id} ${property.id}`);
+      }
+      // Whatever comes out must still draw.
+      assert.match(collection.render(item, { ...Object.fromEntries(collection.properties.map((p) => [p.id, p.default])), ...values }), /^<svg/);
+    }
+  }
+});

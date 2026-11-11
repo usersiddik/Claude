@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 const UPDATED = "4 November 2026";
-const CONTACT = "namesiddik@gmail.com";
+const CONTACT = SITE.contact;
 const SESSION_DAYS = SESSION_TTL / (60 * 60 * 24);
 
 /** Plain-language privacy policy. Keep it in step with src/lib/auth and the browser storage it lists. */

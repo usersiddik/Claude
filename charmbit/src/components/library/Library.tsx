@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { CloseIcon, SearchIcon } from "@/components/ui/icons";
-import { defaultValues, findItem, GENERATED, renderItem, stickerTitle, type IconAsset, type LiveCollection, type StickerItem, type Value, type Values } from "@/lib/universe";
+import { CloseIcon, HeartGlyph, SearchIcon } from "@/components/ui/icons";
+import { defaultValues, findItem, GENERATED, randomValues, renderItem, stickerTitle, type IconAsset, type LiveCollection, type StickerItem, type Value, type Values } from "@/lib/universe";
 import { iconsCollection } from "@/lib/universe/collections/icons";
 import { stickerPath, svgDataUri } from "@/lib/universe/paths";
 import { buildSearchIndex, POPULAR_SEARCHES, search } from "@/lib/universe/search";
@@ -12,6 +12,7 @@ import { BEFORE_SIGN_IN } from "@/components/auth/AuthProvider";
 import { brandKey } from "@/lib/brand";
 import { Editor } from "./Editor";
 import { SEARCH_EVENT } from "./search-events";
+import { useFavourites } from "./useFavourites";
 import styles from "./Library.module.css";
 
 export interface Selection {
@@ -108,13 +109,44 @@ export function Library({ icons, selection, onSelect, initialQuery = "", restore
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [results]);
 
+  // Saved stickers live in this browser; no account needed.
+  const favourites = useFavourites();
+  const [showSaved, setShowSaved] = useState(false);
+  const savedEntries: Entry[] = useMemo(
+    () =>
+      favourites.list.flatMap((key) => {
+        const [collectionId, itemId] = key.split("/");
+        const owner = universe.find((candidate) => candidate.id === collectionId);
+        const found = owner?.items.find((candidate) => candidate.id === itemId);
+        return owner && found ? [{ collection: owner, item: found }] : [];
+      }),
+    [favourites.list, universe],
+  );
+  const [sort, setSort] = useState<"default" | "az">("default");
+
+  // "/" jumps to search from anywhere on the page.
+  const searchField = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const typing = target?.closest("input, textarea, select, [contenteditable]");
+      if (event.key !== "/" || typing || event.metaKey || event.ctrlKey || event.altKey || document.querySelector("dialog[open]")) return;
+      event.preventDefault();
+      searchField.current?.focus();
+      searchField.current?.scrollIntoView({ block: "center", behavior: "auto" });
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   // Group filter resets when the collection changes.
   const [groupFor, setGroupFor] = useState({ collection: collection.id, group: "all" });
   const group = groupFor.collection === collection.id ? groupFor.group : "all";
-  const visible: Entry[] = useMemo(
-    () => results ?? collection.items.filter((candidate) => group === "all" || candidate.group === group).map((candidate) => ({ collection, item: candidate })),
-    [results, collection, group],
-  );
+  const mode = results ? "search" : showSaved ? "saved" : "browse";
+  const visible: Entry[] = useMemo(() => {
+    const list = results ?? (showSaved ? savedEntries : collection.items.filter((candidate) => group === "all" || candidate.group === group).map((candidate) => ({ collection, item: candidate })));
+    return sort === "az" ? [...list].sort((a, b) => a.item.name.localeCompare(b.item.name)) : list;
+  }, [results, showSaved, savedEntries, collection, group, sort]);
   const position = Math.max(0, visible.findIndex((entry) => entry.collection.id === collection.id && entry.item.id === item.id));
 
   // Tiles use the prerendered files until a colour changes, then render live.
@@ -145,8 +177,15 @@ export function Library({ icons, selection, onSelect, initialQuery = "", restore
   const select = (next: LiveCollection, sticker?: StickerItem) => onSelect({ collection: next.id, sticker: (sticker ?? next.items[0]!).id });
   const browse = (next: LiveCollection) => {
     setQuery("");
+    setShowSaved(false);
     select(next);
   };
+  const openSaved = () => {
+    setQuery("");
+    setShowSaved(true);
+  };
+  const random = () => setEdits((previous) => ({ ...previous, [collection.id]: { ...previous[collection.id], ...randomValues(collection, item) } }));
+  const itemKey = `${collection.id}/${item.id}`;
   const change = (property: string, value: Value) => setEdits((previous) => ({ ...previous, [collection.id]: { ...previous[collection.id], [property]: value } }));
   const reset = () => setEdits((previous) => ({ ...previous, [collection.id]: {} }));
   const step = (direction: 1 | -1) => {
@@ -173,6 +212,9 @@ export function Library({ icons, selection, onSelect, initialQuery = "", restore
     position: { index: position, total: Math.max(visible.length, 1) },
     onChange: change,
     onReset: reset,
+    onRandom: random,
+    saved: favourites.list.includes(itemKey),
+    onToggleSaved: () => favourites.toggle(itemKey),
     onStep: step,
     changed,
     stroke,
@@ -188,6 +230,7 @@ export function Library({ icons, selection, onSelect, initialQuery = "", restore
         </label>
         <input
           id="library-search"
+          ref={searchField}
           type="search"
           className={styles.searchField}
           value={query}
@@ -201,12 +244,21 @@ export function Library({ icons, selection, onSelect, initialQuery = "", restore
           <button type="button" className={styles.searchClear} aria-label="Clear search" onClick={() => setQuery("")}>
             <CloseIcon size={16} />
           </button>
-        ) : null}
+        ) : (
+          <kbd className={styles.searchKey} aria-hidden="true">
+            /
+          </kbd>
+        )}
       </form>
 
       <div ref={rail} className={styles.rail} role="group" aria-label="Collections">
+        <button type="button" className={`${styles.pill} ${styles.savedPill}`} aria-pressed={mode === "saved"} onClick={openSaved}>
+          <HeartGlyph size={18} />
+          Saved
+          <span>{savedEntries.length}</span>
+        </button>
         {universe.map((candidate) => (
-          <button key={candidate.id} type="button" className={styles.pill} aria-pressed={!results && candidate.id === collection.id} onClick={() => browse(candidate)}>
+          <button key={candidate.id} type="button" className={styles.pill} aria-pressed={mode === "browse" && candidate.id === collection.id} onClick={() => browse(candidate)}>
             {/* eslint-disable-next-line @next/next/no-img-element -- static SVG sticker */}
             <img src={stickerPath(candidate.id, candidate.cover[0] ?? candidate.items[0]!.id)} alt="" width={28} height={28} loading="lazy" decoding="async" />
             {candidate.title}
@@ -235,6 +287,17 @@ export function Library({ icons, selection, onSelect, initialQuery = "", restore
                 ))}
               </div>
             </div>
+          ) : mode === "saved" ? (
+            <div className={styles.browserHead}>
+              <div>
+                <h3 className={styles.collectionTitle}>Saved</h3>
+                <p className={styles.collectionText}>
+                  {savedEntries.length === 0
+                    ? "Nothing saved yet. Open a sticker and tap Save to keep it here."
+                    : `${savedEntries.length} sticker${savedEntries.length === 1 ? "" : "s"} saved in this browser. No account needed.`}
+                </p>
+              </div>
+            </div>
           ) : (
             <div className={styles.browserHead}>
               <div>
@@ -258,7 +321,23 @@ export function Library({ icons, selection, onSelect, initialQuery = "", restore
             </div>
           )}
 
-          <ul role="list" className={styles.grid} key={results ? `search-${query}` : `${collection.id}-${group}`} aria-label={results ? "Search results" : `${collection.title} stickers`}>
+          {visible.length > 1 ? (
+            <div className={styles.sortRow}>
+              <span>
+                {visible.length} sticker{visible.length === 1 ? "" : "s"}
+              </span>
+              <div role="group" aria-label="Sort">
+                <button type="button" className={styles.sort} aria-pressed={sort === "default"} onClick={() => setSort("default")}>
+                  {mode === "search" ? "Best match" : mode === "saved" ? "Recently saved" : "Featured"}
+                </button>
+                <button type="button" className={styles.sort} aria-pressed={sort === "az"} onClick={() => setSort("az")}>
+                  A–Z
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          <ul role="list" className={styles.grid} key={`${mode}-${results ? query : showSaved ? "saved" : `${collection.id}-${group}`}-${sort}`} aria-label={mode === "search" ? "Search results" : mode === "saved" ? "Saved stickers" : `${collection.title} stickers`}>
             {visible.map((entry, order) => {
               const selected = entry.collection.id === collection.id && entry.item.id === item.id;
               const title = stickerTitle(entry.collection, entry.item);
@@ -267,8 +346,9 @@ export function Library({ icons, selection, onSelect, initialQuery = "", restore
                   <button type="button" className={styles.tile} aria-pressed={selected} aria-label={title} onClick={() => openTile(entry)}>
                     {/* eslint-disable-next-line @next/next/no-img-element -- static or generated SVG */}
                     <img src={tiles.get(`${entry.collection.id}/${entry.item.id}`)} alt="" width={160} height={160} loading="lazy" decoding="async" draggable={false} />
-                    <span className={styles.tileName}>{results ? title : entry.item.name}</span>
+                    <span className={styles.tileName}>{mode === "browse" ? entry.item.name : title}</span>
                   </button>
+                  {favourites.list.includes(`${entry.collection.id}/${entry.item.id}`) ? <HeartGlyph size={14} className={styles.tileSaved} aria-label="Saved" /> : null}
                 </li>
               );
             })}

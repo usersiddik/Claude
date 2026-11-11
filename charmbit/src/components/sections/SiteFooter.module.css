@@ -79,3 +79,20 @@
   color: inherit;
   text-underline-offset: 3px;
 }
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 20px;
+  margin: var(--space-2) 0;
+  font-size: 0.875rem;
+}
+
+.links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  color: inherit;
+  text-underline-offset: 3px;
+}

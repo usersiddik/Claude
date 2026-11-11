@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { CloseIcon } from "@/components/ui/icons";
+import { CloseIcon, HeartGlyph, ShuffleIcon } from "@/components/ui/icons";
 import { silhouetteOf } from "@/lib/art/kit";
 import { paddingFor, renderSticker, strokeWidth, type StrokeId } from "@/lib/sticker";
 import { svgDataUri } from "@/lib/universe/paths";
@@ -20,6 +20,10 @@ interface EditorProps {
   position: { index: number; total: number };
   onChange: (property: string, value: Value) => void;
   onReset: () => void;
+  /** Random colours and details for this sticker. */
+  onRandom: () => void;
+  saved: boolean;
+  onToggleSaved: () => void;
   onStep: (direction: 1 | -1) => void;
   /** Panel beside the grid, or a sheet on phones. */
   variant: "panel" | "sheet";
@@ -35,7 +39,7 @@ const CANVASES: readonly { id: Canvas; label: string }[] = [
   { id: "grid", label: "Transparent background" },
 ];
 
-export function Editor({ collection, item, values, position, onChange, onReset, onStep, variant, onClose, changed, stroke, onStroke }: EditorProps) {
+export function Editor({ collection, item, values, position, onChange, onReset, onRandom, saved, onToggleSaved, onStep, variant, onClose, changed, stroke, onStroke }: EditorProps) {
   const [canvas, setCanvas] = useState<Canvas>("light");
   const [pulse, setPulse] = useState(0);
   const svg = useMemo(() => renderItem(collection, item, values), [collection, item, values]);
@@ -100,8 +104,18 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
         <p className={styles.infoKicker}>
           {collection.title} · {position.index + 1} of {position.total}
         </p>
-        <h3 className={styles.infoTitle}>{item.name}</h3>
+        <div className={styles.infoRow}>
+          <h3 className={styles.infoTitle}>{item.name}</h3>
+          <button type="button" className={styles.save} aria-pressed={saved} onClick={onToggleSaved}>
+            <HeartGlyph size={16} />
+            {saved ? "Saved" : "Save"}
+          </button>
+        </div>
         <p className={styles.infoCaption}>“{item.caption}”</p>
+        <ul role="list" className={styles.tags} aria-label="Category">
+          <li>{collection.title}</li>
+          {collection.groups.find((candidate) => candidate.id === item.group) ? <li>{collection.groups.find((candidate) => candidate.id === item.group)!.name}</li> : null}
+        </ul>
       </div>
 
       <div className={styles.fields}>
@@ -118,10 +132,18 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
           </div>
         ) : null}
         <StrokeField name={`${variant}-stroke`} value={stroke} onChange={onStroke} />
-        {changed ? (
-          <button type="button" className={styles.reset} onClick={onReset}>
-            Reset colours
-          </button>
+        {properties.length > 0 ? (
+          <div className={styles.fieldActions}>
+            <button type="button" className={styles.surprise} onClick={onRandom}>
+              <ShuffleIcon size={16} />
+              Surprise me
+            </button>
+            {changed ? (
+              <button type="button" className={styles.reset} onClick={onReset}>
+                Reset to original
+              </button>
+            ) : null}
+          </div>
         ) : null}
       </div>
 

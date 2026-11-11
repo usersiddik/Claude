@@ -5,7 +5,7 @@ import type { ExportFormat } from "@/lib/assets/types";
 import { silhouetteOf } from "@/lib/art/kit";
 import { copyText } from "@/lib/clipboard";
 import { announceCopy } from "@/lib/copy-events";
-import { canShareFiles, copyImage, download, renderForWhatsApp, renderSticker, shareSticker } from "@/lib/sticker";
+import { canShareFiles, copyImage, download, renderForWhatsApp, renderSticker, renderWebp, shareSticker } from "@/lib/sticker";
 
 const subscribeNothing = () => () => {};
 
@@ -65,16 +65,43 @@ export function useStickerActions({ svg, title, slug, code }: Sticker, stroke: n
     },
     async whatsapp() {
       try {
-        const { blob, extension } = await renderForWhatsApp(svg, options);
-        download(blob, `${slug}-sticker.${extension}`);
-        notify(extension === "webp" ? "WhatsApp WebP" : "PNG", true, "Saved");
+        const { blob, extension, valid } = await renderForWhatsApp(svg, options);
+        download(blob, `${slug}-whatsapp.${extension}`);
+        // Say what was actually saved: a PNG is not a WhatsApp sticker file.
+        notify(valid ? "WhatsApp WebP" : extension === "webp" ? "WebP (over 100 KB)" : "PNG (no WebP here)", true, "Saved");
+      } catch {
+        notify("WhatsApp sticker", false);
+      }
+    },
+    async webp(size: number) {
+      try {
+        const blob = await renderWebp(svg, { ...options, size });
+        if (!blob) {
+          notify("WebP (not supported in this browser)", false);
+          return;
+        }
+        download(blob, `${slug}-${size}.webp`);
+        notify(`${size}px WebP`, true, "Saved");
       } catch {
         notify("WebP", false);
       }
     },
+    /** Telegram static stickers: 512 px on a side, PNG with transparency. */
+    async telegram() {
+      try {
+        download(await renderSticker(svg, { ...options, size: 512 }), `${slug}-telegram.png`);
+        notify("Telegram PNG", true, "Saved");
+      } catch {
+        notify("Telegram sticker", false);
+      }
+    },
     svgFile() {
-      download(new Blob([code("svg")], { type: "image/svg+xml" }), `${slug}.svg`);
-      notify("SVG", true, "Saved");
+      try {
+        download(new Blob([code("svg")], { type: "image/svg+xml" }), `${slug}.svg`);
+        notify("SVG", true, "Saved");
+      } catch {
+        notify("SVG", false);
+      }
     },
     async code(format: ExportFormat, label: string) {
       try {

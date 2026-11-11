@@ -45,17 +45,32 @@ export function StickerActions({ svg, title, slug, code, stroke, onCopied }: Sti
       <div className={styles.secondaryActions}>
         <Popover label="Download" align="start" trigger={<><DownloadIcon size={16} /> Download</>}>
           <div className={styles.menu}>
-            <button type="button" data-dismiss onClick={gate(() => actions.png(512))}>
-              PNG <span>512 px · transparent</span>
+            <p className={styles.menuLabel}>Image</p>
+            <div className={styles.menuRow}>
+              <span>PNG</span>
+              {[256, 512, 1024].map((size) => (
+                <button key={size} type="button" data-dismiss aria-label={`PNG, ${size} pixels`} onClick={gate(() => actions.png(size))}>
+                  {size}
+                </button>
+              ))}
+            </div>
+            <div className={styles.menuRow}>
+              <span>WebP</span>
+              {[256, 512, 1024].map((size) => (
+                <button key={size} type="button" data-dismiss aria-label={`WebP, ${size} pixels`} onClick={gate(() => actions.webp(size))}>
+                  {size}
+                </button>
+              ))}
+            </div>
+            <button type="button" data-dismiss onClick={gate(actions.svgFile)}>
+              SVG <span>vector, any size</span>
             </button>
-            <button type="button" data-dismiss onClick={gate(() => actions.png(1024))}>
-              PNG, large <span>1024 px · transparent</span>
-            </button>
+            <p className={styles.menuLabel}>Messaging</p>
             <button type="button" data-dismiss onClick={gate(actions.whatsapp)}>
               WhatsApp sticker <span>512 px WebP, under 100 KB</span>
             </button>
-            <button type="button" data-dismiss onClick={gate(actions.svgFile)}>
-              SVG <span>vector, any size</span>
+            <button type="button" data-dismiss onClick={gate(actions.telegram)}>
+              Telegram sticker <span>512 px PNG</span>
             </button>
           </div>
         </Popover>
@@ -78,7 +93,9 @@ export function StickerActions({ svg, title, slug, code, stroke, onCopied }: Sti
           </button>
         ) : null}
       </div>
-      <p className={styles.hint}>Paste into WhatsApp, iMessage, Telegram, or Slack. GIF export is coming next.</p>
+      <p className={styles.hint}>
+        Copy, then paste into WhatsApp, iMessage, Telegram or Slack. <a href="/developers#messaging">Adding it to a sticker pack?</a>
+      </p>
     </div>
   );
 }

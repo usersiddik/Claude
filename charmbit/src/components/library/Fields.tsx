@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { normalizeHex } from "@/lib/art/color";
 import { STROKES, type StrokeId } from "@/lib/sticker";
 import type { ColorProperty, Swatch, ToggleProperty } from "@/lib/universe";
@@ -51,8 +51,34 @@ export function ColorField({ name, property, value, onChange }: ColorFieldProps)
             />
           </label>
         ) : null}
+        {property.custom ? <HexInput key={value ?? "original"} label={property.label} value={value} onChange={onChange} /> : null}
       </div>
     </fieldset>
+  );
+}
+
+/** Type or paste a hex code. Applies as soon as it is a valid colour. */
+function HexInput({ label, value, onChange }: { label: string; value: string | null; onChange: (value: string) => void }) {
+  const [text, setText] = useState(value ?? "");
+  const invalid = text.trim() !== "" && !normalizeHex(text);
+  return (
+    <input
+      type="text"
+      className={styles.hex}
+      value={text}
+      onChange={(event) => {
+        setText(event.target.value);
+        const hex = normalizeHex(event.target.value);
+        if (hex && hex !== value?.toUpperCase()) onChange(hex);
+      }}
+      placeholder="#HEX"
+      maxLength={7}
+      spellCheck={false}
+      autoComplete="off"
+      autoCapitalize="characters"
+      aria-label={`${label} hex colour`}
+      aria-invalid={invalid || undefined}
+    />
   );
 }
 

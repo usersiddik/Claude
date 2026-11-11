@@ -1,6 +1,7 @@
 .chapter {
   position: relative;
-  z-index: 1;
+  /* Above the footer, so open menus near the bottom are never covered by it. */
+  z-index: 2;
   margin-top: -64px;
 }
 

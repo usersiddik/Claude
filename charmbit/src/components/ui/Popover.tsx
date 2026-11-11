@@ -23,7 +23,15 @@ export function Popover({ label, trigger, children, align = "start", triggerClas
 
   useEffect(() => {
     if (!open) return;
-    panel.current?.querySelector<HTMLElement>("input:checked, input, button")?.focus();
+    // Open upwards when the menu would run off the bottom of the screen.
+    const node = panel.current;
+    if (node) {
+      delete node.dataset.side;
+      const box = node.getBoundingClientRect();
+      const above = button.current?.getBoundingClientRect().top ?? 0;
+      if (box.bottom > window.innerHeight - 8 && above > box.height + 16) node.dataset.side = "top";
+    }
+    panel.current?.querySelector<HTMLElement>("input:checked, input, button")?.focus({ preventScroll: true });
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.stopPropagation();

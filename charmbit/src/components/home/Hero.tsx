@@ -84,12 +84,15 @@ export function Hero({ total, live, names }: HeroProps) {
         <p className={styles.kicker}>{SITE.tagline}</p>
         <Headline />
         <p className={styles.lede}>
-          {total} original stickers across {live} collections: characters, festivals, hearts, and the words you send every day. Find one, recolour it, paste it anywhere.
+          {total} original stickers across {live} collections: characters, festivals, hearts, and the words you send every day. Find one you love, make it yours, use it anywhere.
         </p>
         <HeroSearch />
         <div className={styles.actions}>
-          <a href="#library" className={styles.textLink}>
-            Or browse the library
+          <a href="#collections" className={styles.cta}>
+            Explore stickers
+          </a>
+          <a href={libraryHref("cats", "hi")} className={`${styles.cta} ${styles.ctaQuiet}`} data-library="">
+            Open studio
             <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 10h11M11 5l5 5-5 5" />
             </svg>

@@ -42,8 +42,15 @@ export function SiteFooter() {
           </a>
           <p className={styles.tagline}>{SITE.tagline}</p>
           <p className={styles.small}>
-            Original artwork. © {new Date().getFullYear()} {BRAND.name}. <Link href="/privacy">Privacy</Link>
+            Original artwork. © {new Date().getFullYear()} {BRAND.name}.
           </p>
+          <nav aria-label="Footer" className={styles.links}>
+            <Link href="/developers">Developers</Link>
+            <Link href="/license">Licence</Link>
+            <Link href="/privacy">Privacy</Link>
+            <a href={`mailto:${SITE.contact}`}>Contact</a>
+          </nav>
+          <p className={styles.small}>Coming later: an AI sticker maker and a drawing studio.</p>
         </div>
       </div>
     </footer>
