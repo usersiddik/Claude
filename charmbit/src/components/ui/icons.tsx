@@ -150,6 +150,12 @@ export const SparkleIcon = (p: IconProps) => (
     <path d="M12 3.5c.6 4.2 2.3 6 6.5 6.5-4.2.6-5.9 2.3-6.5 6.5-.6-4.2-2.3-5.9-6.5-6.5 4.2-.5 5.9-2.3 6.5-6.5ZM18.5 15.5c.3 1.7 1 2.4 2.5 2.7-1.5.3-2.2 1-2.5 2.6-.3-1.6-1-2.3-2.5-2.6 1.5-.3 2.2-1 2.5-2.7Z" />
   </Icon>
 );
+export const LockIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="5" y="10.5" width="14" height="9.5" rx="2.5" fill="currentColor" stroke="none" />
+    <path d="M8.2 10.5V8a3.8 3.8 0 0 1 7.6 0v2.5" />
+  </Icon>
+);
 export const ShuffleIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M4 7h3.5c4.5 0 4.5 10 9 10H20M17.5 14.5 20 17l-2.5 2.5M4 17h3.5c1.4 0 2.3-.9 3-2.2M13.5 9.2c.7-1.3 1.6-2.2 3-2.2H20M17.5 4.5 20 7l-2.5 2.5" />

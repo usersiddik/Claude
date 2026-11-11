@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { CloseIcon, HeartGlyph, SearchIcon } from "@/components/ui/icons";
+import { CloseIcon, HeartGlyph, LockIcon, SearchIcon } from "@/components/ui/icons";
 import { buildUniverse, CATEGORIES, categoryOf, defaultValues, findItem, isLive, randomValues, renderItem, stickerSrc, stickerTitle, type IconAsset, type LiveCollection, type CategoryId, type StickerItem, type Value, type Values } from "@/lib/universe";
 import type { PackFiles } from "@/lib/universe/packs";
 import { svgDataUri } from "@/lib/universe/paths";
@@ -169,6 +169,10 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
     }
     return map;
   }, [visible, edits]);
+
+  // Premium stickers show as locked tiles after the free ones. Payments are not open yet.
+  const lockedTiles = mode === "browse" ? (collection.locked ?? []).filter((candidate) => group === "all" || candidate.group === group) : [];
+  const premium = useRef<HTMLDialogElement>(null);
 
   const sheet = useRef<HTMLDialogElement>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -395,6 +399,18 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
                 </li>
               );
             })}
+            {lockedTiles.map((locked) => (
+              <li key={`locked-${locked.id}`} className={styles.cell}>
+                <button type="button" className={`${styles.tile} ${styles.lockedTile}`} aria-label={`${locked.name}: premium, coming soon`} onClick={() => premium.current?.showModal()}>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- blurred teaser */}
+                  <img src={locked.image?.src} alt="" width={160} height={160} loading="lazy" decoding="async" draggable={false} />
+                  <span className={styles.lockBadge} aria-hidden="true">
+                    <LockIcon size={18} />
+                  </span>
+                  <span className={styles.tileName}>Premium</span>
+                </button>
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -402,6 +418,21 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
           <Editor {...editorProps} variant="panel" />
         </div>
       </div>
+
+      <dialog ref={premium} className={styles.premium} aria-labelledby="premium-title" onClick={(event) => event.target === premium.current && premium.current?.close()}>
+        <span className={styles.premiumLock} aria-hidden="true">
+          <LockIcon size={26} />
+        </span>
+        <h3 id="premium-title" className={styles.premiumTitle}>
+          Premium is coming soon
+        </h3>
+        <p className={styles.premiumText}>
+          {collection.locked?.length ?? 0} more {collection.title} stickers are being saved for a premium plan. Payments aren&rsquo;t open yet, so there is nothing to buy today. The free stickers are yours to use now.
+        </p>
+        <button type="button" className={styles.premiumClose} onClick={() => premium.current?.close()}>
+          Got it
+        </button>
+      </dialog>
 
       <dialog ref={sheet} className={styles.sheet} aria-label={`${stickerTitle(collection, item)} editor`} onClose={() => setSheetOpen(false)} onClick={(event) => event.target === sheet.current && closeSheet()}>
         {sheetOpen ? (

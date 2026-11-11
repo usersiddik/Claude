@@ -1276,3 +1276,123 @@
     display: inline;
   }
 }
+
+/* Premium: locked tiles and the coming-soon note ----------------------------------- */
+
+.lockedTile img {
+  filter: blur(9px) saturate(0.9);
+  opacity: 0.75;
+  transform: scale(1.05);
+}
+
+@media (hover: hover) {
+  .lockedTile:hover img {
+    filter: blur(9px) saturate(0.9);
+    transform: scale(1.05);
+  }
+}
+
+.lockBadge {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #f7dc82, #d4a017);
+  color: #4a3500;
+  box-shadow:
+    0 0 0 3px rgb(255 255 255 / 0.85),
+    0 8px 18px -6px rgb(120 84 0 / 0.6);
+  translate: -50% -50%;
+  transition: transform 300ms var(--ease-spring);
+}
+
+.lockedTile:hover .lockBadge {
+  transform: scale(1.1) rotate(-6deg);
+}
+
+.lockedTile .tileName {
+  color: #8a6200;
+  font-weight: 600;
+}
+
+:root[data-theme="dark"] .lockedTile .tileName {
+  color: #f0cf6b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .lockedTile .tileName {
+    color: #f0cf6b;
+  }
+}
+
+.premium {
+  width: min(420px, calc(100vw - 32px));
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  border: 0;
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-float);
+  text-align: center;
+}
+
+.premium::backdrop {
+  background: rgb(15 14 13 / 0.5);
+}
+
+.premiumLock {
+  display: inline-grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #f7dc82, #d4a017);
+  color: #4a3500;
+}
+
+.premiumTitle {
+  margin: var(--space-4) 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: 1.875rem;
+  font-weight: 400;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.premiumText {
+  color: var(--text-2);
+  font-size: 0.9375rem;
+}
+
+.premiumClose {
+  min-height: 46px;
+  margin-top: var(--space-5);
+  padding: 0 28px;
+  border: 0;
+  border-radius: 980px;
+  background: var(--ink);
+  color: var(--on-ink);
+  font-weight: 600;
+}
+
+/* A warm tint behind locked tiles, so pale artwork still reads through the blur. */
+.lockedTile,
+.lockedTile:hover {
+  background: color-mix(in oklab, var(--accent) 45%, var(--tile));
+}
+
+:root[data-theme="dark"] .lockedTile,
+:root[data-theme="dark"] .lockedTile:hover {
+  background: color-mix(in oklab, var(--accent) 12%, var(--tile));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .lockedTile,
+  :root:not([data-theme="light"]) .lockedTile:hover {
+    background: color-mix(in oklab, var(--accent) 12%, var(--tile));
+  }
+}

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { loadAssets } from "../src/lib/assets/load.ts";
 import { buildArchive, buildUniverse, CATEGORIES, categoryOf, isLive, stickerSrc } from "../src/lib/universe/index.ts";
-import { buildPack, masterPrompt, PACKS, stickerPrompt } from "../src/lib/universe/packs/index.ts";
+import { buildPack, PACKS, stickerPrompt } from "../src/lib/universe/packs/index.ts";
 import { buildSearchIndex, search } from "../src/lib/universe/search.ts";
 
 const sheru = PACKS.find((pack) => pack.id === "sheru")!;
@@ -22,33 +22,48 @@ describe("image packs", () => {
     }
   });
 
-  it("starts with 16 distinct Sheru stickers", () => {
-    assert.equal(sheru.stickers.length, 16);
-    assert.equal(new Set(sheru.stickers.map((sticker) => sticker.scene)).size, 16);
+  it("Sheru has 40 distinct stickers: 20 free and 20 premium", () => {
+    assert.equal(sheru.stickers.length, 40);
+    assert.equal(new Set(sheru.stickers.map((sticker) => sticker.scene)).size, 40);
+    assert.equal(sheru.stickers.filter((sticker) => sticker.premium).length, 20);
   });
 
   it("a pack with no files is not shown", () => {
     assert.equal(buildPack(sheru, []), null);
+    // Premium art alone does not publish a pack.
+    assert.equal(buildPack(sheru, ["crown.webp"]), null);
   });
 
-  it("only stickers with a default-look file appear, with their other looks", () => {
-    const pack = buildPack(sheru, ["coffee.webp", "coffee.black.webp", "shades.png", "lol.black.webp", "notes.txt"])!;
-    assert.deepEqual(pack.items.map((item) => item.id), ["shades", "coffee"]);
-    const coffee = pack.items.find((item) => item.id === "coffee")!;
-    assert.equal(coffee.image?.src, "/packs/sheru/coffee.webp");
-    assert.deepEqual(coffee.image?.variants.map((variant) => variant.id), ["white", "black"]);
-    assert.deepEqual(pack.items.find((item) => item.id === "shades")!.image?.variants, []);
+  it("only free stickers with a default-look file appear, with their other looks", () => {
+    const pack = buildPack(sheru, ["chai-sip.webp", "chai-sip.black.webp", "boss-point.png", "laughing.black.webp", "notes.txt"])!;
+    assert.deepEqual(pack.items.map((item) => item.id), ["boss-point", "chai-sip"]);
+    const chai = pack.items.find((item) => item.id === "chai-sip")!;
+    assert.equal(chai.image?.src, "/packs/sheru/chai-sip.webp");
+    assert.deepEqual(chai.image?.variants.map((variant) => variant.id), ["white", "black"]);
+    assert.deepEqual(pack.items.find((item) => item.id === "boss-point")!.image?.variants, []);
     assert.equal(pack.media, "image");
     assert.ok(pack.cover.every((id) => pack.items.some((item) => item.id === id)));
     assert.ok(pack.groups.every((group) => pack.items.some((item) => item.group === group.id)));
-    assert.equal(stickerSrc(pack, coffee), "/packs/sheru/coffee.webp");
+    assert.equal(stickerSrc(pack, chai), "/packs/sheru/chai-sip.webp");
+  });
+
+  it("premium stickers are locked tiles, kept out of the usable stickers", () => {
+    const pack = buildPack(sheru, ["boss-point.webp", "crown.webp"])!;
+    assert.deepEqual(pack.items.map((item) => item.id), ["boss-point"]);
+    assert.equal(pack.locked?.length, 20);
+    assert.ok(pack.locked!.every((item) => item.locked && item.image?.src));
+    // Its own art when it exists, otherwise a free sticker's (it is only ever shown blurred).
+    assert.equal(pack.locked!.find((item) => item.id === "crown")!.image!.src, "/packs/sheru/crown.webp");
+    assert.equal(pack.locked!.find((item) => item.id === "wink")!.image!.src, "/packs/sheru/boss-point.webp");
+    const index = buildSearchIndex([pack]);
+    assert.equal(search(index, "crown").length, 0);
   });
 
   it("packs with files sit ahead of the drawn collections, each in its category", () => {
     const icons = loadAssets();
     const before = buildUniverse(icons, {});
     assert.deepEqual(before.map((collection) => collection.id), buildArchive(icons).map((collection) => collection.id));
-    const after = buildUniverse(icons, { sheru: ["coffee.webp"], gifs: ["cat-sad.gif"] });
+    const after = buildUniverse(icons, { sheru: ["chai-sip.webp"], gifs: ["cat-sad.gif"] });
     assert.deepEqual(after.slice(0, 2).map((collection) => collection.id), ["sheru", "gifs"]);
     assert.equal(after.length, before.length + 2);
     assert.deepEqual(after.slice(0, 3).filter(isLive).map(categoryOf), ["whatsapp", "gif", "colour"]);
@@ -70,18 +85,18 @@ describe("image packs", () => {
   it("pack stickers are searchable by their tags", () => {
     const pack = buildPack(sheru, sheru.stickers.map((sticker) => `${sticker.id}.webp`))!;
     const index = buildSearchIndex([pack].filter(isLive));
-    assert.equal(search(index, "good morning")[0]?.item.id, "coffee");
-    assert.equal(search(index, "broke")[0]?.item.id, "broke");
-    assert.ok(search(index, "sunglasses").some((result) => result.item.id === "shades"));
+    assert.equal(search(index, "good morning")[0]?.item.id, "good-morning");
+    assert.equal(search(index, "chai")[0]?.item.id, "chai-sip");
+    assert.ok(search(index, "sunglasses").some((result) => result.item.id === "shades-off"));
   });
 
-  it("prompts fix the identity and never ask for text or scenery", () => {
+  it("prompts fix the identity and never ask for a border or scenery", () => {
     const prompt = stickerPrompt(sheru, sheru.stickers[0]!);
     assert.ok(prompt.includes(sheru.identity));
     assert.ok(prompt.includes(sheru.stickers[0]!.scene));
-    assert.match(prompt, /solid, bright green/);
-    assert.match(prompt, /Do not add any text/);
-    assert.ok(masterPrompt(sheru).includes(sheru.looks[0]!.wardrobe));
+    assert.ok(prompt.includes(sheru.looks[0]!.wardrobe));
+    assert.match(prompt, /#808080/);
+    assert.match(prompt, /No white sticker border/);
     assert.ok(stickerPrompt(sheru, sheru.stickers[0]!, sheru.looks[1]).includes(sheru.looks[1]!.wardrobe));
   });
 });

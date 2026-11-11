@@ -49,6 +49,8 @@ export interface StickerItem {
   tags?: string;
   /** Set for stickers that are image files rather than drawings made in code. */
   image?: StickerImage;
+  /** Premium and not yet available: shown blurred with a lock, never opened in the editor. */
+  locked?: boolean;
 }
 
 /** One look of an image sticker, e.g. an outfit. */
@@ -98,6 +100,11 @@ export interface LiveCollection extends CollectionBase {
    * recoloured; "image" is a still image file; "animated" is a GIF.
    */
   media?: "vector" | "image" | "animated";
+  /**
+   * Premium stickers, shown as locked tiles after `items`. Kept apart so counts,
+   * search, covers and the editor only ever deal with stickers people can use.
+   */
+  locked?: readonly StickerItem[];
 }
 
 export interface SoonCollection extends CollectionBase {

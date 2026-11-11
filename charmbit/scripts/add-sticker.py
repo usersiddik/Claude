@@ -2,64 +2,78 @@
 """
 Prepare a generated image as a sticker and put it in a pack.
 
-    python3 scripts/add-sticker.py <image> <pack> <sticker-id> [look]
+    python3 scripts/add-sticker.py <image> <pack> <sticker-id> [look] [--border N]
 
-    python3 scripts/add-sticker.py ~/Downloads/coffee.png sheru coffee
-    python3 scripts/add-sticker.py ~/Downloads/coffee-black.png sheru coffee black
+    python3 scripts/add-sticker.py ~/Downloads/chai.png sheru chai-sip
+    python3 scripts/add-sticker.py ~/Downloads/chai.png sheru chai-sip --border 22
+    python3 scripts/add-sticker.py ~/Downloads/chai-black.png sheru chai-sip black
 
 What it does:
-  1. Removes a flat background colour (the prompts ask for solid green). Images
-     that already have a transparent background are left as they are.
-  2. Trims the empty space, centres the character on a square with a small
+  1. Removes the flat background around the character. It fills inwards from
+     the edges of the picture and stops at the character, so light greys and
+     whites inside the character are never touched. Images that already have a
+     transparent background are left as they are.
+  2. With --border N, shaves N pixels off the outline. Use it when the
+     generator drew its own white sticker border, so the site's outline
+     option (none, thin, thick) stays in control.
+  3. Trims the empty space, centres the character on a square with a small
      margin, and resizes to 1024 x 1024.
-  3. Saves a WebP with transparency to public/packs/<pack>/.
+  4. Saves a WebP with transparency to public/packs/<pack>/.
 
 Needs Pillow:  pip install pillow
 """
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageChops, ImageFilter
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 SIZE = 1024
 MARGIN = 0.04
-# Colour distance at which a pixel counts as fully background / fully character.
-NEAR, FAR = 60, 130
+# How far a pixel may differ from the background colour and still count as background.
+TOLERANCE = 26
+MARKER = (255, 0, 255)
 
 
 def has_transparency(image: Image.Image) -> bool:
     return image.getchannel("A").getextrema()[0] < 250
 
 
-def background_colour(image: Image.Image) -> tuple[int, int, int]:
-    """The colour around the edge of the image (median of the border pixels)."""
-    width, height = image.size
-    rgb = image.convert("RGB")
-    pixels = [rgb.getpixel((x, y)) for x in range(0, width, 8) for y in (0, 1, height - 2, height - 1)]
-    pixels += [rgb.getpixel((x, y)) for y in range(0, height, 8) for x in (0, 1, width - 2, width - 1)]
-    return tuple(sorted(channel)[len(pixels) // 2] for channel in zip(*pixels))  # type: ignore[return-value]
-
-
 def remove_background(image: Image.Image) -> Image.Image:
-    key = background_colour(image)
+    """Flood the background in from every edge; whatever the flood cannot reach is the character."""
     rgb = image.convert("RGB")
-    difference = ImageChops.difference(rgb, Image.new("RGB", rgb.size, key))
-    red, green, blue = difference.split()
-    # Largest channel difference is a cheap, good-enough colour distance.
-    distance = ImageChops.lighter(ImageChops.lighter(red, green), blue)
-    alpha = distance.point(lambda value: 0 if value <= NEAR else 255 if value >= FAR else int((value - NEAR) * 255 / (FAR - NEAR)))
-    alpha = alpha.filter(ImageFilter.GaussianBlur(0.6))
-
-    # Despill: where the key colour is green, stop green exceeding the other channels,
-    # so white fur does not keep a green edge.
-    if key[1] > key[0] + 40 and key[1] > key[2] + 40:
-        r, g, b = rgb.split()
-        g = ImageChops.darker(g, ImageChops.lighter(r, b))
-        rgb = Image.merge("RGB", (r, g, b))
-
+    width, height = rgb.size
+    work = rgb.copy()
+    seeds = [(x, y) for x in range(0, width, 16) for y in (0, height - 1)] + [(x, y) for y in range(0, height, 16) for x in (0, width - 1)]
+    key = work.getpixel((0, 0))
+    for seed in seeds:
+        pixel = work.getpixel(seed)
+        if pixel != MARKER and max(abs(a - b) for a, b in zip(pixel, key)) <= TOLERANCE * 2:
+            ImageDraw.floodfill(work, seed, MARKER, thresh=TOLERANCE)
+    red, green, blue = work.split()
+    # Background = exactly the marker colour.
+    background = ImageChops.multiply(ImageChops.multiply(red.point(lambda v: 255 if v == 255 else 0), green.point(lambda v: 255 if v == 0 else 0)), blue.point(lambda v: 255 if v == 255 else 0))
+    alpha = ImageChops.invert(background)
+    # Pull the edge in by a pixel to drop the background-tinted fringe, then soften it.
+    alpha = alpha.filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.8))
     result = rgb.convert("RGBA")
     result.putalpha(alpha)
     return result
+
+
+def shave(image: Image.Image, pixels: int) -> Image.Image:
+    """Removes a border of the given width from the outline (for a baked-in white sticker edge)."""
+    alpha = image.getchannel("A").point(lambda v: 255 if v > 128 else 0)
+    # Alternate square and diamond steps so the shaved outline stays rounded, not boxy.
+    for step in range(pixels):
+        if step % 2 == 0:
+            alpha = alpha.filter(ImageFilter.MinFilter(3))
+        else:
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                alpha = ImageChops.darker(alpha, ImageChops.offset(alpha, dx, dy))
+    alpha = alpha.filter(ImageFilter.GaussianBlur(1))
+    image = image.copy()
+    image.putalpha(ImageChops.darker(alpha, image.getchannel("A")))
+    return image
 
 
 def frame(image: Image.Image) -> Image.Image:
@@ -76,13 +90,21 @@ def frame(image: Image.Image) -> Image.Image:
 
 
 def main() -> None:
-    if len(sys.argv) not in (4, 5):
+    args = sys.argv[1:]
+    border = 0
+    if "--border" in args:
+        at = args.index("--border")
+        border = int(args[at + 1])
+        del args[at : at + 2]
+    if len(args) not in (3, 4):
         sys.exit(__doc__)
-    source, pack, sticker = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
-    look = sys.argv[4] if len(sys.argv) == 5 else None
+    source, pack, sticker = Path(args[0]), args[1], args[2]
+    look = args[3] if len(args) == 4 else None
     image = Image.open(source).convert("RGBA")
     if not has_transparency(image):
         image = remove_background(image)
+    if border > 0:
+        image = shave(image, border)
     image = frame(image)
     folder = Path(__file__).resolve().parent.parent / "public" / "packs" / pack
     folder.mkdir(parents=True, exist_ok=True)

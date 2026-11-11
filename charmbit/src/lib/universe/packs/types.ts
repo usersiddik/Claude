@@ -17,6 +17,8 @@ export interface PackSticker {
   tags: string;
   /** What to ask the image generator for: pose, expression, props. */
   scene: string;
+  /** Shown locked (blurred, with a gold lock) until a paid plan exists. */
+  premium?: boolean;
 }
 
 export interface PackLook {

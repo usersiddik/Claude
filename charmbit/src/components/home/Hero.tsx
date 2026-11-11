@@ -51,7 +51,8 @@ function Headline() {
 
 /** Everything the sheet shows comes from the collections visitors can see. */
 function sheetData(collections: readonly LiveCollection[]) {
-  const pack = collections.find((collection) => collection.media === "image");
+  // A pack leads the sheet once it has enough stickers to fill it.
+  const pack = collections.find((collection) => collection.media === "image" && collection.items.length >= 6);
   if (pack) {
     // An image pack leads: its first sticker is featured, with its outfits as the colour dots.
     const [first, ...rest] = pack.items;
