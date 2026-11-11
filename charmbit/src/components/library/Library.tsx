@@ -9,6 +9,7 @@ import { buildSearchIndex, POPULAR_SEARCHES, search } from "@/lib/universe/searc
 import { CopyIsland } from "@/components/ui/CopyIsland";
 import type { StrokeId } from "@/lib/sticker";
 import { BEFORE_SIGN_IN } from "@/components/auth/AuthProvider";
+import { brandKey } from "@/lib/brand";
 import { Editor } from "./Editor";
 import { SEARCH_EVENT } from "./search-events";
 import styles from "./Library.module.css";
@@ -34,7 +35,7 @@ interface Saved {
   query: string;
 }
 
-const SAVED = "charmbit:library";
+const SAVED = brandKey("library");
 let saved: Saved | null | undefined;
 
 /** Reads (once) what the library saved before leaving for Google sign-in. */

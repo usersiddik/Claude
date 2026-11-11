@@ -14,7 +14,7 @@ export function iconsCollection(assets: readonly IconAsset[]): LiveCollection {
     title: "Charms & Icons",
     noun: "Charm",
     tagline: "Flat, crisp, recolourable.",
-    description: "The original Charmbit set: flat charms and UI marks with an ink line that follows your text colour.",
+    description: "The original set: flat charms and UI marks with an ink line that follows your text colour.",
     families: ["icons"],
     accent: "#ECEAE6",
     groups: [

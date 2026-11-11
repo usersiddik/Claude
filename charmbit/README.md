@@ -1,9 +1,11 @@
-# Charmbit
+# Sticker universe (working name)
 
-**Tiny charms. Serious code.**
-Original SVG characters, icons, and Duos for products people remember.
+> **The brand name is not decided yet.** "Charmbit" is only a working name. It lives in one place,
+> `src/lib/brand.ts`, and nowhere else in `src/` (a test enforces this). See [Brand name](#brand-name).
 
-Charmbit is a growing universe of original stickers, for people who send them to friends and for
+**Original art, made to share.**
+
+This is a growing universe of original stickers, for people who send them to friends and for
 developers who ship them in products. The site reads like a magazine in four chapters:
 
 1. **The universe** (hero): an editorial headline surrounded by floating stickers from every collection, with
@@ -39,6 +41,21 @@ toggles where they make sense (blush, stripes or spots, whiskers, glass ears, st
   `/stickers/<collection>/<sticker>.svg`); four small routes under `/api/auth` handle sign-in.
 - Runtime dependencies: `next`, `react`, and `react-dom` only (sign-in uses Web Crypto and `fetch`).
 
+## Brand name
+
+Everything people see (header wordmark, placeholder monogram, favicon, page title, social tags,
+JSON-LD, footer, Flutter export comments) reads from `src/lib/brand.ts`.
+
+- **Try a name without touching code:** set `NEXT_PUBLIC_BRAND_NAME=Kitemuse` in `.env.local` or in
+  Vercel's environment variables, then rebuild or redeploy.
+- **Adopt the final name:** change `WORKING_NAME` in `src/lib/brand.ts`.
+- **Internal identifier:** storage keys, events and cookies use `BRAND.id` (`"studio"`), which is separate
+  from the display name, so a rename doesn't sign anyone out or lose saved settings.
+- **Logo:** the mark is a placeholder monogram (the brand initial on a yellow tile) until a real logo is
+  designed. Replace `LogoMark` in `src/components/ui/Wordmark.tsx` and `src/app/icon.tsx`.
+- **Not yet renamed:** the project folder (`charmbit/`, which Vercel's root directory setting points at) and
+  the Vercel project and domain (`claude-charmbit.vercel.app`). Rename those together once the name is final.
+
 ## Getting started
 
 ```bash
@@ -73,7 +90,7 @@ How it works (no auth library, no database):
   audience, expiry, and verified email, then sets a signed, http-only session cookie (30 days).
 - `GET /api/auth/session` says whether sign-in is on and who is signed in; `POST /api/auth/logout` signs out.
 - Cookies are signed with HMAC-SHA256 (`AUTH_SECRET`) and compared in constant time. Nothing is stored on the
-  server; Charmbit only receives the name, email, and photo Google shares.
+  server; the site only receives the name, email, and photo Google shares.
 - Before leaving for Google, the library saves the visitor's colours, outline, and search in `sessionStorage`
   and restores them on return, so they land back on the same sticker. A note says who they're signed in as.
 

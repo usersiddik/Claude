@@ -1,3 +1,5 @@
+import { BRAND } from "../brand.ts";
+
 /** Server-side sign-in settings. Sign-in (and the copy gate) turns on when all three are set. */
 export interface AuthConfig {
   clientId: string;
@@ -13,8 +15,8 @@ export function authConfig(): AuthConfig | null {
   return { clientId, clientSecret, secret };
 }
 
-export const SESSION_COOKIE = "cb_session";
-export const STATE_COOKIE = "cb_oauth";
+export const SESSION_COOKIE = `${BRAND.id}_session`;
+export const STATE_COOKIE = `${BRAND.id}_oauth`;
 export const SESSION_TTL = 60 * 60 * 24 * 30;
 export const STATE_TTL = 60 * 10;
 

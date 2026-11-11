@@ -1,14 +1,17 @@
+import { BRAND } from "@/lib/brand";
 import styles from "./Wordmark.module.css";
 
-/** The Charmbit mark: a small charm on a key ring. */
+/**
+ * Placeholder mark: the brand initial on a rounded tile. It reads from the
+ * brand config, so it follows a rename until the real logo is designed.
+ */
 export function LogoMark({ size = 24 }: { size?: number }) {
   return (
     <svg viewBox="0 0 32 32" width={size} height={size} fill="none" aria-hidden="true" focusable="false">
-      <circle cx="16" cy="6.5" r="3.6" stroke="currentColor" strokeWidth="2.2" />
-      <rect x="5" y="10.5" width="22" height="18" rx="4" fill="#F6D673" stroke="currentColor" strokeWidth="2.2" />
-      <circle cx="12" cy="18.5" r="1.6" fill="currentColor" />
-      <circle cx="20" cy="18.5" r="1.6" fill="currentColor" />
-      <path d="M13.5 22.6c1.4 1.2 3.6 1.2 5 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <rect x="2.5" y="2.5" width="27" height="27" rx="7" fill="#F6D673" stroke="currentColor" strokeWidth="2.2" />
+      <text x="16" y="17" textAnchor="middle" dominantBaseline="central" fill="#141312" fontSize="19" style={{ fontFamily: "var(--font-display)" }}>
+        {BRAND.initial}
+      </text>
     </svg>
   );
 }
@@ -17,7 +20,7 @@ export function Wordmark() {
   return (
     <span className={styles.wordmark}>
       <LogoMark />
-      <span className={styles.text}>charmbit</span>
+      <span className={styles.text}>{BRAND.wordmark}</span>
     </span>
   );
 }

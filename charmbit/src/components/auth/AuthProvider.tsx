@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { User } from "@/lib/auth/token";
+import { brandKey } from "@/lib/brand";
 import { SignInDialog } from "./SignInDialog";
 import styles from "./Auth.module.css";
 
@@ -19,8 +20,8 @@ interface AuthValue {
 }
 
 /** Fired just before leaving for Google, so the library can save the visitor's work. */
-export const BEFORE_SIGN_IN = "charmbit:before-sign-in";
-const PENDING = "charmbit:signing-in";
+export const BEFORE_SIGN_IN = brandKey("before-sign-in");
+const PENDING = brandKey("signing-in");
 
 const AuthContext = createContext<AuthValue>({
   status: "disabled",

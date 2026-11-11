@@ -1,3 +1,5 @@
+import { brandKey } from "./brand.ts";
+
 /** Decoupled copy notifications: any component can announce, the island listens. */
 
 export interface CopyNotice {
@@ -11,7 +13,7 @@ export interface CopyNotice {
   verb?: "Copied" | "Saved";
 }
 
-const EVENT = "charmbit:copied";
+const EVENT = brandKey("copied");
 
 export function announceCopy(notice: CopyNotice): void {
   window.dispatchEvent(new CustomEvent<CopyNotice>(EVENT, { detail: notice }));

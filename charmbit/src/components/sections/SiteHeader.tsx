@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AccountButton } from "@/components/auth/AccountButton";
+import { BRAND } from "@/lib/brand";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { MobileMenu } from "./MobileMenu";
@@ -10,7 +11,7 @@ export function SiteHeader() {
   return (
     <header className={styles.header}>
       <div className={`container ${styles.inner}`}>
-        <Link href="/" className={styles.brand} aria-label="Charmbit home">
+        <Link href="/" className={styles.brand} aria-label={`${BRAND.name} home`}>
           <Wordmark />
         </Link>
         <nav aria-label="Primary" className={styles.nav}>

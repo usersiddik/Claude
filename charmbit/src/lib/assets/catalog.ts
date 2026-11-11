@@ -1,7 +1,7 @@
 import type { AssetMeta } from "./types.ts";
 
 /**
- * The Charmbit catalogue. Order here defines catalogue numbers (No. 001…).
+ * The icon catalogue. Order here defines catalogue numbers (No. 001…).
  * Each entry needs a matching file at `assets/svg/<family>s/<slug>.svg`.
  */
 const ALL_FORMATS = ["svg", "react", "flutter"] as const;

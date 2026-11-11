@@ -1,9 +1,12 @@
+import { BRAND } from "./brand.ts";
+
+/** Site copy and URLs. The name comes from the brand config; never write it here. */
 export const SITE = {
-  name: "Charmbit",
-  tagline: "Tiny charms. Serious code.",
+  name: BRAND.name,
+  tagline: "Original art, made to share.",
   supportingLine: "Original SVG characters, icons, and Duos for products people remember.",
   description:
-    "Charmbit is a growing universe of original stickers: cats, ghosts, frogs, rabbits, giraffes, Diwali kids, hearts, and lettered expressions. Recolour any sticker, paste it into a chat, or export it as SVG, React, or Flutter.",
+    `${BRAND.name} is a growing universe of original stickers: cats, ghosts, frogs, rabbits, giraffes, Diwali kids, hearts, and lettered expressions. Recolour any sticker, paste it into a chat, or export it as SVG, React, or Flutter.`,
   /** Canonical origin for metadata, OG, robots and sitemap URLs. */
   url: resolveSiteUrl(),
 } as const;

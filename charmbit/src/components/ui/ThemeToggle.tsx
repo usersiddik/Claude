@@ -1,5 +1,6 @@
 "use client";
 
+import { brandKey } from "@/lib/brand";
 import { MoonIcon, SunIcon } from "./icons";
 import styles from "./ThemeToggle.module.css";
 
@@ -12,7 +13,7 @@ export function ThemeToggle() {
     const next = current === "dark" ? "light" : "dark";
     root.dataset.theme = next;
     try {
-      localStorage.setItem("charmbit-theme", next);
+      localStorage.setItem(brandKey("theme"), next);
     } catch {
       // Storage can be unavailable (private mode); the theme still applies for this visit.
     }

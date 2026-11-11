@@ -1,5 +1,5 @@
 /**
- * Small, dependency-free helpers for the controlled SVG subset Charmbit uses.
+ * Small, dependency-free helpers for the controlled SVG subset the site uses.
  * Pure functions: safe to import on the server, the client, and in tests.
  */
 

@@ -1,5 +1,6 @@
 import { readViewBox, parseSvg } from "../assets/svg.ts";
 import { PALETTE } from "../assets/palette.ts";
+import { BRAND } from "../brand.ts";
 import { componentName } from "./naming.ts";
 import type { ExportOptions, ExportSource } from "./types.ts";
 
@@ -23,7 +24,7 @@ export function toFlutter(asset: ExportSource, options: ExportOptions = {}): str
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-/// ${asset.title} from Charmbit. Ink lines follow [color].
+/// ${asset.title} from ${BRAND.name}. Ink lines follow [color].
 class ${name} extends StatelessWidget {
   const ${name}({
     super.key,

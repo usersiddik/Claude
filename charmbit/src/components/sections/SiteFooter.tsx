@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/ui/Wordmark";
+import { BRAND } from "@/lib/brand";
 import { SITE } from "@/lib/site";
 import styles from "./SiteFooter.module.css";
 
@@ -36,12 +37,12 @@ export function SiteFooter() {
           ))}
         </ul>
         <div className={styles.bottom}>
-          <a href="#top" className={styles.brand} aria-label="Charmbit, back to top">
+          <a href="#top" className={styles.brand} aria-label={`${BRAND.name}, back to top`}>
             <Wordmark />
           </a>
           <p className={styles.tagline}>{SITE.tagline}</p>
           <p className={styles.small}>
-            Original artwork. © {new Date().getFullYear()} Charmbit. <Link href="/privacy">Privacy</Link>
+            Original artwork. © {new Date().getFullYear()} {BRAND.name}. <Link href="/privacy">Privacy</Link>
           </p>
         </div>
       </div>

@@ -1,8 +1,8 @@
 {
-  "name": "charmbit",
+  "name": "studio-web",
   "version": "0.1.0",
   "private": true,
-  "description": "Charmbit — original SVG characters, icons, and Duos with SVG, React, and Flutter exports.",
+  "description": "Original stickers and illustrations with SVG, React, and Flutter exports. Brand name lives in src/lib/brand.ts.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { SiteHeader } from "@/components/sections/SiteHeader";
-import { SESSION_TTL } from "@/lib/auth/config";
+import { SESSION_COOKIE, SESSION_TTL, STATE_COOKIE } from "@/lib/auth/config";
 import { SITE } from "@/lib/site";
 import styles from "./page.module.css";
 
@@ -53,10 +53,10 @@ export default function PrivacyPage() {
           <h2>Cookies and browser storage</h2>
           <ul>
             <li>
-              <strong>cb_session</strong>: your signed-in session, for up to {SESSION_DAYS} days.
+              <strong>{SESSION_COOKIE}</strong>: your signed-in session, for up to {SESSION_DAYS} days.
             </li>
             <li>
-              <strong>cb_oauth</strong>: a short-lived cookie that protects the sign-in itself, deleted when you return from Google (at most 10 minutes).
+              <strong>{STATE_COOKIE}</strong>: a short-lived cookie that protects the sign-in itself, deleted when you return from Google (at most 10 minutes).
             </li>
             <li>
               <strong>Theme</strong>: your light or dark choice, saved in your browser&rsquo;s local storage.

@@ -1,5 +1,5 @@
 /**
- * Charmbit asset schema.
+ * Asset schema.
  *
  * `AssetMeta` is what you author in `catalog.ts`. The loader joins it with the
  * SVG file at `assets/svg/<family>s/<slug>.svg` to produce a full `Asset`.
