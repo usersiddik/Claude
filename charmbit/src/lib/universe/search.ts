@@ -32,7 +32,7 @@ const CONCEPTS: Record<string, readonly string[]> = {
   cat: ["cats", "kitty", "kitten", "meow"],
   ghost: ["ghosts", "boo", "spooky"],
   frog: ["frogs", "toad"],
-  rabbit: ["rabbits", "bunny", "bunnies"],
+  rabbit: ["rabbits", "bunny", "bunnies", "lumi"],
   giraffe: ["giraffes"],
   kids: ["kid", "child", "children", "girl", "boy", "family", "siblings", "sister", "brother"],
 };

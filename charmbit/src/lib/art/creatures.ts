@@ -50,18 +50,20 @@ export interface Reaction {
   name: string;
   caption: string;
   group: ReactionGroup;
-  /** Two characters (cats). */
+  /** Two characters (cats and bunnies). */
   pair?: boolean;
   /** Uses the festive outfit colour. */
   outfit?: boolean;
   species: readonly Species[];
-  /** Has a standing version (cats). */
+  /** Has a standing version (cats and bunnies). */
   stands?: boolean;
 }
 
 const ALL: readonly Species[] = ["cat", "ghost", "frog", "rabbit", "giraffe"];
 const BODIED: readonly Species[] = ["cat", "frog", "rabbit", "giraffe"];
 const CAT: readonly Species[] = ["cat"];
+/** Species that stand and come in couples. */
+const PAIRED: readonly Species[] = ["cat", "rabbit"];
 
 export const REACTIONS: readonly Reaction[] = [
   { id: "hi", name: "Hi", caption: "Hiii!", group: "everyday", species: ALL, stands: true },
@@ -86,9 +88,9 @@ export const REACTIONS: readonly Reaction[] = [
   { id: "missyou", name: "Miss you", caption: "Miss you…", group: "love", species: ALL },
   { id: "smitten", name: "Heart eyes", caption: "Smitten", group: "love", species: ALL, stands: true },
   { id: "flowers", name: "Flowers for you", caption: "For you", group: "love", species: ALL, stands: true },
-  { id: "hug", name: "Hug", caption: "Hugs", group: "together", pair: true, species: CAT },
-  { id: "shoulder", name: "Head on shoulder", caption: "My person", group: "together", pair: true, species: CAT },
-  { id: "cheek", name: "Cheek to cheek", caption: "Us", group: "together", pair: true, species: CAT },
+  { id: "hug", name: "Hug", caption: "Hugs", group: "together", pair: true, species: PAIRED },
+  { id: "shoulder", name: "Head on shoulder", caption: "My person", group: "together", pair: true, species: PAIRED },
+  { id: "cheek", name: "Cheek to cheek", caption: "Us", group: "together", pair: true, species: PAIRED },
   { id: "diya", name: "Diya", caption: "Happy Diwali", group: "festive", outfit: true, species: ["cat", "ghost"] },
   { id: "sparkler", name: "Sparkler", caption: "Happy Diwali", group: "festive", outfit: true, species: ["cat", "ghost"] },
   { id: "diwali-sparklers", name: "Sparklers together", caption: "Happy Diwali", group: "festive", pair: true, outfit: true, species: CAT },
@@ -113,7 +115,7 @@ export interface CreatureSpec {
   heart?: string;
   glass: boolean;
   blush: boolean;
-  /** Stripes on cats, spots on frogs and giraffes, a fur tuft on rabbits. */
+  /** Stripes on cats, spots on frogs and giraffes. */
   pattern: boolean;
   whiskers: boolean;
   /** Filter-free output (no blur or texture) for renderers like flutter_svg. */
@@ -124,7 +126,7 @@ export const DEFAULT_LOOKS: Record<Species, Look> = {
   cat: { fur: "#F4A24C", eyes: "#2E9E6A" },
   ghost: { fur: "#F7F5F2", eyes: "#3A2C26" },
   frog: { fur: "#86C25A", eyes: "#8E6B2E" },
-  rabbit: { fur: "#EADCCB", eyes: "#8E6B2E" },
+  rabbit: { fur: "#F7F5F2", eyes: "#6B4226" },
   giraffe: { fur: "#F2B84B", eyes: "#3A2C26" },
 };
 
@@ -300,17 +302,23 @@ function fever(id: Id, sid: Id, spec: CreatureSpec, o: CharacterOptions): string
 
 /* Couples ------------------------------------------------------------------- */
 
+/** The bow that tells the partner bunny apart. */
+const bow = (at: Point, color: string) =>
+  `<g data-part="bow" transform="translate(${at[0]} ${at[1]}) rotate(-16)" stroke="${darken(color, 0.3)}" stroke-width="3.5" stroke-linejoin="round">` +
+  `<path d="M0 0C-16-20-40-22-42-4C-44 14-18 16 0 0Z" fill="${color}"/><path d="M0 0C16-20 40-22 42-4C44 14 18 16 0 0Z" fill="${color}"/><circle r="9" fill="${lighten(color, 0.2)}"/></g>`;
+
 function pair(spec: CreatureSpec, base: Base, ids: { a: Id; b: Id; s: Id }): string {
-  const rig = rigOf("cat");
+  const species = base.species;
+  const rig = rigOf(species);
   const gold = `url(#${ids.s("gold")})`;
   const a = (face: Face, pose: Pose, extra: Partial<CharacterOptions> = {}) =>
-    character(ids.a, { ...base, species: "cat", look: spec.look, face, pose, outfit: undefined, gold, ...extra });
+    character(ids.a, { ...base, species, look: spec.look, face, pose, outfit: undefined, gold, ...extra });
   const b = (face: Face, pose: Pose, extra: Partial<CharacterOptions> = {}) =>
-    character(ids.b, { ...base, species: "cat", look: spec.partner, face, pose, outfit: undefined, gold, ...extra });
+    character(ids.b, { ...base, species, look: spec.partner, face, pose, outfit: undefined, gold, headwear: species === "rabbit" ? bow([196, 150], "#F7A8C0") : undefined, ...extra });
   const content: Face = { eyes: "happy", mouth: "smile", blush: 2 };
   const heart = (at: Point, s = 46) => classicHeart(ids.s, at, s);
   const hugArm = (id: Id, look: Look, from: Point, to: Point, bend: number, sleeve?: string) => {
-    const p = paletteFor("cat", look);
+    const p = paletteFor(species, look);
     return limb(
       {
         fill: sleeve ? lighten(sleeve, 0.05) : `url(#${id("fur")})`,
@@ -417,8 +425,8 @@ export function drawCreature(spec: CreatureSpec): string {
   const ns = namespace(`cb${creatureKey(spec)}`);
   const ids = { a: ns("a"), b: ns("b"), s: ns("s") };
   const portable = Boolean(spec.portable);
-  const species: Species = reaction.pair ? "cat" : reaction.species.includes(spec.species) ? spec.species : "cat";
-  const stance: Stance = species === "cat" && reaction.stands && spec.stance === "stand" ? "stand" : "sit";
+  const species: Species = reaction.species.includes(spec.species) ? spec.species : "cat";
+  const stance: Stance = PAIRED.includes(species) && reaction.stands && spec.stance === "stand" ? "stand" : "sit";
   const paint: ScenePaint = { outfit: spec.outfit, heart: spec.heart ?? "#E4183F" };
   const base: Base = {
     species,
@@ -434,7 +442,7 @@ export function drawCreature(spec: CreatureSpec): string {
   const defs =
     characterDefs(ids.a, paletteFor(species, spec.look), portable) +
     festiveDefs(ids.a, spec.outfit) +
-    (reaction.pair ? characterDefs(ids.b, paletteFor("cat", spec.partner), portable) + festiveDefs(ids.b, spec.outfit) : "") +
+    (reaction.pair ? characterDefs(ids.b, paletteFor(species, spec.partner), portable) + festiveDefs(ids.b, spec.outfit) : "") +
     sceneDefs(ids.s, paint);
   const body = reaction.pair ? pair(spec, base, ids) : single(ids.a, ids.s, { ...spec, species }, base);
   return svgDocument(defs, body);

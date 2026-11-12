@@ -5,7 +5,7 @@
 import { optimizeSvg } from "../assets/svg.ts";
 import type { ExportFormat } from "../assets/types.ts";
 import { FORMATS } from "../exports/index.ts";
-import { cats, frogs, ghosts, giraffes, rabbits } from "./collections/creatures.ts";
+import { cats, frogs, ghosts, giraffes, lumiColour } from "./collections/creatures.ts";
 import { diwali } from "./collections/diwali.ts";
 import { everyday } from "./collections/everyday.ts";
 import { iconsCollection, type IconAsset } from "./collections/icons.ts";
@@ -19,7 +19,7 @@ export type { IconAsset } from "./collections/icons.ts";
 export { CATEGORIES, categoryOf, colorOf, flagOf } from "./types.ts";
 
 /** Generated collections (everything except the file-based icons). */
-export const GENERATED: readonly LiveCollection[] = [love, cats, diwali, ghosts, everyday, frogs, rabbits, giraffes];
+export const GENERATED: readonly LiveCollection[] = [love, cats, diwali, ghosts, everyday, frogs, lumiColour, giraffes];
 export const UPCOMING = [christmas, eid, halloween] as const;
 
 export const FAMILIES: readonly { id: Family | "all"; name: string }[] = [

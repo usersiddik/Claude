@@ -25,7 +25,8 @@ developers who ship them in products. The site reads like a magazine in four cha
 | Diwali                 | 25 | 16 scenes with kids and family (diyas, sparklers, rangoli, kandil, laddoos, aarti, anar), 3 lettered wishes, 6 decor pieces |
 | Ghosts                 | 23 | The full mood set, plus Boo! and festive lights |
 | Everyday Expressions   | 20 | Lettered stickers: Hi!, Good morning, LOL, OMG, Sorry, Miss you, Get well soon… |
-| Frogs, Rabbits, Giraffes | 21 each | The shared mood set on new characters |
+| Lumi (colour)          | 40 | The white bunny drawn in code: 21 sitting moods, 16 standing poses, 3 couples with her partner Mimi |
+| Frogs, Giraffes        | 21 each | The shared mood set on new characters |
 | Charms & Icons         | 14 | The original flat charms and UI marks |
 | Christmas, Eid, Halloween | soon | Preview covers |
 
@@ -96,6 +97,10 @@ A tab with nothing in it shows "Soon" and an honest empty message.
 
 **Lumi**, a baby white bunny (`?c=lumi`), is the second image pack:
 
+- **Two Lumis:** the image pack here (`?c=lumi`, WhatsApp stickers) and a drawn, recolourable one
+  (`?c=lumi-colour`, Colour stickers) that replaced the old Rabbits collection. The drawn one is the
+  `rabbit` species in `src/lib/art/species.ts`: white by default, two upright ears that droop when she is
+  sad, rosy cheeks, sitting and standing poses, and couples where Mimi wears a pink bow.
 - **Definition:** `src/lib/universe/packs/lumi.ts`: 34 stickers in four groups (Sweet & shy, Big feelings,
   Everyday, and Together with her partner Mimi, who is the same bunny with a pink bow). No outfits.
 - **Prompts:** `docs/lumi-prompts.md` (`node --experimental-strip-types scripts/prompts.ts lumi`). Each pack
@@ -167,7 +172,7 @@ The gate protects the buttons; like any website, the artwork itself can still be
 folded into shared concepts before matching, so people can type the way they talk:
 
 - "mwah" and "smooch" find kisses; "sad" finds crying and single-tear stickers; "birthday" finds Yay and
-  Congrats; "bunny" finds rabbits; "good morning" is one idea, not two words.
+  Congrats; "bunny" finds Lumi; "good morning" is one idea, not two words.
 - Each sticker is indexed by its name (strongest), extra meanings (a tear also says sorry), caption and id,
   then its group and collection. Every query word must match; prefixes of three letters or more count.
 - Stickers from the collection a word names rank first ("diwali" leads with the Diwali collection).

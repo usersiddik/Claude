@@ -459,10 +459,10 @@ const RABBIT_BODY = "M186 326C158 366 152 432 164 474C172 500 204 506 256 506C30
 const rabbitRig: Rig = {
   face: {
     eyes: [
-      [204, 232],
-      [308, 232],
+      [200, 232],
+      [312, 232],
     ],
-    r: 33,
+    r: 37,
     mouth: [256, 282],
     cheeks: [
       [156, 282],
@@ -512,20 +512,19 @@ const rabbitRig: Rig = {
   feetY: 490,
 };
 
+const RABBIT_STAND_BODY = "M190 326C170 358 166 402 174 432C180 454 206 462 256 462C306 462 332 454 338 432C346 402 342 358 322 326Z";
+
+/** Two tall upright ears with peach insides. They lean out when she is sad and tip in when she is shy. */
 function rabbitEar(id: Id, p: Palette, o: CharacterOptions, side: -1 | 1): string {
-  const x = 256 + side * 66;
-  const rotate = side * 10;
-  const floppy = side === 1;
-  // The right ear folds over at the tip, which reads as soft and a little shy.
-  const outer = floppy
-    ? `M${x - 30} 160C${x - 38} 112 ${x - 32} 64 ${x - 8} 40C${x + 18} 14 ${x + 70} 24 ${x + 92} 52C${x + 104} 68 ${x + 92} 82 ${x + 74} 74C${x + 54} 64 ${x + 34} 62 ${x + 26} 86C${x + 22} 110 ${x + 28} 136 ${x + 32} 160Z`
-    : `M${x - 32} 160C${x - 42} 110 ${x - 38} 52 ${x - 10} 22C${x + 2} 10 ${x + 18} 10 ${x + 26} 26C${x + 44} 62 ${x + 40} 116 ${x + 30} 160Z`;
-  const inner = floppy
-    ? `M${x - 14} 150C${x - 18} 112 ${x - 14} 78 ${x} 60C${x + 10} 50 ${x + 18} 60 ${x + 14} 80C${x + 10} 104 ${x + 14} 128 ${x + 16} 150Z`
-    : `M${x - 16} 150C${x - 22} 110 ${x - 20} 66 ${x - 2} 40C${x + 6} 32 ${x + 12} 36 ${x + 14} 46C${x + 22} 76 ${x + 22} 114 ${x + 16} 150Z`;
+  const x = 256 + side * 62;
+  const sad = o.face.brows === "sad" || o.face.eyes === "squeeze" || o.face.eyes === "teary";
+  const angry = o.face.brows === "angry";
+  const rotate = side * (sad ? 108 : angry ? 32 : 12);
+  const outer = `M${x - 36} 172C${x - 52} 118 ${x - 50} 52 ${x - 22} 20C${x - 10} 6 ${x + 12} 6 ${x + 24} 20C${x + 50} 52 ${x + 52} 118 ${x + 36} 172Z`;
+  const inner = `M${x - 19} 160C${x - 30} 118 ${x - 28} 68 ${x - 10} 42C${x - 4} 34 ${x + 6} 34 ${x + 12} 42C${x + 28} 68 ${x + 30} 118 ${x + 19} 160Z`;
   const fill = o.glass ? `url(#${id("glass")})` : `url(#${id("fur")})`;
   return (
-    `<g transform="rotate(${floppy ? 4 : rotate} ${x} 160)">` +
+    `<g transform="rotate(${rotate} ${x} 172)">` +
     `<path d="${outer}" fill="${fill}" stroke="${o.glass ? "#FFFFFF" : p.outline}" stroke-width="5" stroke-linejoin="round"/>` +
     `<path d="${inner}" fill="url(#${id("ear")})"/>` +
     `</g>`
@@ -546,6 +545,10 @@ function rabbitHead(id: Id, p: Palette, o: CharacterOptions, face: FaceAnchors):
     `<ellipse cx="256" cy="236" rx="128" ry="90" fill="url(#${id("glow")})"/>`,
     shine(200, 150, 48, 14, -14),
     `<ellipse cx="256" cy="294" rx="58" ry="36" fill="url(#${id("muzzle")})"/>`,
+    // Lumi's big rosy cheeks, under the usual blush marks.
+    o.blush && o.face.blush !== 0
+      ? `<g data-part="rosy" fill="#F7A1AE"><ellipse cx="150" cy="284" rx="40" ry="26" opacity="0.2"/><ellipse cx="150" cy="284" rx="28" ry="17" opacity="0.26"/><ellipse cx="362" cy="284" rx="40" ry="26" opacity="0.2"/><ellipse cx="362" cy="284" rx="28" ry="17" opacity="0.26"/></g>`
+      : "",
     facePaint(id, p, o, face),
     `<path d="M246 266C246 260 266 260 266 266C266 272 260 276 256 277C252 276 246 272 246 266Z" fill="url(#${id("nose")})"/>`,
     mouth(p, o.face, face),
@@ -555,12 +558,23 @@ function rabbitHead(id: Id, p: Palette, o: CharacterOptions, face: FaceAnchors):
   ].join("");
 }
 
-function rabbitBody(id: Id, p: Palette): string {
-  return `<path d="${RABBIT_BODY}" fill="url(#${id("fur")})" ${outlineOf(p)}/>` + `<ellipse cx="256" cy="414" rx="58" ry="70" fill="url(#${id("muzzle")})"/>`;
+function rabbitBody(id: Id, p: Palette, o: CharacterOptions): string {
+  const outline = outlineOf(p);
+  if (o.stance !== "stand") {
+    return `<path d="${RABBIT_BODY}" fill="url(#${id("fur")})" ${outline}/>` + `<ellipse cx="256" cy="414" rx="58" ry="70" fill="url(#${id("muzzle")})"/>`;
+  }
+  // Standing: shorter torso, two short legs with long bunny feet.
+  const legs =
+    `<path d="M202 438C200 462 200 480 204 494H240C244 480 244 462 242 438Z" fill="url(#${id("fur")})" ${outline}/>` +
+    `<path d="M270 438C268 462 268 480 272 494H308C312 480 312 462 310 438Z" fill="url(#${id("fur")})" ${outline}/>` +
+    `<ellipse cx="214" cy="494" rx="36" ry="15" fill="url(#${id("fur")})" ${outline}/><ellipse cx="298" cy="494" rx="36" ry="15" fill="url(#${id("fur")})" ${outline}/>` +
+    `<path d="M200 488v9M214 488v9M298 488v9M312 488v9" stroke="${p.outline}" stroke-opacity="0.45" stroke-width="3" stroke-linecap="round"/>`;
+  return legs + `<path d="${RABBIT_STAND_BODY}" fill="url(#${id("fur")})" ${outline}/>` + `<ellipse cx="256" cy="400" rx="48" ry="50" fill="url(#${id("muzzle")})"/>`;
 }
 
-function rabbitBack(id: Id, p: Palette): string {
-  return `<g fill="${p.muzzle}" ${outlineOf(p)}><circle cx="364" cy="470" r="30"/></g><path d="M352 458c6-6 16-8 24-4" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.8"/>`;
+function rabbitBack(id: Id, p: Palette, o: CharacterOptions): string {
+  const [x, y, r] = o.stance === "stand" ? [346, 432, 24] : [364, 470, 30];
+  return `<g fill="${p.muzzle}" ${outlineOf(p)}><circle cx="${x}" cy="${y}" r="${r}"/></g><path d="M${x - 12} ${y - 12}c6-6 16-8 24-4" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.8"/>`;
 }
 
 /* Giraffe -------------------------------------------------------------------- */
@@ -721,7 +735,7 @@ export function paletteFor(species: Species, look: Look): Palette {
   const p = palette(look);
   if (species === "giraffe") return { ...p, stripe: mix(darken(look.fur, 0.38), "#6B3A1E", 0.45), muzzle: lighten(look.fur, 0.62) };
   if (species === "frog") return { ...p, stripe: darken(look.fur, 0.3), muzzle: mix(lighten(look.fur, 0.7), "#FFF6D8", 0.5) };
-  if (species === "rabbit") return { ...p, earInner: "#F8B8C4" };
+  if (species === "rabbit") return { ...p, earInner: "#F9B49C", nose: "#F58E8E" };
   return p;
 }
 

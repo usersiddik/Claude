@@ -38,11 +38,12 @@ export const FROG_SKIN: readonly Swatch[] = [
 ];
 
 export const RABBIT_FUR: readonly Swatch[] = [
-  { id: "oat", name: "Oat", hex: "#EADCCB" },
   { id: "snow", name: "Snow", hex: "#F7F5F2" },
+  { id: "oat", name: "Oat", hex: "#EADCCB" },
   { id: "cocoa", name: "Cocoa", hex: "#B08462" },
   { id: "grey", name: "Grey", hex: "#B9BAC6" },
   { id: "peach", name: "Peach", hex: "#F6C7A8" },
+  { id: "rose", name: "Rose", hex: "#F7C6D2" },
   { id: "lavender", name: "Lavender", hex: "#D3C4F2" },
   { id: "charcoal", name: "Charcoal", hex: "#5A5B66" },
 ];
@@ -61,6 +62,7 @@ export const EYES: readonly Swatch[] = [
   { id: "amber", name: "Amber", hex: "#C27A22" },
   { id: "sky", name: "Sky", hex: "#3E8FDE" },
   { id: "hazel", name: "Hazel", hex: "#8E6B2E" },
+  { id: "cocoa", name: "Cocoa", hex: "#6B4226" },
   { id: "violet", name: "Violet", hex: "#8A5FD6" },
   { id: "onyx", name: "Onyx", hex: "#3A2C26" },
 ];

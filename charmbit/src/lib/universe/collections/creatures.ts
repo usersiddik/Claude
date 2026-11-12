@@ -34,7 +34,8 @@ const GROUP_NAMES: Record<Reaction["group"], string> = {
 const itemId = (reaction: ReactionId, stance: Stance) => (stance === "stand" ? `${reaction}-standing` : reaction);
 
 export function creatureCollection(config: CreatureConfig): LiveCollection {
-  const cat = config.species === "cat";
+  // Cats and bunnies stand as well as sit, and come in couples.
+  const cat = config.species === "cat" || config.species === "rabbit";
   const toggles = ["blush", ...(config.pattern ? ["pattern"] : []), ...(config.whiskers ? ["whiskers"] : []), ...(config.glass ? ["glass"] : [])];
   const usesFor = (reaction: Reaction) => [
     "fur",
@@ -69,14 +70,14 @@ export function creatureCollection(config: CreatureConfig): LiveCollection {
         { id: "standing", name: "Standing" },
         { id: "couples", name: "Couples" },
         { id: "festive", name: "Festive" },
-      ]
+      ].filter((group) => items.some((item) => item.group === group.id))
     : (["everyday", "feelings", "love", "festive"] as const).filter((group) => items.some((item) => item.group === group)).map((group) => ({ id: group, name: GROUP_NAMES[group] }));
 
   const look = DEFAULT_LOOKS[config.species];
   const properties: Property[] = [
     { id: "fur", kind: "color", label: config.colorLabel, swatches: config.swatches, default: look.fur, custom: true },
     { id: "eyes", kind: "color", label: "Eyes", swatches: EYES, default: look.eyes },
-    ...(cat ? [{ id: "partner", kind: "color", label: "Partner", swatches: CAT_FUR, default: DEFAULT_CREATURE.partner.fur, custom: true } as const] : []),
+    ...(cat ? [{ id: "partner", kind: "color", label: "Partner", swatches: config.swatches, default: DEFAULT_CREATURE.partner.fur, custom: true } as const] : []),
     ...(items.some((item) => item.uses.includes("outfit")) ? [{ id: "outfit", kind: "color", label: "Outfit", swatches: OUTFITS, default: DEFAULT_CREATURE.outfit } as const] : []),
     { id: "heart", kind: "color", label: "Heart", swatches: HEARTS, default: "#E4183F" },
     { id: "blush", kind: "toggle", label: "Blush", default: true },
@@ -105,12 +106,13 @@ export function creatureCollection(config: CreatureConfig): LiveCollection {
         reaction,
         stance,
         look: { fur: colorOf(values, "fur", look.fur), eyes: colorOf(values, "eyes", look.eyes) },
-        partner: { fur: colorOf(values, "partner", DEFAULT_CREATURE.partner.fur), eyes: DEFAULT_CREATURE.partner.eyes },
+        // Mimi, the partner bunny, shares Lumi's eye colour; the partner cat keeps its own.
+        partner: { fur: colorOf(values, "partner", DEFAULT_CREATURE.partner.fur), eyes: config.species === "rabbit" ? colorOf(values, "eyes", look.eyes) : DEFAULT_CREATURE.partner.eyes },
         outfit: colorOf(values, "outfit", DEFAULT_CREATURE.outfit),
         heart: colorOf(values, "heart", "#E4183F"),
         glass: flagOf(values, "glass", false),
         blush: flagOf(values, "blush", true),
-        pattern: flagOf(values, "pattern", true),
+        pattern: config.pattern ? flagOf(values, "pattern", true) : false,
         whiskers: flagOf(values, "whiskers", true),
         portable: options.portable,
       });
@@ -166,20 +168,21 @@ export const frogs = creatureCollection({
   cover: ["yay", "smitten", "cool"],
 });
 
-export const rabbits = creatureCollection({
-  id: "rabbits",
+/** Lumi drawn in code: the white bunny from the WhatsApp pack, recolourable. */
+export const lumiColour = creatureCollection({
+  id: "lumi-colour",
   species: "rabbit",
-  title: "Rabbits",
-  noun: "Rabbit",
-  tagline: "One ear up, one ear down.",
-  description: "A soft bunny with one floppy ear, buck teeth, and a pom-pom tail.",
-  accent: "#F2EBE2",
+  title: "Lumi",
+  noun: "Bunny",
+  tagline: "Soft, shy, and any colour you like.",
+  description: "Lumi the baby white bunny, sitting and standing through every mood, plus hugs with her partner Mimi.",
+  accent: "#FBE3E6",
   colorLabel: "Fur",
   swatches: RABBIT_FUR,
   glass: "Glass ears",
-  pattern: "Fur tuft",
+  pattern: false,
   whiskers: true,
-  cover: ["love", "hi", "shy"],
+  cover: ["shy-standing", "love", "hi"],
 });
 
 export const giraffes = creatureCollection({

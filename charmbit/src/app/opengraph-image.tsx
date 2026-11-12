@@ -15,7 +15,7 @@ const PICKS = [
   ["diwali", "sparkler-siblings", 210, 970, 14, 6],
   ["frogs", "yay", 160, 46, 430, -8],
   ["diwali", "diya-girl", 150, 250, 470, 8],
-  ["rabbits", "love", 130, 820, 488, -6],
+  ["lumi-colour", "love", 130, 820, 488, -6],
   ["love", "cat-flowers", 200, 990, 392, 4],
 ] as const;
 

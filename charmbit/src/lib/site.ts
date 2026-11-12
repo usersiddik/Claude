@@ -6,7 +6,7 @@ export const SITE = {
   tagline: "Original art, made to share.",
   supportingLine: "Original SVG characters, icons, and Duos for products people remember.",
   description:
-    `${BRAND.name} is a growing universe of original stickers: cats, ghosts, frogs, rabbits, giraffes, Diwali kids, hearts, and lettered expressions. Recolour any sticker, paste it into a chat, or export it as SVG, React, or Flutter.`,
+    `${BRAND.name} is a growing universe of original stickers: cats, ghosts, frogs, giraffes, Lumi the bunny, Diwali kids, hearts, and lettered expressions. Recolour any sticker, paste it into a chat, or export it as SVG, React, or Flutter.`,
   /** Where questions about licensing, privacy and support go. */
   contact: "namesiddik@gmail.com",
   /** Canonical origin for metadata, OG, robots and sitemap URLs. */
