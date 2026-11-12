@@ -59,10 +59,37 @@ def remove_background(image: Image.Image, tolerance: int = TOLERANCE) -> Image.I
     background = ImageChops.multiply(ImageChops.multiply(red.point(lambda v: 255 if v == 255 else 0), green.point(lambda v: 255 if v == 0 else 0)), blue.point(lambda v: 255 if v == 255 else 0))
     alpha = ImageChops.invert(background)
     # Pull the edge in by a pixel to drop the background-tinted fringe, then soften it.
-    alpha = alpha.filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.8))
+    alpha = alpha.filter(ImageFilter.MinFilter(3))
     result = rgb.convert("RGBA")
-    result.putalpha(alpha)
-    return result
+    result.putalpha(alpha.filter(ImageFilter.GaussianBlur(0.8)))
+    return unmix_edge(result, alpha, key)
+
+
+def unmix_edge(image: Image.Image, solid: Image.Image, key: tuple[int, int, int]) -> Image.Image:
+    """
+    Fur and hair end in strands that are half background, which shows as a grey
+    rim on a light page. In a thin band along the outline, work out how much of
+    each pixel is background, make that part transparent, and take the
+    background colour back out of what is left. Needs NumPy; skipped without it.
+    """
+    try:
+        import numpy
+    except ImportError:
+        return image
+    band = numpy.asarray(solid) > 0
+    band &= ~(numpy.asarray(solid.filter(ImageFilter.MinFilter(15))) > 0)
+    pixels = numpy.asarray(image).astype("float32")
+    colour, alpha = pixels[..., :3], pixels[..., 3] / 255
+    back = numpy.array(key, dtype="float32")
+    # How far each pixel is from the background colour, against the brightest nearby colour.
+    away = numpy.abs(colour - back).max(axis=2)
+    full = max(60.0, float(numpy.percentile(away[band], 85))) if band.any() else 255.0
+    cover = numpy.clip(away / full, 0, 1)
+    cover = numpy.where(band, cover, 1.0)
+    clean = (colour - (1 - cover[..., None]) * back) / numpy.maximum(cover[..., None], 0.05)
+    colour = numpy.where(band[..., None], numpy.clip(clean, 0, 255), colour)
+    out = numpy.dstack([colour, numpy.clip(alpha * cover, 0, 1) * 255]).astype("uint8")
+    return Image.fromarray(out, "RGBA")
 
 
 def shave(image: Image.Image, pixels: int) -> Image.Image:
