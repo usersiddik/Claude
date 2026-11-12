@@ -13,6 +13,9 @@ export type PackFiles = Readonly<Record<string, readonly string[]>>;
 
 const EXTENSIONS = ["webp", "png"] as const;
 
+/** Shown for stickers whose artwork has not been added yet. */
+export const PLACEHOLDER = "/packs/placeholder.svg";
+
 export const packPath = (packId: string, file: string) => `/packs/${packId}/${file}`;
 
 /** The file for a sticker in a look, if present. The default look has no suffix. */
@@ -41,7 +44,7 @@ export function buildPack(definition: PackDefinition, fileNames: readonly string
       premium.push({ sticker, src: main?.src });
       continue;
     }
-    if (!main) continue;
+    // No file yet: still listed, as a "Coming soon" tile, so the full set is visible.
     items.push({
       id: sticker.id,
       name: sticker.name,
@@ -49,10 +52,13 @@ export function buildPack(definition: PackDefinition, fileNames: readonly string
       group: sticker.group,
       tags: sticker.tags,
       uses: [],
-      image: { src: main.src, variants: found.length > 1 ? found : [] },
+      image: main
+        ? { src: main.src, variants: found.length > 1 ? found : [] }
+        : { src: PLACEHOLDER, variants: [], pending: true },
     });
   }
   if (items.length === 0) return null;
+  const ready = items.filter((item) => !item.image?.pending);
   const present = new Set(items.map((item) => item.id));
   const cover = definition.cover.filter((id) => present.has(id));
   return {
@@ -77,7 +83,7 @@ export function buildPack(definition: PackDefinition, fileNames: readonly string
       group: sticker.group,
       uses: [],
       locked: true,
-      image: { src: src ?? items[index % items.length]!.image!.src, variants: [] },
+      image: { src: src ?? (ready[index % ready.length]?.image?.src ?? PLACEHOLDER), variants: [] },
     })),
     // Image stickers are files; this wrapper exists only to satisfy code that expects SVG.
     render: (item) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><image href="${item.image?.src ?? ""}" width="512" height="512"/></svg>`,

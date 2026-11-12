@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect x="14" y="14" width="228" height="228" rx="34" fill="none" stroke="#9A9385" stroke-width="3" stroke-dasharray="10 9"/>
+  <text x="128" y="122" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="600" fill="#7A7468">Coming</text>
+  <text x="128" y="150" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="600" fill="#7A7468">soon</text>
+</svg>

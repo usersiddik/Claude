@@ -6,7 +6,8 @@ import { buildUniverse, countStickers, defaultValues, exportItem, findItem, isLi
 import { refsResolve } from "./art.test.ts";
 
 const universe = buildUniverse(loadAssets());
-const live = universe.filter(isLive);
+// Drawn collections only: image packs are files, not SVG to check here.
+const live = universe.filter(isLive).filter((collection) => collection.media === undefined || collection.media === "vector");
 
 describe("collection registry", () => {
   it("has unique collection ids and a healthy size", () => {

@@ -69,6 +69,8 @@ export interface StickerImage {
   variants: readonly StickerVariant[];
   /** True for GIFs: shown and downloaded as they are, never redrawn. */
   animated?: boolean;
+  /** No artwork file yet: shown as a "Coming soon" tile, and cannot be copied or downloaded. */
+  pending?: boolean;
 }
 
 export type Family = "characters" | "festivals" | "feelings" | "icons";

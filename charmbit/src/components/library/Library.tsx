@@ -390,7 +390,7 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
               const title = stickerTitle(entry.collection, entry.item);
               return (
                 <li key={`${entry.collection.id}/${entry.item.id}`} style={{ "--i": Math.min(order, 24) } as CSSProperties} className={styles.cell}>
-                  <button type="button" className={styles.tile} aria-pressed={selected} aria-label={title} onClick={() => openTile(entry)}>
+                  <button type="button" className={styles.tile} aria-pressed={selected} aria-label={entry.item.image?.pending ? `${title}, coming soon` : title} data-pending={entry.item.image?.pending ? "" : undefined} onClick={() => openTile(entry)}>
                     {/* eslint-disable-next-line @next/next/no-img-element -- static or generated SVG */}
                     <img src={tiles.get(`${entry.collection.id}/${entry.item.id}`)} alt="" width={160} height={160} loading="lazy" decoding="async" draggable={false} data-animated={entry.item.image?.animated ? "" : undefined} />
                     <span className={styles.tileName}>{mode === "browse" ? entry.item.name : title}</span>

@@ -52,10 +52,10 @@ function Headline() {
 /** Everything the sheet shows comes from the collections visitors can see. */
 function sheetData(collections: readonly LiveCollection[]) {
   // A pack leads the sheet once it has enough stickers to fill it.
-  const pack = collections.find((collection) => collection.media === "image" && collection.items.length >= 6);
+  const pack = collections.find((collection) => collection.media === "image" && collection.items.filter((item) => !item.image?.pending).length >= 6);
   if (pack) {
     // An image pack leads: its first sticker is featured, with its outfits as the colour dots.
-    const [first, ...rest] = pack.items;
+    const [first, ...rest] = pack.items.filter((item) => !item.image?.pending);
     const variants: SheetVariant[] = (first!.image?.variants.length ? first!.image.variants : [{ name: pack.title, swatch: pack.accent, src: first!.image!.src }]).map((variant) => ({ name: variant.name, hex: variant.swatch, src: variant.src }));
     const stickers: SheetSticker[] = rest.slice(0, 5).map((item, index) => ({ href: libraryHref(pack.id, item.id), src: stickerSrc(pack, item), name: stickerTitle(pack, item), rotate: TILTS[index] ?? 0 }));
     return { featured: { name: stickerTitle(pack, first!), href: libraryHref(pack.id, first!.id), label: "Outfit" }, variants, stickers };

@@ -28,15 +28,18 @@ describe("image packs", () => {
     assert.equal(sheru.stickers.filter((sticker) => sticker.premium).length, 20);
   });
 
-  it("a pack with no files is not shown", () => {
-    assert.equal(buildPack(sheru, []), null);
-    // With the lock on, premium art alone does not publish a pack.
-    assert.equal(buildPack({ ...sheru, lockPremium: true }, ["crown.webp"]), null);
+  it("a pack with no files still lists every sticker, as coming soon", () => {
+    const pack = buildPack(sheru, [])!;
+    assert.equal(pack.items.length, 40);
+    assert.ok(pack.items.every((item) => item.image?.pending && item.image.src === "/packs/placeholder.svg"));
+    assert.equal(buildPack(sheru, ["boss-point.webp"])!.items.filter((item) => item.image?.pending).length, 39);
+    // With the lock on, only the 20 free stickers are listed.
+    assert.equal(buildPack({ ...sheru, lockPremium: true }, ["crown.webp"])!.items.length, 20);
   });
 
   it("only free stickers with a default-look file appear, with their other looks", () => {
     const pack = buildPack(sheru, ["chai-sip.webp", "chai-sip.black.webp", "boss-point.png", "laughing.black.webp", "notes.txt"])!;
-    assert.deepEqual(pack.items.map((item) => item.id), ["boss-point", "chai-sip"]);
+    assert.deepEqual(pack.items.filter((item) => !item.image?.pending).map((item) => item.id), ["boss-point", "chai-sip"]);
     const chai = pack.items.find((item) => item.id === "chai-sip")!;
     assert.equal(chai.image?.src, "/packs/sheru/chai-sip.webp");
     assert.deepEqual(chai.image?.variants.map((variant) => variant.id), ["white", "black"]);
@@ -50,14 +53,14 @@ describe("image packs", () => {
   it("every sticker is free while the premium lock is off", () => {
     assert.equal(sheru.lockPremium, false);
     const pack = buildPack(sheru, ["boss-point.webp", "crown.webp"])!;
-    assert.deepEqual(pack.items.map((item) => item.id), ["boss-point", "crown"]);
+    assert.deepEqual(pack.items.filter((item) => !item.image?.pending).map((item) => item.id), ["boss-point", "crown"]);
     assert.deepEqual(pack.locked, []);
     assert.equal(buildPack(sheru, sheru.stickers.map((sticker) => `${sticker.id}.webp`))!.items.length, 40);
   });
 
   it("with the lock on, premium stickers are locked tiles kept out of the usable stickers", () => {
     const pack = buildPack({ ...sheru, lockPremium: true }, ["boss-point.webp", "crown.webp"])!;
-    assert.deepEqual(pack.items.map((item) => item.id), ["boss-point"]);
+    assert.deepEqual(pack.items.filter((item) => !item.image?.pending).map((item) => item.id), ["boss-point"]);
     assert.equal(pack.locked?.length, 20);
     assert.ok(pack.locked!.every((item) => item.locked && item.image?.src));
     assert.equal(pack.locked!.find((item) => item.id === "crown")!.image!.src, "/packs/sheru/crown.webp");
@@ -68,10 +71,10 @@ describe("image packs", () => {
   it("packs with files sit ahead of the drawn collections, each in its category", () => {
     const icons = loadAssets();
     const before = buildUniverse(icons, {});
-    assert.deepEqual(before.map((collection) => collection.id), buildArchive(icons).map((collection) => collection.id));
+    assert.deepEqual(before.slice(1).map((collection) => collection.id), buildArchive(icons).map((collection) => collection.id));
     const after = buildUniverse(icons, { sheru: ["chai-sip.webp"], gifs: ["cat-sad.gif"] });
     assert.deepEqual(after.slice(0, 2).map((collection) => collection.id), ["sheru", "gifs"]);
-    assert.equal(after.length, before.length + 2);
+    assert.equal(after.length, before.length + 1);
     assert.deepEqual(after.slice(0, 3).filter(isLive).map(categoryOf), ["whatsapp", "gif", "colour"]);
     assert.deepEqual(CATEGORIES.map((category) => category.id), ["whatsapp", "colour", "gif"]);
   });

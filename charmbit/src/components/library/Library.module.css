@@ -1396,3 +1396,8 @@
     background: color-mix(in oklab, var(--accent) 12%, var(--tile));
   }
 }
+
+/* Stickers without artwork yet: listed, but clearly not ready. */
+.tile[data-pending] img {
+  opacity: 0.8;
+}

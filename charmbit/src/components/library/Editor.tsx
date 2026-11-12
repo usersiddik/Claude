@@ -168,7 +168,11 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
         ) : null}
       </div>
 
-      <StickerActions stroke={width} svg={svg} image={file} animated={animated} title={title} slug={stickerSlug(collection, item)} code={item.image ? undefined : (format) => exportItem(collection, item, values, format)} onCopied={() => setPulse((value) => value + 1)} />
+      {item.image?.pending ? (
+        <p className={styles.hint}>Artwork coming soon. You can copy and download it once it is added.</p>
+      ) : (
+        <StickerActions stroke={width} svg={svg} image={file} animated={animated} title={title} slug={stickerSlug(collection, item)} code={item.image ? undefined : (format) => exportItem(collection, item, values, format)} onCopied={() => setPulse((value) => value + 1)} />
+      )}
     </div>
   );
 }

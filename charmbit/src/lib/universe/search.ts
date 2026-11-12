@@ -107,6 +107,8 @@ export function buildSearchIndex(collections: readonly LiveCollection[]): Search
     const groups = new Map(collection.groups.map((group) => [group.id, group.name]));
     const collectionTerms = terms(`${collection.title} ${collection.noun}`);
     for (const item of collection.items) {
+      // Stickers without artwork yet are not findable: a search should never lead to a placeholder.
+      if (item.image?.pending) continue;
       const idWords = item.id.split("-");
       const tags = `${idWords.map((word) => TAGS[word] ?? "").join(" ")} ${item.tags ?? ""}`;
       entries.push({
