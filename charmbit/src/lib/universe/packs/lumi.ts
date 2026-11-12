@@ -24,7 +24,7 @@ export const lumi: PackDefinition = {
     framing: "Close-up chibi bust sticker portrait of",
     pronoun: "She",
     keep: "Keep her face, fur, ears, eye colour, blush and proportions exactly the same as the attached reference image.",
-    style: "High-end 3D animation render, soft warm studio rim lighting, centered chest-up framing with a little empty space on every side, clean outer edges for an easy cutout. Her body ends in a soft, rounded, fluffy lower edge well inside the picture, never cropped by a straight horizontal line or by the edge of the image.",
+    style: "High-end 3D animation render, soft warm studio rim lighting, centered chest-up framing with a little empty space on every side, clean outer edges for an easy cutout. Her fur meets the grey background directly: do not draw a white die-cut border, stroke or outline around her, and do not dress her in any clothes or accessories that are not named above. Her body ends in a soft, rounded, fluffy lower edge well inside the picture, never cropped by a straight horizontal line or by the edge of the image.",
     drift: "her face, ears, fur or blush",
   },
   looks: [{ id: "classic", name: "Classic", swatch: "#FFFFFF", wardrobe: "" }],

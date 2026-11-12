@@ -105,13 +105,17 @@ def round_bottom(image: Image.Image) -> Image.Image:
     if not box:
         return image
     bottom = box[3] - 1
-    # The straight cut: the row a few pixels above the lowest one, to skip the soft edge.
-    row = solid.crop((0, max(0, bottom - 4), image.width, max(1, bottom - 3))).getbbox()
-    if not row:
+    # A straight cut is as wide a few pixels up as it is further up; a rounded bottom narrows quickly.
+    def run(rows_up: int) -> tuple[int, int] | None:
+        found = solid.crop((0, max(0, bottom - rows_up), image.width, max(1, bottom - rows_up + 1))).getbbox()
+        return (found[0], found[2]) if found else None
+
+    low, high = run(4), run(28)
+    if not low or not high:
         return image
-    left, right = row[0], row[2]
+    left, right = low
     span = right - left
-    if span < (box[2] - box[0]) * 0.3:
+    if span < (box[2] - box[0]) * 0.3 or span < (high[1] - high[0]) * 0.88:
         return image
     depth = span * 0.3
     centre = (left + right) / 2
