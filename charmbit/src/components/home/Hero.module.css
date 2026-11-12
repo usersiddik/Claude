@@ -253,6 +253,8 @@
   grid-area: 1 / 1;
   width: 90%;
   opacity: 0;
+  /* Its own layer: without this, Chromium sometimes never paints a large raster here until a repaint is forced. */
+  will-change: transform;
   transition:
     opacity 450ms var(--ease),
     transform 500ms var(--ease-spring);
