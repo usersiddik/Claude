@@ -362,3 +362,72 @@ img {
     transition-delay: 0ms !important;
   }
 }
+
+/* ================================================================================
+ * Visual system, 2026 redesign.
+ * Bone paper and violet-black night, both with fine grain. One accent: gold.
+ * Display: Anton, condensed and loud. Labels: JetBrains Mono, spaced wide.
+ * ============================================================================== */
+
+:root {
+  --canvas: #efeae2;
+  --surface-2: #f6f2ec;
+  --tile: #f6f2ec;
+  --tile-hover: #ebe5db;
+  --font-display: var(--font-anton), "Arial Narrow", Impact, sans-serif;
+  --font-mono: var(--font-jbmono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Sections that are always dark, in both themes. */
+  --night: #110d17;
+  --night-2: #1b1525;
+  --night-text: #efe9df;
+  --night-text-2: #a59cb3;
+  --night-line: rgb(239 233 223 / 0.12);
+  --violet: #3b2a5e;
+  --gold: #e2b04b;
+  --gold-hi: #f7dd94;
+  --gold-lo: #a8741f;
+
+  /* Fine paper grain, layered over flat colour. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  line-height: 0.88;
+}
+
+/* Small corner labels: mono, uppercase, spaced. */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Grain overlay: add to any positioned section. */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--grain);
+  opacity: 0.16;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.grainNight::after {
+  opacity: 0.22;
+  mix-blend-mode: screen;
+}

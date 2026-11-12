@@ -1,121 +1,77 @@
 /*
- * Hero: one full-bleed composition. The headline fills the width; the figure
- * stands behind it with his head coming forward through the type; small
- * stickers drift in orbit with the pointer; a ticker of real stickers runs
- * along the bottom edge. Motion is transform and opacity only.
+ * Hero: a single portrait on bone paper, giant faint lettering behind it,
+ * captions in the bottom corners. The next section cuts in on a diagonal.
+ * Motion is transform and opacity only.
  */
 
 .hero {
   position: relative;
-  display: grid;
-  grid-template-rows: 1fr auto;
   min-height: calc(100svh - var(--header-h));
   overflow: clip;
   isolation: isolate;
+  background: var(--canvas);
 }
 
 .stage {
   position: relative;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
+  z-index: 1;
+  min-height: inherit;
   --px: 0;
   --py: 0;
 }
 
-/* Corner marks ------------------------------------------------------------------ */
+/* Giant lettering --------------------------------------------------------------- */
 
-.meta {
-  padding: 18px var(--gutter) 0;
-  animation: fade 900ms var(--ease) 1200ms both;
-}
-
-@media (max-width: 767px) {
-  .meta {
-    display: none;
-  }
-}
-
-/* Headline ------------------------------------------------------------------------ */
-
-.head {
-  position: relative;
-  z-index: 2;
-  padding-top: clamp(24px, 5vh, 56px);
+.backdrop {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  padding-bottom: 6vh;
+  font-family: var(--font-display);
+  font-size: clamp(9rem, 31vw, 34rem);
+  line-height: 0.8;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--text) 9%, var(--canvas));
+  transform: translate3d(calc(var(--px) * 10px), calc(var(--py) * 6px), 0);
+  transition: transform 1200ms var(--ease);
+  user-select: none;
   pointer-events: none;
 }
 
-.title {
-  font-size: clamp(3.9rem, 19.5vw, 7.5rem);
-  line-height: 0.82;
-  letter-spacing: -0.025em;
-}
-
-@media (min-width: 768px) {
-  .title {
-    font-size: clamp(5.5rem, 12.2vw, 11.5rem);
-    line-height: 0.8;
-  }
-}
-
-.line {
+.backdrop span {
   display: block;
-  overflow: hidden;
-  padding-bottom: 0.04em;
-  margin-bottom: -0.04em;
+  animation: settle 1600ms var(--ease) both;
 }
 
-/* Each line steps in a little further: a staircase, set by hand. */
-.line:nth-child(3) {
-  padding-left: 0.18em;
+.backdrop span:nth-child(2) {
+  animation-delay: 120ms;
 }
 
-.line:nth-child(4) {
-  padding-left: 0.42em;
-}
-
-.lineText {
-  display: inline-block;
-  animation: rise 1100ms var(--ease) both;
-  animation-delay: calc(120ms + var(--i) * 110ms);
-}
-
-@keyframes rise {
+@keyframes settle {
   from {
-    transform: translateY(108%) rotate(2deg);
+    opacity: 0;
+    transform: scale(1.06);
   }
 }
 
-/* The figure --------------------------------------------------------------------- */
+/* The figure ---------------------------------------------------------------------- */
 
 .figure {
   position: absolute;
-  right: 7vw;
+  left: 50%;
   bottom: 0;
   z-index: 1;
-  width: clamp(280px, 52vw, 780px);
+  width: min(66vw, calc((100svh - var(--header-h)) * 0.98), 860px);
   aspect-ratio: 1;
-  transform: translate3d(calc(var(--px) * -14px), calc(var(--py) * -8px), 0);
+  translate: -50% 0;
+  transform: translate3d(calc(var(--px) * -12px), calc(var(--py) * -6px), 0);
   transition: transform 900ms var(--ease);
-  animation: arrive 1300ms var(--ease) 350ms both;
+  animation: arrive 1300ms var(--ease) 200ms both;
   -webkit-tap-highlight-color: transparent;
-  -webkit-user-drag: none;
   user-select: none;
-}
-
-/* Wide screens: he stands through the headline, his head in front of its last letters. */
-@media (min-width: 1024px) {
-  .figure {
-    right: 4vw;
-    width: clamp(520px, 54vw, 760px);
-  }
-}
-
-/* Once the container is capped, the headline stops growing, so the figure follows the container instead of the viewport. */
-@media (min-width: 1376px) {
-  .figure {
-    right: calc(50% - 710px);
-    width: 760px;
-  }
 }
 
 .figure img {
@@ -123,406 +79,179 @@
   height: 100%;
   object-fit: contain;
   object-position: bottom;
-  filter: drop-shadow(0 30px 40px rgb(20 19 18 / 0.22));
+  filter: drop-shadow(0 40px 50px rgb(20 16 22 / 0.18));
   -webkit-user-drag: none;
   /* Its own layer: Chromium sometimes never paints a large raster here until a repaint is forced. */
   will-change: transform;
 }
 
-/* The front copy only shows from the shoulders up, so his head overlaps the type. */
-.figureFront {
-  z-index: 3;
-  pointer-events: none;
-  clip-path: inset(0 0 var(--figure-split, 44%) 0);
-}
-
-.figureFront img {
-  filter: none;
-}
-
 @keyframes arrive {
   from {
     opacity: 0;
-    transform: translate3d(0, 60px, 0);
+    transform: translate3d(0, 50px, 0);
   }
 }
 
-/* Phones: the figure sits in the flow between the headline and the deck,
-   tucked up under the last line so his head still comes through the type. */
-@media (max-width: 767px) {
-  .figure {
-    display: none;
-  }
+/* Corners --------------------------------------------------------------------------- */
 
-  .figureFront {
-    display: block;
-    position: relative;
-    right: auto;
-    bottom: auto;
-    z-index: 1;
-    width: min(72vw, 340px);
-    margin: -14vw calc(var(--gutter) * -0.6) -6vw auto;
-    clip-path: none;
-    pointer-events: auto;
-  }
-
-  .figureFront img {
-    filter: drop-shadow(0 18px 24px rgb(20 19 18 / 0.2));
-  }
-}
-
-/* Orbiting stickers ---------------------------------------------------------------- */
-
-.orbit {
+.left,
+.right {
   position: absolute;
-  left: var(--x);
-  top: var(--y);
-  z-index: 1;
-  width: clamp(72px, calc(var(--size) * 1vw), 168px);
-  rotate: var(--r);
-  transform: translate3d(calc(var(--px) * var(--depth) * -28px), calc(var(--py) * var(--depth) * -20px), 0);
-  transition: transform 900ms var(--ease);
-  animation: pop 900ms var(--ease-spring) both;
-  animation-delay: calc(700ms + var(--i) * 90ms);
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-
-.orbit img {
-  width: 100%;
-  height: auto;
-  animation: float var(--dur, 6s) ease-in-out infinite alternate;
-  animation-delay: calc(var(--i) * -0.9s);
-  transition:
-    scale 450ms var(--ease-spring),
-    filter 300ms var(--ease);
-  -webkit-user-drag: none;
-}
-
-@media (hover: hover) {
-  .orbit:hover {
-    z-index: 4;
-  }
-
-  .orbit:hover img {
-    scale: 1.14;
-    filter: drop-shadow(0 16px 20px rgb(20 19 18 / 0.2));
-  }
-}
-
-@keyframes pop {
-  from {
-    opacity: 0;
-    scale: 0.4;
-  }
-}
-
-@keyframes float {
-  from {
-    translate: 0 -5px;
-  }
-  to {
-    translate: 0 7px;
-  }
-}
-
-@media (max-width: 767px) {
-  .orbit {
-    display: none;
-  }
-}
-
-/* Lede, search, buttons ----------------------------------------------------------- */
-
-.deck {
-  position: relative;
-  z-index: 4;
+  /* Clear of the diagonal that the next section cuts in with. */
+  bottom: calc(9vw + clamp(24px, 4vh, 48px));
+  z-index: 2;
   display: grid;
-  gap: 18px;
-  justify-items: start;
-  width: 100%;
-  padding-top: clamp(16px, 2.6vh, 28px);
-  padding-bottom: clamp(24px, 3.4vh, 40px);
+  gap: 14px;
+  animation: fade 900ms var(--ease) 650ms both;
 }
 
-@media (min-width: 1024px) {
-  .deck {
-    max-width: min(600px, 50%);
-    margin-left: 0;
-    gap: 14px;
-  }
+.left {
+  left: var(--gutter);
+  width: min(30vw, 380px);
+  justify-items: start;
+}
+
+.right {
+  right: var(--gutter);
+  width: min(26vw, 340px);
+  justify-items: start;
+  animation-delay: 800ms;
+}
+
+.title {
+  font-size: clamp(2.6rem, 4.6vw, 4.75rem);
+  text-transform: uppercase;
 }
 
 .lede {
-  max-width: 34rem;
-  font-size: clamp(1rem, 1.3vw, 1.125rem);
+  max-width: 30ch;
   color: var(--text-2);
-  animation: fade 900ms var(--ease) 700ms both;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+.meet {
+  color: var(--text-2);
+  font-size: 0.6875rem;
+}
+
+.caption {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.caption strong {
+  color: var(--text);
+  font-weight: 700;
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  animation: fade 900ms var(--ease) 850ms both;
+  gap: 8px;
 }
 
 @keyframes fade {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(14px);
   }
 }
 
-/* Headline and deck ease back as the page scrolls away. */
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: scroll()) {
-    .head,
-    .figure {
-      animation-name: rise-head;
-      animation-timeline: scroll(root);
-      animation-range: 0 80vh;
-      animation-fill-mode: both;
-    }
+/* The trading card ------------------------------------------------------------------- */
 
-    .figure {
-      animation: arrive 1300ms var(--ease) 350ms both, recede linear both;
-      animation-timeline: auto, scroll(root);
-      animation-range: normal, 0 80vh;
-    }
-
-    .head {
-      animation: recede linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 80vh;
-    }
-
-    @keyframes recede {
-      to {
-        opacity: 0.15;
-        transform: translateY(-50px);
-      }
-    }
-  }
-}
-
-/* Ticker ----------------------------------------------------------------------------- */
-
-.ticker {
+.card {
+  --rx: 0deg;
+  --ry: 0deg;
   position: relative;
-  z-index: 5;
-  border-top: 1px solid var(--hairline);
-  border-bottom: 1px solid var(--hairline);
-  background: var(--surface);
-  overflow: hidden;
-  animation: fade 900ms var(--ease) 1000ms both;
-}
-
-.tickerTrack {
-  display: flex;
-  width: max-content;
-  animation: ticker 60s linear infinite;
-}
-
-.ticker:hover .tickerTrack,
-.ticker:focus-within .tickerTrack {
-  animation-play-state: paused;
-}
-
-.tickerList {
-  display: flex;
-  gap: 4px;
-  padding: 8px 2px;
-}
-
-.tickerItem {
   display: block;
-  width: 72px;
-  height: 72px;
-  padding: 8px;
-  border-radius: var(--radius);
+  width: clamp(104px, 9.5vw, 138px);
+  aspect-ratio: 3 / 4;
+  margin-bottom: 8px;
+  padding: 5px;
+  border-radius: 8px;
+  background: linear-gradient(140deg, var(--gold-hi), var(--gold) 38%, var(--gold-lo) 70%, var(--gold-hi));
+  box-shadow: 0 18px 30px -16px rgb(60 40 10 / 0.55);
+  rotate: -5deg;
+  transform: perspective(600px) rotateX(var(--rx)) rotateY(var(--ry));
   transition:
-    background-color var(--fast) var(--ease),
-    transform 400ms var(--ease-spring);
+    transform 500ms var(--ease),
+    rotate 500ms var(--ease-spring);
 }
 
-.tickerItem img {
+.cardInner {
+  position: relative;
+  display: grid;
+  place-items: center;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  -webkit-user-drag: none;
+  overflow: hidden;
+  border-radius: 4px;
+  background:
+    radial-gradient(circle at 50% 38%, color-mix(in oklab, var(--card-tint, #f7c9cf) 85%, white) 0%, color-mix(in oklab, var(--card-tint, #f7c9cf) 60%, var(--violet)) 100%);
 }
 
-.tickerItem:hover {
-  background: var(--fill);
-  transform: translateY(-4px) rotate(-4deg);
+.cardInner img {
+  width: 92%;
+  height: auto;
+  filter: drop-shadow(0 6px 8px rgb(0 0 0 / 0.25));
+  transition: transform 500ms var(--ease-spring);
 }
 
-@keyframes ticker {
-  to {
-    transform: translateX(-50%);
+/* A sliver of light that passes over the card on hover. */
+.cardInner::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(115deg, transparent 40%, rgb(255 255 255 / 0.45) 50%, transparent 60%);
+  transform: translateX(-60%);
+  transition: transform 900ms var(--ease);
+}
+
+@media (hover: hover) {
+  .card:hover {
+    rotate: -1deg;
+  }
+
+  .card:hover .cardInner img {
+    transform: scale(1.06) translateY(-3px);
+  }
+
+  .card:hover .cardInner::after {
+    transform: translateX(60%);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ticker {
-    overflow-x: auto;
-  }
-
-  .tickerTrack {
-    animation: none;
-  }
-
-  .tickerList[aria-hidden] {
-    display: none;
-  }
-}
-
-@media (max-width: 767px) {
-  .tickerItem {
-    width: 60px;
-    height: 60px;
-    padding: 6px;
-  }
-}
-
-/* Search, chips and buttons ----------------------------------------------------------- */
-
-.searchBlock {
-  display: grid;
-  justify-items: start;
-  gap: 14px;
-  width: min(560px, 100%);
-  margin-top: 8px;
-  animation: fade 900ms var(--ease) 800ms both;
-}
-
-.search {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 6px 6px 6px 18px;
-  border-radius: 980px;
-  background: var(--surface);
-  box-shadow:
-    inset 0 0 0 1px var(--hairline-strong),
-    0 18px 40px -22px rgb(20 19 18 / 0.45);
-  transition: box-shadow 300ms var(--ease);
-}
-
-.search:focus-within {
-  box-shadow:
-    inset 0 0 0 1px var(--ink),
-    0 0 0 5px rgb(255 182 39 / 0.22),
-    0 18px 40px -22px rgb(20 19 18 / 0.45);
-}
-
-.searchIcon {
-  flex: none;
-  color: var(--text-2);
-}
-
-.searchField {
-  flex: 1;
-  width: 0;
-  min-width: 0;
-  height: 44px;
-  border: 0;
-  background: transparent;
-  font-size: 1rem;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.searchField::placeholder {
-  color: var(--text-2);
-}
-
-.searchField:focus {
-  outline: none;
-}
-
-.searchButton {
-  display: inline-flex;
-  align-items: center;
-  flex: none;
-  min-height: 44px;
-  padding: 0 20px;
-  border: 0;
-  border-radius: 980px;
-  background: var(--ink);
-  color: var(--on-ink);
-  font-weight: 600;
-  transition: transform 300ms var(--ease-spring);
-}
-
-.searchButton:hover {
-  transform: translateX(2px);
-}
-
-.searchButton:active {
-  transform: scale(0.97);
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.chip {
-  min-height: 34px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 980px;
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--hairline);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  animation: fade 700ms var(--ease) both;
-  animation-delay: calc(950ms + var(--i) * 50ms);
-  transition:
-    background-color var(--fast) var(--ease),
-    transform 300ms var(--ease-spring);
-}
-
-.chip:hover {
-  background: var(--fill-hover);
-  transform: translateY(-2px);
-}
-
-@media (max-width: 480px) {
-  .searchButton {
-    padding: 0 16px;
-  }
-}
-
-/* Calls to action ---------------------------------------------------------------- */
+/* Calls to action ---------------------------------------------------------------------- */
 
 .cta {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 46px;
-  padding: 0 22px;
+  min-height: 44px;
+  padding: 0 20px;
   border-radius: 980px;
   background: var(--ink);
   color: var(--on-ink);
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
-  transition: transform 300ms var(--ease-spring);
+  transition: transform 300ms var(--ease-spring), background-color var(--fast) var(--ease);
 }
 
 .ctaQuiet {
-  background: var(--surface);
+  background: transparent;
   color: var(--text);
   box-shadow: inset 0 0 0 1px var(--hairline-strong);
 }
 
 .cta:hover {
   transform: translateY(-2px);
+}
+
+.ctaQuiet:hover {
+  background: var(--fill);
 }
 
 .cta:active {
@@ -537,19 +266,96 @@
   transform: translateX(3px);
 }
 
-@media (max-width: 767px) {
-  .cta {
-    min-height: 44px;
-    padding: 0 18px;
-    font-size: 0.875rem;
-  }
+/* Popular searches ----------------------------------------------------------------------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
 }
 
-
 .chipsLabel {
-  align-self: center;
-  margin-right: 4px;
+  margin-right: 2px;
   color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.chip {
+  min-height: 30px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 980px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  color: var(--text);
   font-size: 0.8125rem;
   font-weight: 500;
+  transition:
+    background-color var(--fast) var(--ease),
+    transform 300ms var(--ease-spring);
+}
+
+.chip:hover {
+  background: var(--fill);
+  transform: translateY(-2px);
+}
+
+/* Below 1180px the corners would collide with the figure, so everything stacks. ---------------- */
+
+@media (max-width: 1179px) {
+  .stage {
+    display: grid;
+    grid-template-rows: auto auto auto;
+    padding: 28px var(--gutter) 64px;
+  }
+
+  .backdrop {
+    align-content: start;
+    padding: 6vh 0 0;
+    font-size: clamp(7rem, 40vw, 22rem);
+  }
+
+  .left,
+  .right {
+    position: static;
+    width: auto;
+    animation-delay: 300ms;
+  }
+
+  .left {
+    order: 1;
+    max-width: 34rem;
+  }
+
+  .figure {
+    order: 2;
+    position: relative;
+    left: auto;
+    bottom: auto;
+    width: min(100%, 560px);
+    margin: 4px auto -12px;
+    translate: none;
+  }
+
+  .right {
+    order: 3;
+    max-width: 34rem;
+    padding-top: 20px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .card {
+    display: none;
+  }
+
+  .title {
+    font-size: clamp(3.2rem, 13vw, 5.5rem);
+  }
+
 }

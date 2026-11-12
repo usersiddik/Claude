@@ -1,15 +1,15 @@
 .chapter {
   position: relative;
   /* Above the footer, so open menus near the bottom are never covered by it. */
-  z-index: 2;
-  margin-top: -64px;
+  z-index: 3;
+  margin-top: -48px;
 }
 
 .sheet {
   padding: var(--space-7) 0 var(--section-y);
-  border-radius: var(--radius) var(--radius) 0 0;
-  background: var(--surface);
-  box-shadow: 0 -24px 60px -40px rgb(20 19 18 / 0.35);
+  border-radius: 18px 18px 0 0;
+  background: var(--canvas);
+  box-shadow: 0 -30px 60px -40px rgb(0 0 0 / 0.6);
   transform-origin: 50% 0;
 }
 
@@ -46,6 +46,13 @@
 
 .title {
   font-size: clamp(3rem, 8vw, 7.5rem);
+  text-transform: uppercase;
+}
+
+.lede {
+  max-width: 36ch;
+  color: var(--text-2);
+  font-size: 1.0625rem;
 }
 
 .steps {

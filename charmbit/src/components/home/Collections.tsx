@@ -1,71 +1,50 @@
-import { CATEGORIES, categoryOf, findItem, isLive, stickerSrc, type Collection } from "@/lib/universe";
-import { coverPath, libraryHref } from "@/lib/universe/paths";
-import { CollectionsGrid, type CardData } from "./CollectionsGrid";
+import { CATEGORIES, categoryOf, findItem, isLive, stickerSrc, type Collection, type LiveCollection } from "@/lib/universe";
+import { libraryHref } from "@/lib/universe/paths";
+import { CollectionsRail, type CastCard } from "./CollectionsRail";
 import styles from "./Collections.module.css";
 
+const ready = (collection: LiveCollection) => collection.items.filter((item) => !item.image?.pending).length;
+
+/** The cast: every collection as a trading card, on the dark field. */
 export function Collections({ universe }: { universe: readonly Collection[] }) {
-  const cards: CardData[] = universe.map((collection) =>
-    isLive(collection)
-      ? {
-          id: collection.id,
-          title: collection.title,
-          tagline: collection.tagline,
-          accent: collection.accent,
-          families: collection.families,
-          category: categoryOf(collection),
-          animated: collection.media === "animated",
-          status: "live",
-          count: collection.items.length,
-          covers: collection.cover.map((id) => stickerSrc(collection, findItem(collection, id))),
-          href: libraryHref(collection.id),
-        }
-      : {
-          id: collection.id,
-          title: collection.title,
-          tagline: collection.tagline,
-          accent: collection.accent,
-          families: collection.families,
-          category: "colour",
-          status: "soon",
-          arrives: collection.arrives,
-          covers: [coverPath(collection.id)],
-        },
-  );
-  const live = cards.filter((card) => card.status === "live").length;
-  // Only filters that have something in them; none at all when there is a single choice.
-  const filters = [{ id: "all" as const, name: "All" }, ...CATEGORIES.map((entry) => ({ id: entry.id, name: entry.name }))]
-    .map((filter) => ({ ...filter, count: filter.id === "all" ? cards.length : cards.filter((card) => card.category === filter.id).length }))
-    .filter((filter) => filter.count > 0);
+  const live = universe.filter(isLive).filter((collection) => ready(collection) > 0);
+  const cards: CastCard[] = live.map((collection) => {
+    const cover = findItem(collection, collection.cover.find((id) => collection.items.some((item) => item.id === id && !item.image?.pending)) ?? collection.items.find((item) => !item.image?.pending)?.id);
+    const category = CATEGORIES.find((entry) => entry.id === categoryOf(collection))!;
+    return {
+      id: collection.id,
+      title: collection.title,
+      tagline: collection.tagline,
+      tint: collection.accent,
+      category: category.id,
+      categoryName: category.short,
+      count: ready(collection),
+      src: stickerSrc(collection, cover),
+      href: libraryHref(collection.id),
+    };
+  });
+  const filters = CATEGORIES.map((entry) => ({ id: entry.id, name: entry.name, count: cards.filter((card) => card.category === entry.id).length })).filter((filter) => filter.count > 0);
 
   return (
-    <section id="collections" className={styles.section} aria-labelledby="collections-title">
-      <div className="container">
+    <section id="collections" className={`grain grainNight ${styles.section}`} aria-labelledby="collections-title">
+      <div className={styles.word} aria-hidden="true">
+        Collections
+      </div>
+      <div className={`container ${styles.head}`}>
         <p className="eyebrow">
-          <span>Chapter 02 — Collections</span>
+          <span>The cast</span>
           <span>
-            {live} live{cards.length > live ? ` · ${cards.length - live} on the way` : ""}
+            {cards.length} collections · {cards.reduce((total, card) => total + card.count, 0)} stickers
           </span>
         </p>
-        <div className={styles.head}>
-          <h2 id="collections-title" className={`display ${styles.title}`} data-reveal="">
-            Pick your
-            <br />
-            collection.
-          </h2>
-          <p className={styles.lede} data-reveal="" style={{ "--i": 2 } as React.CSSProperties}>
-            Three kinds of sticker: high-quality ones made for WhatsApp, ones you can recolour, and GIFs. Every collection is a cast with its own moods.
-          </p>
-        </div>
-        <CollectionsGrid cards={cards} filters={filters} />
-        <div className={styles.more} data-reveal="">
-          <a href="#library" className={styles.moreLink}>
-            Open the full library
-            <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 10h11M11 5l5 5-5 5" />
-            </svg>
-          </a>
-        </div>
+        <h2 id="collections-title" className={`display ${styles.title}`} data-reveal="">
+          Pick a character.
+        </h2>
+        <p className={styles.lede} data-reveal="" style={{ "--i": 1 } as React.CSSProperties}>
+          WhatsApp stickers are ready to send. Colour stickers change to any colour you like. Every one takes your own words.
+        </p>
       </div>
+      <CollectionsRail cards={cards} filters={filters} />
     </section>
   );
 }

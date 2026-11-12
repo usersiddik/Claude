@@ -1,12 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Instrument_Serif, Inter } from "next/font/google";
+import { Anton, Instrument_Serif, Inter, JetBrains_Mono } from "next/font/google";
 import { brandKey } from "@/lib/brand";
 import { SITE } from "@/lib/site";
 import "./globals.css";
 
-// Inter for interface text; Instrument Serif for the editorial display type.
+// Inter for interface text, Anton for the condensed display type, JetBrains Mono for small labels.
+// Instrument Serif stays loaded for the legal and developer pages' long-form headings.
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const serif = Instrument_Serif({ subsets: ["latin"], weight: "400", variable: "--font-serif", display: "swap" });
+const anton = Anton({ subsets: ["latin"], weight: "400", variable: "--font-anton", display: "swap" });
+const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-jbmono", display: "swap" });
 
 /** Applies a saved theme before first paint so there is no flash. */
 const THEME_SCRIPT = `try{var t=localStorage.getItem(${JSON.stringify(brandKey("theme"))});if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
@@ -36,7 +39,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f2f0eb" },
+    { media: "(prefers-color-scheme: light)", color: "#efeae2" },
     { media: "(prefers-color-scheme: dark)", color: "#0f0e0d" },
   ],
   colorScheme: "light dark",
@@ -44,7 +47,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${serif.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${serif.variable} ${anton.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>

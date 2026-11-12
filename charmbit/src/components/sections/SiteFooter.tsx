@@ -17,10 +17,10 @@ const FORMATS = [
 /** Chapter 04: formats, then the sign-off. Always dark, like the back cover. */
 export function SiteFooter() {
   return (
-    <footer id="formats" className={styles.footer}>
+    <footer id="formats" className={`grain grainNight ${styles.footer}`}>
       <div className="container">
         <p className={`eyebrow ${styles.eyebrow}`}>
-          <span>Chapter 04 — Formats</span>
+          <span>Formats</span>
           <span>Free to use in chats and products</span>
         </p>
         <h2 className={`display ${styles.title}`} data-reveal="">
@@ -53,6 +53,9 @@ export function SiteFooter() {
           <p className={styles.small}>Coming later: an AI sticker maker and a drawing studio.</p>
         </div>
       </div>
+      <span className={styles.signoff} aria-hidden="true">
+        {BRAND.name}
+      </span>
     </footer>
   );
 }

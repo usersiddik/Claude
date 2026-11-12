@@ -3,6 +3,7 @@ import { AccountButton } from "@/components/auth/AccountButton";
 import { BRAND } from "@/lib/brand";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Wordmark } from "@/components/ui/Wordmark";
+import { HeaderShell } from "./HeaderShell";
 import { MobileMenu } from "./MobileMenu";
 import { NavSearch } from "./NavSearch";
 import { NAV_LINKS } from "./nav";
@@ -11,7 +12,7 @@ import styles from "./SiteHeader.module.css";
 /** Brand, search, links, account: one quiet bar that stays at the top. */
 export function SiteHeader() {
   return (
-    <header className={styles.header}>
+    <HeaderShell className={styles.header}>
       <div className={`container ${styles.inner}`}>
         <Link href="/" className={styles.brand} aria-label={`${BRAND.name} home`}>
           <Wordmark />
@@ -34,6 +35,6 @@ export function SiteHeader() {
           <MobileMenu />
         </div>
       </div>
-    </header>
+    </HeaderShell>
   );
 }

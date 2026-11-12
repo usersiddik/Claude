@@ -10,26 +10,14 @@ export function LibraryChapter({ icons, packs, total }: { icons: readonly IconAs
       <div className={styles.sheet}>
         <div className="container">
           <p className="eyebrow">
-            <span>Chapter 03 — Library</span>
+            <span>The studio</span>
             <span>{total} stickers</span>
           </p>
           <div className={styles.head}>
             <h2 id="library-title" className={`display ${styles.title}`}>
-              Make it
-              <br />
-              yours.
+              Make it yours.
             </h2>
-            <ol className={styles.steps}>
-              <li>
-                <span>01</span>Search, or pick a collection
-              </li>
-              <li>
-                <span>02</span>Tap a sticker: colours, text, outline
-              </li>
-              <li>
-                <span>03</span>Copy, then paste into any chat
-              </li>
-            </ol>
+            <p className={styles.lede}>Tap any sticker. Change its colours, add your words, then copy it into a chat.</p>
           </div>
           <LibraryBlock icons={icons} packs={packs} />
         </div>

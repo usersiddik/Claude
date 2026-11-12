@@ -4,6 +4,8 @@ import { FloatingCta } from "@/components/home/FloatingCta";
 import { Hero } from "@/components/home/Hero";
 import { LibraryChapter } from "@/components/home/LibraryChapter";
 import { Reveal } from "@/components/home/Reveal";
+import { Statement } from "@/components/home/Statement";
+import { Tilt } from "@/components/home/Tilt";
 import { SiteFooter } from "@/components/sections/SiteFooter";
 import { SiteHeader } from "@/components/sections/SiteHeader";
 import { CopyIsland } from "@/components/ui/CopyIsland";
@@ -43,11 +45,13 @@ export default function HomePage() {
       <main id="main">
         <Hero total={total} collections={live} />
         <Collections universe={universe} />
+        <Statement collections={live} />
         <LibraryChapter icons={iconAssets()} packs={packFiles()} total={total} />
       </main>
       <SiteFooter />
       <FloatingCta />
       <Reveal />
+      <Tilt />
       <CopyIsland scope="page" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData(universe) }} />
     </AuthProvider>

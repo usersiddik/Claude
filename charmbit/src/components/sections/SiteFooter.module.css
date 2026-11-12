@@ -1,23 +1,46 @@
 .footer {
   position: relative;
   z-index: 1;
-  padding: var(--section-y) 0 var(--space-6);
-  background: #0f0e0d;
-  color: #f2f0eb;
-  --text: #f2f0eb;
-  --ink: #f2f0eb;
-  --on-ink: #0f0e0d;
-  --text-2: #a8a399;
-  --hairline: rgb(255 255 255 / 0.12);
+  padding: var(--section-y) 0 0;
+  background: var(--night);
+  color: var(--night-text);
+  overflow: hidden;
+  --text: var(--night-text);
+  --ink: var(--night-text);
+  --on-ink: var(--night);
+  --text-2: var(--night-text-2);
+  --hairline: var(--night-line);
+}
+
+.footer > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* The last thing on the page: the name, edge to edge. */
+.signoff {
+  display: block;
+  margin-top: var(--space-7);
+  font-family: var(--font-display);
+  font-size: 23.5vw;
+  line-height: 0.74;
+  letter-spacing: -0.02em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--violet);
+  translate: 0 0.06em;
+  user-select: none;
 }
 
 .eyebrow > :first-child {
-  color: #f2f0eb;
+  color: var(--gold);
 }
 
 .title {
   margin: var(--space-6) 0 var(--space-7);
   font-size: clamp(3.4rem, 12vw, 11rem);
+  text-transform: uppercase;
 }
 
 .formats {

@@ -1,0 +1,141 @@
+/* One centred statement on violet grain, three steps, and polaroids around the edges. */
+
+.section {
+  position: relative;
+  z-index: 2;
+  padding: clamp(96px, 13vw, 180px) 0 clamp(80px, 10vw, 140px);
+  background: radial-gradient(90% 70% at 50% 40%, #2a1d44, #1a1229 60%, var(--night) 100%);
+  color: var(--night-text);
+  overflow: hidden;
+  --text: var(--night-text);
+  --text-2: var(--night-text-2);
+  --hairline: var(--night-line);
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.quote {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 6vw, 5rem);
+  line-height: 0.6;
+  letter-spacing: 0.06em;
+  color: #8a7d68;
+}
+
+.title {
+  margin-top: var(--space-5);
+  font-size: clamp(2.8rem, 8vw, 7.75rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+  color: #c9bea9;
+}
+
+.lede {
+  max-width: 44ch;
+  margin-top: var(--space-6);
+  color: var(--text-2);
+  font-size: 1rem;
+}
+
+/* Steps ------------------------------------------------------------------------------- */
+
+.steps {
+  display: grid;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: 980px;
+  margin: clamp(56px, 7vw, 96px) 0 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+@media (min-width: 768px) {
+  .steps {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+  }
+}
+
+.step {
+  display: grid;
+  gap: 8px;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--hairline);
+}
+
+.n {
+  color: var(--gold);
+  font-size: 0.6875rem;
+}
+
+.stepTitle {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.stepText {
+  color: var(--text-2);
+  font-size: 0.9375rem;
+}
+
+/* Polaroids ------------------------------------------------------------------------------ */
+
+.polaroid {
+  position: absolute;
+  left: var(--l);
+  top: var(--t);
+  z-index: 0;
+  width: clamp(120px, 11vw, 170px);
+  margin: 0;
+  padding: 10px 10px 30px;
+  background: #ece5d6;
+  box-shadow: 0 24px 40px -18px rgb(0 0 0 / 0.7);
+  rotate: var(--r);
+  animation: drift 7s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -2.3s);
+}
+
+.polaroid img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: radial-gradient(circle, #f6f0e4, #d9cfbd);
+}
+
+.polaroid figcaption {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 8px;
+  overflow: hidden;
+  color: #5a5146;
+  font-size: 0.5625rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes drift {
+  from {
+    translate: 0 -6px;
+  }
+  to {
+    translate: 0 8px;
+  }
+}
+
+@media (max-width: 1099px) {
+  .polaroid {
+    display: none;
+  }
+}
