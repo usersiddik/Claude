@@ -1,12 +1,13 @@
 import type { LiveCollection, StickerItem, StickerVariant } from "../types.ts";
 import { gifs } from "./gifs.ts";
+import { lumi } from "./lumi.ts";
 import { sheru } from "./sheru.ts";
-import type { PackDefinition, PackLook, PackSticker } from "./types.ts";
+import type { PackDefinition, PackLook, PackPromptStyle, PackSticker } from "./types.ts";
 
-export type { PackDefinition, PackLook, PackSticker } from "./types.ts";
+export type { PackDefinition, PackLook, PackPromptStyle, PackSticker } from "./types.ts";
 
 /** Image packs, in display order. Add a character by adding its definition here. */
-export const PACKS: readonly PackDefinition[] = [sheru, gifs];
+export const PACKS: readonly PackDefinition[] = [sheru, lumi, gifs];
 
 /** File names found in each pack's folder, keyed by pack id. Plain data, safe to send to the browser. */
 export type PackFiles = Readonly<Record<string, readonly string[]>>;
@@ -134,14 +135,25 @@ export function buildPacks(files: PackFiles): LiveCollection[] {
   return PACKS.flatMap((definition) => buildPack(definition, files[definition.id] ?? []) ?? []);
 }
 
+const DEFAULT_PROMPT: PackPromptStyle = {
+  framing: "Waist-up sticker portrait of",
+  pronoun: "He",
+  keep: "Keep his face, mane, fur, chain and watch exactly the same as the attached reference image.",
+  style: "Photorealistic 3D render style, crisp studio lighting, centered framing with a little empty space on every side.",
+  drift: "his face, mane or outfit",
+};
+
+export const promptStyle = (definition: PackDefinition): PackPromptStyle => ({ ...DEFAULT_PROMPT, ...definition.prompt });
+
 /** The prompt for one sticker in one look. Attach the reference image of the character when you run it. */
 export function stickerPrompt(definition: PackDefinition, sticker: PackSticker, look: PackLook = definition.looks[0]!): string {
+  const style = promptStyle(definition);
   return [
-    `Waist-up sticker portrait of ${definition.identity}`,
-    `He is wearing ${look.wardrobe}.`,
+    `${style.framing} ${definition.identity}`,
+    ...(look.wardrobe ? [`${style.pronoun} is wearing ${look.wardrobe}.`] : []),
     `Action and expression: ${sticker.scene}.`,
-    "Keep his face, mane, fur, chain and watch exactly the same as the attached reference image.",
-    "Photorealistic 3D render style, crisp studio lighting, centered framing with a little empty space on every side.",
+    style.keep,
+    style.style,
     "Isolated on a flat solid neutral grey background (#808080). No white sticker border or outline, no drop shadow, no background clutter, no extra text, no watermark.",
   ].join("\n");
 }

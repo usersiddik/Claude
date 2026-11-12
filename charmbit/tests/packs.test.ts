@@ -6,6 +6,7 @@ import { buildPack, PACKS, stickerPrompt } from "../src/lib/universe/packs/index
 import { buildSearchIndex, search } from "../src/lib/universe/search.ts";
 
 const sheru = PACKS.find((pack) => pack.id === "sheru")!;
+const lumi = PACKS.find((pack) => pack.id === "lumi")!;
 
 describe("image packs", () => {
   it("every pack definition is well formed", () => {
@@ -71,11 +72,11 @@ describe("image packs", () => {
   it("packs with files sit ahead of the drawn collections, each in its category", () => {
     const icons = loadAssets();
     const before = buildUniverse(icons, {});
-    assert.deepEqual(before.slice(1).map((collection) => collection.id), buildArchive(icons).map((collection) => collection.id));
-    const after = buildUniverse(icons, { sheru: ["chai-sip.webp"], gifs: ["cat-sad.gif"] });
-    assert.deepEqual(after.slice(0, 2).map((collection) => collection.id), ["sheru", "gifs"]);
+    assert.deepEqual(before.slice(2).map((collection) => collection.id), buildArchive(icons).map((collection) => collection.id));
+    const after = buildUniverse(icons, { sheru: ["chai-sip.webp"], lumi: ["pleading-eyes.webp"], gifs: ["cat-sad.gif"] });
+    assert.deepEqual(after.slice(0, 3).map((collection) => collection.id), ["sheru", "lumi", "gifs"]);
     assert.equal(after.length, before.length + 1);
-    assert.deepEqual(after.slice(0, 3).filter(isLive).map(categoryOf), ["whatsapp", "gif", "colour"]);
+    assert.deepEqual(after.slice(0, 4).filter(isLive).map(categoryOf), ["whatsapp", "whatsapp", "gif", "colour"]);
     assert.deepEqual(CATEGORIES.map((category) => category.id), ["whatsapp", "colour", "gif"]);
   });
 
@@ -97,6 +98,31 @@ describe("image packs", () => {
     assert.equal(search(index, "good morning")[0]?.item.id, "good-morning");
     assert.equal(search(index, "chai")[0]?.item.id, "chai-sip");
     assert.ok(search(index, "sunglasses").some((result) => result.item.id === "shades-off"));
+  });
+
+  it("Lumi has at least 25 distinct stickers, including the couple set", () => {
+    assert.ok(lumi.stickers.length >= 25);
+    assert.equal(new Set(lumi.stickers.map((sticker) => sticker.scene)).size, lumi.stickers.length);
+    assert.ok(lumi.stickers.filter((sticker) => sticker.group === "duo").length >= 3);
+    const pack = buildPack(lumi, ["pleading-eyes.webp"])!;
+    assert.equal(pack.id, "lumi");
+    assert.equal(pack.items.length, lumi.stickers.length);
+    assert.deepEqual(pack.items.filter((item) => !item.image?.pending).map((item) => item.id), ["pleading-eyes"]);
+    assert.equal(pack.cover[0], "pleading-eyes");
+    const index = buildSearchIndex([buildPack(lumi, lumi.stickers.map((sticker) => `${sticker.id}.webp`))!]);
+    assert.equal(search(index, "pookie")[0]?.item.id, "pleading-eyes");
+    assert.equal(search(index, "boba")[0]?.item.id, "boba-sip");
+    assert.ok(search(index, "hug").some((result) => result.item.id === "couple-hug"));
+  });
+
+  it("each pack words its own prompts, and a character with no outfit has no outfit line", () => {
+    const prompt = stickerPrompt(lumi, lumi.stickers[0]!);
+    assert.ok(prompt.startsWith("Close-up chibi bust sticker portrait of Lumi,"));
+    assert.ok(prompt.includes(lumi.identity) && prompt.includes(lumi.stickers[0]!.scene));
+    assert.doesNotMatch(prompt, /is wearing|mane|chain/);
+    assert.match(prompt, /Keep her face/);
+    assert.match(prompt, /#808080/);
+    assert.match(prompt, /No white sticker border/);
   });
 
   it("prompts fix the identity and never ask for a border or scenery", () => {

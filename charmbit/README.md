@@ -94,6 +94,15 @@ A tab with nothing in it shows "Soon" and an honest empty message.
   only: a premium image in `public/packs` can still be opened by its address, so real payments and access
   checks are needed before relying on it.
 
+**Lumi**, a baby white bunny (`?c=lumi`), is the second image pack:
+
+- **Definition:** `src/lib/universe/packs/lumi.ts`: 34 stickers in four groups (Sweet & shy, Big feelings,
+  Everyday, and Together with her partner Mimi, who is the same bunny with a pink bow). No outfits.
+- **Prompts:** `docs/lumi-prompts.md` (`node --experimental-strip-types scripts/prompts.ts lumi`). Each pack
+  words its own prompts through its `prompt` field; Sheru's wording is the default.
+- **Adding a sticker:** `python3 scripts/add-sticker.py <image> lumi <sticker-id>`. Stickers without a file
+  show as "Coming soon" tiles.
+
 **GIFs:** put a `.gif` in `public/packs/gifs/` and it appears. The file name becomes its name and search
 words (`cat-drinking-water.gif` is "Cat drinking water"), so use lowercase words joined by hyphens. To set a
 nicer name or caption, list it in `src/lib/universe/packs/gifs.ts`. Browsers cannot copy a moving image to

@@ -25,8 +25,22 @@ export interface PackLook {
   id: string;
   name: string;
   swatch: string;
-  /** How the image prompt describes this look. */
+  /** How the image prompt describes this look. Leave empty for a character with no outfit. */
   wardrobe: string;
+}
+
+/** How a pack's image prompts are worded. Anything left out falls back to the defaults in `stickerPrompt`. */
+export interface PackPromptStyle {
+  /** Opens the prompt, before the identity, e.g. "Waist-up sticker portrait of". */
+  framing: string;
+  /** "He" or "She", for the outfit line. */
+  pronoun: string;
+  /** The instruction that pins the character to the reference image. */
+  keep: string;
+  /** Render style, lighting and framing. */
+  style: string;
+  /** What to reject when checking a result, e.g. "his face, mane or outfit". */
+  drift: string;
 }
 
 export interface PackDefinition {
@@ -45,6 +59,8 @@ export interface PackDefinition {
   accent: string;
   /** The character sheet: what must stay the same in every sticker. */
   identity: string;
+  /** Wording for this character's prompts. Sheru's wording is the default. */
+  prompt?: Partial<PackPromptStyle>;
   /** Looks, default first. The default look's files have no suffix. */
   looks: readonly PackLook[];
   groups: readonly { id: string; name: string }[];
