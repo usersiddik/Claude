@@ -101,7 +101,9 @@ A tab with nothing in it shows "Soon" and an honest empty message.
 - **Prompts:** `docs/lumi-prompts.md` (`node --experimental-strip-types scripts/prompts.ts lumi`). Each pack
   words its own prompts through its `prompt` field; Sheru's wording is the default.
 - **Adding a sticker:** `python3 scripts/add-sticker.py <image> lumi <sticker-id>`. Stickers without a file
-  show as "Coming soon" tiles.
+  show as "Coming soon" tiles. The script rounds off a body that the picture cuts with a straight line at
+  the bottom (`--square-bottom` keeps the cut), and `--tolerance N` (default 26) controls how much of the
+  grey background is removed: lower it if the cutout bites into shaded fur.
 
 **GIFs:** put a `.gif` in `public/packs/gifs/` and it appears. The file name becomes its name and search
 words (`cat-drinking-water.gif` is "Cat drinking water"), so use lowercase words joined by hyphens. To set a

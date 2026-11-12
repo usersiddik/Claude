@@ -2,7 +2,7 @@
 """
 Prepare a generated image as a sticker and put it in a pack.
 
-    python3 scripts/add-sticker.py <image> <pack> <sticker-id> [look] [--border N]
+    python3 scripts/add-sticker.py <image> <pack> <sticker-id> [look] [--border N] [--tolerance N] [--square-bottom]
 
     python3 scripts/add-sticker.py ~/Downloads/chai.png sheru chai-sip
     python3 scripts/add-sticker.py ~/Downloads/chai.png sheru chai-sip --border 22
@@ -16,9 +16,14 @@ What it does:
   2. With --border N, shaves N pixels off the outline. Use it when the
      generator drew its own white sticker border, so the site's outline
      option (none, thin, thick) stays in control.
-  3. Trims the empty space, centres the character on a square with a small
+  3. Rounds off a body that the picture cuts with a straight line at the
+     bottom, so the sticker ends in a soft curve instead of a hard edge.
+     --square-bottom keeps the straight cut.
+     If the cutout bites into shaded fur or clothing, lower --tolerance
+     (default 26); if a rim of background is left, raise it.
+  4. Trims the empty space, centres the character on a square with a small
      margin, and resizes to 1024 x 1024.
-  4. Saves a WebP with transparency to public/packs/<pack>/.
+  5. Saves a WebP with transparency to public/packs/<pack>/.
 
 Needs Pillow:  pip install pillow
 """
@@ -38,7 +43,7 @@ def has_transparency(image: Image.Image) -> bool:
     return image.getchannel("A").getextrema()[0] < 250
 
 
-def remove_background(image: Image.Image) -> Image.Image:
+def remove_background(image: Image.Image, tolerance: int = TOLERANCE) -> Image.Image:
     """Flood the background in from every edge; whatever the flood cannot reach is the character."""
     rgb = image.convert("RGB")
     width, height = rgb.size
@@ -47,8 +52,8 @@ def remove_background(image: Image.Image) -> Image.Image:
     key = work.getpixel((0, 0))
     for seed in seeds:
         pixel = work.getpixel(seed)
-        if pixel != MARKER and max(abs(a - b) for a, b in zip(pixel, key)) <= TOLERANCE * 2:
-            ImageDraw.floodfill(work, seed, MARKER, thresh=TOLERANCE)
+        if pixel != MARKER and max(abs(a - b) for a, b in zip(pixel, key)) <= tolerance * 2:
+            ImageDraw.floodfill(work, seed, MARKER, thresh=tolerance)
     red, green, blue = work.split()
     # Background = exactly the marker colour.
     background = ImageChops.multiply(ImageChops.multiply(red.point(lambda v: 255 if v == 255 else 0), green.point(lambda v: 255 if v == 0 else 0)), blue.point(lambda v: 255 if v == 255 else 0))
@@ -63,6 +68,18 @@ def remove_background(image: Image.Image) -> Image.Image:
 def shave(image: Image.Image, pixels: int) -> Image.Image:
     """Removes a border of the given width from the outline (for a baked-in white sticker edge)."""
     alpha = image.getchannel("A").point(lambda v: 255 if v > 128 else 0)
+    try:
+        # A true round shave when SciPy is installed: it follows curves and dips far better.
+        import numpy
+        from scipy import ndimage
+
+        inside = ndimage.distance_transform_edt(numpy.asarray(alpha) > 0) > pixels
+        alpha = Image.fromarray((inside * 255).astype("uint8")).filter(ImageFilter.GaussianBlur(1.2))
+        image = image.copy()
+        image.putalpha(ImageChops.darker(alpha, image.getchannel("A")))
+        return image
+    except ImportError:
+        pass
     # Alternate square and diamond steps so the shaved outline stays rounded, not boxy.
     for step in range(pixels):
         if step % 2 == 0:
@@ -73,6 +90,44 @@ def shave(image: Image.Image, pixels: int) -> Image.Image:
     alpha = alpha.filter(ImageFilter.GaussianBlur(1))
     image = image.copy()
     image.putalpha(ImageChops.darker(alpha, image.getchannel("A")))
+    return image
+
+
+def round_bottom(image: Image.Image) -> Image.Image:
+    """
+    Where the body is cut by a straight line at the bottom, trims the two
+    lower corners along a curve so the sticker ends in a soft rounded shape.
+    Stickers that already end in a curve or a point are left alone.
+    """
+    alpha = image.getchannel("A")
+    solid = alpha.point(lambda value: 255 if value > 128 else 0)
+    box = solid.getbbox()
+    if not box:
+        return image
+    bottom = box[3] - 1
+    # The straight cut: the row a few pixels above the lowest one, to skip the soft edge.
+    row = solid.crop((0, max(0, bottom - 4), image.width, max(1, bottom - 3))).getbbox()
+    if not row:
+        return image
+    left, right = row[0], row[2]
+    span = right - left
+    if span < (box[2] - box[0]) * 0.3:
+        return image
+    depth = span * 0.3
+    centre = (left + right) / 2
+    steps = 96
+    curve = []
+    for step in range(steps + 1):
+        t = -1 + 2 * step / steps
+        # A superellipse: flat through the middle, sweeping up at the sides.
+        lift = depth * (1 - (1 - abs(t) ** 2.4) ** (1 / 2.4))
+        curve.append((centre + t * (span / 2 + 6), bottom - lift))
+    # Only the area under the curve, between the two ends of the cut, is removed.
+    keep = Image.new("L", image.size, 255)
+    ImageDraw.Draw(keep).polygon([*curve, (curve[-1][0], image.height), (curve[0][0], image.height)], fill=0)
+    keep = keep.filter(ImageFilter.GaussianBlur(1.5))
+    image = image.copy()
+    image.putalpha(ImageChops.darker(alpha, keep))
     return image
 
 
@@ -92,6 +147,14 @@ def frame(image: Image.Image) -> Image.Image:
 def main() -> None:
     args = sys.argv[1:]
     border = 0
+    square_bottom = "--square-bottom" in args
+    if square_bottom:
+        args.remove("--square-bottom")
+    tolerance = TOLERANCE
+    if "--tolerance" in args:
+        at = args.index("--tolerance")
+        tolerance = int(args[at + 1])
+        del args[at : at + 2]
     if "--border" in args:
         at = args.index("--border")
         border = int(args[at + 1])
@@ -102,9 +165,11 @@ def main() -> None:
     look = args[3] if len(args) == 4 else None
     image = Image.open(source).convert("RGBA")
     if not has_transparency(image):
-        image = remove_background(image)
+        image = remove_background(image, tolerance)
     if border > 0:
         image = shave(image, border)
+    if not square_bottom:
+        image = round_bottom(image)
     image = frame(image)
     folder = Path(__file__).resolve().parent.parent / "public" / "packs" / pack
     folder.mkdir(parents=True, exist_ok=True)
