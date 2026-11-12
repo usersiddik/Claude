@@ -2,7 +2,7 @@
 
 import { useState, type CSSProperties } from "react";
 import { normalizeHex } from "@/lib/art/color";
-import { CAPTION_COLORS, CAPTION_MAX_LENGTH, type Caption } from "@/lib/caption";
+import { CAPTION_COLORS, CAPTION_FONTS, CAPTION_MAX_LENGTH, captionFontOf, type Caption } from "@/lib/caption";
 import { STROKES, type StrokeId } from "@/lib/sticker";
 import type { ColorProperty, Swatch, ToggleProperty } from "@/lib/universe";
 import styles from "./Library.module.css";
@@ -109,6 +109,19 @@ export function CaptionField({ name, value, onChange }: { name: string; value: C
           </button>
         ) : null}
       </div>
+      {value.text.trim() ? (
+        <div className={styles.fontPicker} role="radiogroup" aria-label="Lettering style">
+          {CAPTION_FONTS.map((font) => (
+            <label key={font.id} className={styles.fontOption} title={font.name}>
+              <input type="radio" name={`${name}-font`} checked={captionFontOf(value.font).id === font.id} onChange={() => onChange({ ...value, font: font.id })} className={styles.radio} />
+              <span className={styles.fontSample} style={{ fontFamily: `var(${font.variable})`, fontWeight: font.weight, fontStyle: font.style, fontSize: `${1.25 * font.scale}rem` }} aria-hidden="true">
+                Aa
+              </span>
+              <span className={styles.fontName}>{font.name}</span>
+            </label>
+          ))}
+        </div>
+      ) : null}
       {value.text.trim() ? (
         <div className={styles.swatches} role="radiogroup" aria-label="Text colour">
           {CAPTION_COLORS.map((color) => (

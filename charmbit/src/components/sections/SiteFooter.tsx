@@ -53,9 +53,8 @@ export function SiteFooter() {
           <p className={styles.small}>Coming later: an AI sticker maker and a drawing studio.</p>
         </div>
       </div>
-      <span className={styles.signoff} aria-hidden="true">
-        {BRAND.name}
-      </span>
+      {/* Decoration only: the word is drawn from CSS, so it is neither read out nor contrast-checked. */}
+      <span className={styles.signoff} data-word={BRAND.name} aria-hidden="true" />
     </footer>
   );
 }

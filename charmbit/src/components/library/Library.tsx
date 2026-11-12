@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { CloseIcon, HeartGlyph, LockIcon } from "@/components/ui/icons";
-import { buildUniverse, CATEGORIES, categoryOf, defaultValues, findItem, isLive, randomValues, renderItem, stickerSrc, stickerTitle, type IconAsset, type LiveCollection, type CategoryId, type StickerItem, type Value, type Values } from "@/lib/universe";
+import { buildUniverse, CATEGORIES, categoryOf, isReady, readyCount, defaultValues, findItem, isLive, randomValues, renderItem, stickerThumb, stickerTitle, type IconAsset, type LiveCollection, type CategoryId, type StickerItem, type Value, type Values } from "@/lib/universe";
 import type { PackFiles } from "@/lib/universe/packs";
 import { svgDataUri } from "@/lib/universe/paths";
 import { buildSearchIndex, popularSearches, search } from "@/lib/universe/search";
@@ -72,7 +72,7 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
   // The outline width carries across stickers and collections.
   const [stroke, setStroke] = useState<StrokeId>(() => (restore && takeSaved()?.stroke) || "none");
   // Text on the sticker carries across stickers too, like the outline.
-  const [caption, setCaption] = useState<Caption>(() => (restore && takeSaved()?.caption) || { text: "", color: CAPTION_COLORS[0]!.hex });
+  const [caption, setCaption] = useState<Caption>(() => (restore && takeSaved()?.caption) || { text: "", color: CAPTION_COLORS[0]!.hex, font: "bubbly" });
 
   // Customisations are remembered per collection while you browse.
   const [edits, setEdits] = useState<Record<string, Values>>(() => (restore && takeSaved()?.edits) || {});
@@ -144,6 +144,7 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
     const list = results ?? (showSaved ? savedEntries : emptyTab ? [] : collection.items.filter((candidate) => group === "all" || candidate.group === group).map((candidate) => ({ collection, item: candidate })));
     return sort === "az" ? [...list].sort((a, b) => a.item.name.localeCompare(b.item.name)) : list;
   }, [results, showSaved, savedEntries, emptyTab, collection, group, sort]);
+  const readyShown = visible.filter((entry) => isReady(entry.item)).length;
   const position = Math.max(0, visible.findIndex((entry) => entry.collection.id === collection.id && entry.item.id === item.id));
 
   // Tiles use the prerendered files until a colour changes, then render live.
@@ -153,8 +154,8 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
       const base = defaultValues(entry.collection);
       const current = { ...base, ...edits[entry.collection.id] };
       const custom = entry.item.uses.some((use) => current[use] !== base[use]);
-      const look = entry.item.image?.variants.find((variant) => variant.id === current.look)?.src;
-      map.set(`${entry.collection.id}/${entry.item.id}`, look ?? (custom ? svgDataUri(renderItem(entry.collection, entry.item, current, true)) : stickerSrc(entry.collection, entry.item)));
+      const look = entry.item.image?.variants.find((variant) => variant.id === current.look);
+      map.set(`${entry.collection.id}/${entry.item.id}`, (look ? (look.thumb ?? look.src) : undefined) ?? (custom ? svgDataUri(renderItem(entry.collection, entry.item, current, true)) : stickerThumb(entry.collection, entry.item)));
     }
     return map;
   }, [visible, edits]);
@@ -239,14 +240,21 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
 
   return (
     <div className={styles.library} style={{ "--accent": collection.accent } as CSSProperties}>
-      <div className={styles.tabs} role="group" aria-label="Sticker type">
+      <div
+        className={styles.tabs}
+        role="group"
+        aria-label="Sticker type"
+        data-active={mode === "browse" || mode === "empty" ? "" : undefined}
+        style={{ "--active": CATEGORIES.findIndex((entry) => entry.id === category), "--count": CATEGORIES.length } as CSSProperties}
+      >
         {CATEGORIES.map((entry) => {
-          const count = inCategory(entry.id).reduce((total, candidate) => total + candidate.items.length, 0);
+          const count = inCategory(entry.id).reduce((total, candidate) => total + readyCount(candidate), 0);
           return (
             <button key={entry.id} type="button" className={styles.tab} aria-pressed={(mode === "browse" || mode === "empty") && category === entry.id} onClick={() => openCategory(entry.id)}>
+              <CategoryGlyph id={entry.id} />
               <b className={styles.tabFull}>{entry.name}</b>
               <b className={styles.tabShort} aria-hidden="true">{entry.short}</b>
-              <span>{count > 0 ? count : "Soon"}</span>
+              <span className={styles.tabCount} data-soon={count > 0 ? undefined : ""}>{count > 0 ? count : "Soon"}</span>
             </button>
           );
         })}
@@ -263,9 +271,9 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
         {inCategory(category).map((candidate) => (
           <button key={candidate.id} type="button" className={styles.pill} aria-pressed={mode === "browse" && candidate.id === collection.id} onClick={() => browse(candidate)}>
             {/* eslint-disable-next-line @next/next/no-img-element -- static SVG sticker */}
-            <img src={stickerSrc(candidate, findItem(candidate, candidate.cover[0]))} alt="" width={28} height={28} loading="lazy" decoding="async" />
+            <img src={stickerThumb(candidate, findItem(candidate, candidate.cover[0]))} alt="" width={28} height={28} loading="lazy" decoding="async" />
             {candidate.title}
-            <span>{candidate.items.length}</span>
+            <span>{readyCount(candidate)}</span>
           </button>
         ))}
       </div>
@@ -332,7 +340,7 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
                     onClick={() => setGroupFor({ collection: collection.id, group: candidate.id })}
                   >
                     {candidate.name}
-                    <span>{candidate.id === "all" ? collection.items.length : collection.items.filter((entry) => entry.group === candidate.id).length}</span>
+                    <span>{readyCount({ items: candidate.id === "all" ? collection.items : collection.items.filter((entry) => entry.group === candidate.id) })}</span>
                   </button>
                 ))}
               </div>
@@ -342,7 +350,8 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
           {visible.length > 1 ? (
             <div className={styles.sortRow}>
               <span>
-                {visible.length} sticker{visible.length === 1 ? "" : "s"}
+                {readyShown} sticker{readyShown === 1 ? "" : "s"}
+                {visible.length > readyShown ? <span className={styles.soonCount}> · {visible.length - readyShown} coming soon</span> : null}
               </span>
               <div role="group" aria-label="Sort">
                 <button type="button" className={styles.sort} aria-pressed={sort === "default"} onClick={() => setSort("default")}>
@@ -414,5 +423,28 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
         ) : null}
       </dialog>
     </div>
+  );
+}
+
+/** Small line icons for the three sticker types. */
+function CategoryGlyph({ id }: { id: CategoryId }) {
+  return (
+    <svg className={styles.tabGlyph} viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      {id === "whatsapp" ? (
+        <path d="M10 3.2a6.8 6.8 0 0 0-5.9 10.2L3.2 16.8l3.5-.9A6.8 6.8 0 1 0 10 3.2Z" />
+      ) : id === "colour" ? (
+        <>
+          <path d="M10 3.2c3.9 0 6.8 2.7 6.8 5.9 0 2-1.5 3.1-3.2 3.1h-1.4c-.9 0-1.4.8-1 1.6.5 1 .1 2.9-1.6 2.9a6.8 6.8 0 0 1 .4-13.5Z" />
+          <circle cx="6.9" cy="9.2" r=".9" fill="currentColor" stroke="none" />
+          <circle cx="9.6" cy="6.6" r=".9" fill="currentColor" stroke="none" />
+          <circle cx="13" cy="7.6" r=".9" fill="currentColor" stroke="none" />
+        </>
+      ) : (
+        <>
+          <rect x="3" y="4" width="14" height="12" rx="3" />
+          <path d="M8.6 7.6v4.8l3.9-2.4-3.9-2.4Z" fill="currentColor" />
+        </>
+      )}
+    </svg>
   );
 }

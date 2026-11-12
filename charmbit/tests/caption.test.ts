@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { CAPTION_COLORS, captionEdge, fitCaption, luminance } from "../src/lib/caption.ts";
+import { CAPTION_COLORS, CAPTION_FONTS, captionEdge, captionFontOf, fitCaption, luminance, spacedFor } from "../src/lib/caption.ts";
 
 // A fake measurer: every character is 0.6 em wide.
 const measure = (text: string, size: number) => text.length * size * 0.6;
@@ -46,5 +46,19 @@ describe("text on stickers", () => {
   it("offers a small set of valid colours, white first", () => {
     assert.equal(CAPTION_COLORS[0]!.hex, "#FFFFFF");
     for (const color of CAPTION_COLORS) assert.match(color.hex, /^#[0-9A-F]{6}$/);
+  });
+
+  it("offers six lettering styles with Bubbly as the default", () => {
+    assert.equal(CAPTION_FONTS.length, 6);
+    assert.equal(new Set(CAPTION_FONTS.map((font) => font.id)).size, 6);
+    assert.equal(captionFontOf(undefined).id, "bubbly");
+    assert.equal(captionFontOf("nope").id, "bubbly");
+    assert.equal(captionFontOf("script").name, "Script");
+    for (const font of CAPTION_FONTS) assert.match(font.variable, /^--font-/);
+  });
+
+  it("widens word spaces only for faces that need it", () => {
+    assert.equal(spacedFor(captionFontOf("bubbly"), "Good morning"), "Good morning");
+    assert.equal(spacedFor(captionFontOf("elegant"), "Good morning boss"), "Good \u2009morning \u2009boss");
   });
 });

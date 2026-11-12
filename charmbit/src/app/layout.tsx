@@ -1,15 +1,32 @@
 import type { Metadata, Viewport } from "next";
-import { Anton, Instrument_Serif, Inter, JetBrains_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Caveat, Fredoka, Geist, Geist_Mono, Pacifico, Titan_One } from "next/font/google";
+import localFont from "next/font/local";
 import { brandKey } from "@/lib/brand";
 import { SITE } from "@/lib/site";
 import "./globals.css";
 
-// Inter for interface text, Anton for the condensed display type, JetBrains Mono for small labels.
-// Instrument Serif stays loaded for the legal and developer pages' long-form headings.
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const serif = Instrument_Serif({ subsets: ["latin"], weight: "400", variable: "--font-serif", display: "swap" });
-const anton = Anton({ subsets: ["latin"], weight: "400", variable: "--font-anton", display: "swap" });
-const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-jbmono", display: "swap" });
+// Site type: Fraunces (soft optical serif) for display, Geist for text, Geist Mono for small labels.
+// Fraunces is self-hosted with its SOFT axis fixed at 100 and weight trimmed to 400–800,
+// half the bytes of the full variable font with the same look (see fonts/README.md).
+const fraunces = localFont({
+  src: [
+    { path: "./fonts/fraunces-soft.woff2", weight: "400 800", style: "normal" },
+    { path: "./fonts/fraunces-soft-italic.woff2", weight: "400 800", style: "italic" },
+  ],
+  variable: "--font-fraunces",
+  display: "swap",
+  adjustFontFallback: "Times New Roman",
+});
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
+const geistMono = Geist_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-geist-mono", display: "swap" });
+
+// Fonts for text on stickers. Not preloaded: they download only when someone opens the text tool.
+const bubbly = Fredoka({ subsets: ["latin"], weight: "700", variable: "--font-cap-bubbly", display: "swap", preload: false });
+const bold = Bricolage_Grotesque({ subsets: ["latin"], weight: "800", variable: "--font-cap-bold", display: "swap", preload: false });
+const chunky = Titan_One({ subsets: ["latin"], weight: "400", variable: "--font-cap-chunky", display: "swap", preload: false });
+const script = Pacifico({ subsets: ["latin"], weight: "400", variable: "--font-cap-script", display: "swap", preload: false });
+const hand = Caveat({ subsets: ["latin"], weight: "700", variable: "--font-cap-hand", display: "swap", preload: false });
+const FONT_VARIABLES = [fraunces, geist, geistMono, bubbly, bold, chunky, script, hand].map((font) => font.variable).join(" ");
 
 /** Applies a saved theme before first paint so there is no flash. */
 const THEME_SCRIPT = `try{var t=localStorage.getItem(${JSON.stringify(brandKey("theme"))});if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
@@ -47,7 +64,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${serif.variable} ${anton.variable} ${mono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={FONT_VARIABLES} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>

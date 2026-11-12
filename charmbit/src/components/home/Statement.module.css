@@ -32,7 +32,6 @@
   margin-top: var(--space-5);
   font-size: clamp(2.8rem, 8vw, 7.75rem);
   line-height: 0.9;
-  text-transform: uppercase;
   color: #c9bea9;
 }
 
@@ -79,7 +78,6 @@
   font-family: var(--font-display);
   font-size: 1.75rem;
   line-height: 1;
-  text-transform: uppercase;
   color: var(--text);
 }
 
@@ -90,22 +88,49 @@
 
 /* Polaroids ------------------------------------------------------------------------------ */
 
-.polaroid {
+/*
+ * ScrollScene writes --p (0→1 through the viewport), --e (eased entrance) and
+ * --w/--h (section size). Defaults are the resting layout, used before
+ * hydration and with reduced motion.
+ */
+.section {
+  --p: 0.5;
+  --e: 1;
+  --w: 100vw;
+  --h: 1200px;
+}
+
+.scatter {
   position: absolute;
-  left: var(--l);
-  top: var(--t);
+  inset: 0;
   z-index: 0;
-  width: clamp(120px, 11vw, 170px);
+  pointer-events: none;
+}
+
+.polaroid {
+  --rest: calc(1 - var(--e));
+  position: absolute;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) * 1%);
+  width: clamp(130px, 11vw, 172px);
   margin: 0;
   padding: 10px 10px 30px;
   background: #ece5d6;
-  box-shadow: 0 24px 40px -18px rgb(0 0 0 / 0.7);
-  rotate: var(--r);
-  animation: drift 7s ease-in-out infinite alternate;
-  animation-delay: calc(var(--i) * -2.3s);
+  box-shadow:
+    0 24px 40px -18px rgb(0 0 0 / 0.7),
+    0 2px 0 rgb(255 255 255 / 0.4) inset;
+  opacity: clamp(0, var(--e) * 1.8, 1);
+  /* Swept in from its own side with a spin, landing on its spot; then a slow drift by depth. */
+  translate:
+    calc(var(--rest) * var(--side) * var(--w) * 0.28)
+    calc(var(--rest) * 220px * var(--d) + (var(--p) - 0.5) * var(--d) * -240px);
+  rotate: calc((var(--r) + var(--rest) * var(--spin)) * 1deg);
+  scale: calc(0.82 + 0.18 * var(--e));
+  will-change: translate, rotate, scale;
 }
 
-.polaroid img {
+.polaroid img,
+.fanCard img {
   display: block;
   width: 100%;
   aspect-ratio: 1;
@@ -113,11 +138,12 @@
   background: radial-gradient(circle, #f6f0e4, #d9cfbd);
 }
 
-.polaroid figcaption {
+.polaroid figcaption,
+.fanCard figcaption {
   position: absolute;
   left: 10px;
   right: 10px;
-  bottom: 8px;
+  bottom: 9px;
   overflow: hidden;
   color: #5a5146;
   font-size: 0.5625rem;
@@ -125,17 +151,53 @@
   white-space: nowrap;
 }
 
-@keyframes drift {
-  from {
-    translate: 0 -6px;
-  }
-  to {
-    translate: 0 8px;
+@media (max-width: 1359px) {
+  .polaroid:nth-child(n + 5) {
+    display: none;
   }
 }
 
 @media (max-width: 1099px) {
-  .polaroid {
+  .scatter {
     display: none;
   }
+}
+
+/* The fan: phones and tablets ------------------------------------------------------------ */
+
+.fan {
+  --e: 1;
+  position: relative;
+  display: none;
+  width: 100%;
+  height: clamp(214px, 58vw, 290px);
+  margin-top: var(--space-6);
+}
+
+@media (max-width: 1099px) {
+  .fan {
+    display: block;
+  }
+}
+
+.fanCard {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  z-index: calc(10 - var(--k) * var(--k));
+  width: clamp(104px, 27vw, 160px);
+  margin: 0;
+  padding: 7px 7px 24px;
+  background: #ece5d6;
+  box-shadow: 0 18px 30px -16px rgb(0 0 0 / 0.75);
+  /* Stacked at the centre, then spread into an arc as the fan scrolls in. */
+  translate: calc(-50% + var(--k) * var(--e) * clamp(42px, 13.5vw, 128px)) calc(var(--k) * var(--k) * var(--e) * 8px);
+  rotate: calc(var(--k) * var(--e) * 7deg + (1 - var(--e)) * var(--k) * -2deg);
+}
+
+.fanCard figcaption {
+  left: 7px;
+  right: 7px;
+  bottom: 6px;
+  font-size: 0.5rem;
 }

@@ -87,8 +87,10 @@ A tab with nothing in it shows "Soon" and an honest empty message.
 - **Prompts:** `docs/sheru-prompts.md` (regenerate with `node --experimental-strip-types scripts/prompts.ts sheru`).
   Attach the reference image to every prompt so the face stays the same.
 - **Adding a sticker:** `python3 scripts/add-sticker.py <image> sheru <sticker-id> [look] [--border N]` removes
-  the flat background, optionally shaves a baked-in white border, trims, squares and saves a 1024 px WebP.
-  Needs Pillow. A free sticker appears once its file exists.
+  the flat background, optionally shaves a baked-in white border, trims, squares and saves a 1024 px WebP,
+  plus a 400 px copy in `thumbs/` that tiles and cards load instead. Needs Pillow. A free sticker appears
+  once its file exists. For files added any other way, run `python3 scripts/make-thumbs.py`; a test fails
+  while any pack image is missing its thumbnail.
 - **Outfits:** a file named `<sticker>.<look>.webp` (e.g. `chai-sip.black.webp`) adds that outfit.
 - **Premium (switched off):** all 40 stickers are free for now. Setting `lockPremium: true` in the pack shows
   the ones marked `premium` as blurred tiles with a gold lock and a "coming soon" note. That lock is visual

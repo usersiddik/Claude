@@ -5,7 +5,7 @@
  * shares it. Browser-only.
  */
 
-import { captionEdge, fitCaption, type Caption, type Measure } from "./caption.ts";
+import { captionEdge, captionFontOf, fitCaption, type Caption, type CaptionFont, type Measure, spacedFor } from "./caption.ts";
 
 export interface StickerOptions {
   size?: number;
@@ -87,6 +87,7 @@ export async function renderSticker(source: Art, options: StickerOptions = {}): 
   const shape = options.silhouette ? await loadImage(toUrl(options.silhouette)) : image;
   // Image files keep their own proportions, centred in the art area.
   const caption = options.caption?.text.trim() ? options.caption : undefined;
+  if (caption) await loadCaptionFont(caption);
   // With a caption, the art keeps its shape but gives up the bottom of the frame.
   const artHeight = caption ? Math.round(art * (1 - CAPTION_BAND)) : art;
   const naturalWidth = typeof source === "string" ? art : image.naturalWidth || art;
@@ -146,27 +147,39 @@ export async function renderSticker(source: Art, options: StickerOptions = {}): 
   return toBlob(canvas, options.type ?? "image/png", options.quality);
 }
 
-/** The site's text face, so the sticker matches what the editor showed. */
-function captionFont(): string {
-  const family = typeof document === "undefined" ? "" : getComputedStyle(document.body).fontFamily;
-  return family || "Inter, Arial, sans-serif";
+/** The family next/font registered for a lettering style, read from its CSS variable. */
+function captionFamily(font: CaptionFont): string {
+  const family = typeof document === "undefined" ? "" : getComputedStyle(document.documentElement).getPropertyValue(font.variable).trim();
+  return family || "system-ui, sans-serif";
 }
 
-/** Bold text along the bottom with a contrasting edge, sized to fit the width. */
+const fontSpec = (font: CaptionFont, size: number) => `${font.style} ${font.weight} ${size}px ${captionFamily(font)}`;
+
+/** Lettering fonts load on demand: make sure the style is ready before drawing with it. */
+async function loadCaptionFont(caption: Caption): Promise<void> {
+  if (typeof document === "undefined" || !document.fonts) return;
+  try {
+    await document.fonts.load(fontSpec(captionFontOf(caption.font), 64), caption.text);
+  } catch {
+    // Drawing falls back to a system face; the sticker is still usable.
+  }
+}
+
+/** Lettering along the bottom with a contrasting edge, sized to fit the width. */
 function drawCaption(context: CanvasRenderingContext2D, caption: Caption, size: number, padding: number, outlined: boolean): void {
-  const family = captionFont();
+  const font = captionFontOf(caption.font);
   const maxWidth = size - padding * 2 - size * 0.04;
   const measure: Measure = (text, fontSize) => {
-    context.font = `800 ${fontSize}px ${family}`;
-    return context.measureText(text).width;
+    context.font = fontSpec(font, fontSize);
+    return context.measureText(spacedFor(font, text)).width;
   };
-  const layout = fitCaption(measure, caption.text, maxWidth, size * 0.13, size * 0.065);
+  const layout = fitCaption(measure, caption.text, maxWidth, size * 0.13 * font.scale, size * 0.065 * font.scale);
   if (layout.lines.length === 0) return;
   const lineHeight = layout.size * 1.08;
   // The block sits in the band below the art; outlined stickers keep clear of their edge.
   const bottom = size - padding - (outlined ? size * 0.01 : size * 0.02);
   const edge = captionEdge(caption.color);
-  context.font = `800 ${layout.size}px ${family}`;
+  context.font = fontSpec(font, layout.size);
   context.textAlign = "center";
   context.textBaseline = "alphabetic";
   context.lineJoin = "round";
@@ -175,8 +188,8 @@ function drawCaption(context: CanvasRenderingContext2D, caption: Caption, size: 
   context.fillStyle = caption.color;
   layout.lines.forEach((line, index) => {
     const y = bottom - (layout.lines.length - 1 - index) * lineHeight - layout.size * 0.22;
-    context.strokeText(line, size / 2, y);
-    context.fillText(line, size / 2, y);
+    context.strokeText(spacedFor(font, line), size / 2, y);
+    context.fillText(spacedFor(font, line), size / 2, y);
   });
 }
 

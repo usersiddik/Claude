@@ -59,7 +59,7 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
 
   // With an outline on, preview the exact bitmap that will be copied.
   const [rendered, setRendered] = useState<{ key: string; url: string } | null>(null);
-  const captionKey = text ? `${text.text}|${text.color}` : "";
+  const captionKey = text ? `${text.text}|${text.color}|${text.font ?? ""}` : "";
   const renderKey = `${width}:${captionKey}:${file ?? svg}`;
   useEffect(() => {
     if (width === 0 && !text) return;
@@ -86,7 +86,7 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
       <div className={styles.preview} data-canvas={canvas}>
         <div key={`${item.id}-${pulse}`} className={styles.previewArt} data-pulse={pulse > 0 ? "" : undefined}>
           {/* eslint-disable-next-line @next/next/no-img-element -- generated SVG; an image keeps its ids isolated */}
-          <img src={outlined ?? file ?? svgDataUri(svg)} alt={title} className={styles.previewSvg} style={{ "--scale": scale } as CSSProperties} draggable={false} />
+          <img src={outlined ?? file ?? svgDataUri(svg)} alt={title} className={styles.previewSvg} style={{ "--scale": scale } as CSSProperties} loading="lazy" decoding="async" draggable={false} />
         </div>
         <div className={styles.canvasPicker} role="group" aria-label="Preview background">
           {CANVASES.map((option) => (

@@ -7,7 +7,33 @@ export interface Caption {
   text: string;
   /** Fill colour as a hex string. */
   color: string;
+  /** One of CAPTION_FONTS; Bubbly when missing. */
+  font?: CaptionFontId;
 }
+
+/**
+ * Lettering styles for text on stickers. Each names the CSS variable that
+ * next/font sets on <html>, so the canvas draws with the very font the page
+ * loaded. `scale` evens out how large each face looks at the same size;
+ * `space` is added after every word space when drawing.
+ */
+export const CAPTION_FONTS = [
+  { id: "bubbly", name: "Bubbly", variable: "--font-cap-bubbly", weight: 700, style: "normal", scale: 1, space: "" },
+  { id: "bold", name: "Bold", variable: "--font-cap-bold", weight: 800, style: "normal", scale: 1, space: "" },
+  { id: "chunky", name: "Chunky", variable: "--font-cap-chunky", weight: 400, style: "normal", scale: 0.94, space: "" },
+  // Narrow word spaces vanish under the outline; a thin space after each one gives them back.
+  { id: "elegant", name: "Elegant", variable: "--font-fraunces", weight: 800, style: "italic", scale: 1.04, space: "\u2009" },
+  { id: "script", name: "Script", variable: "--font-cap-script", weight: 400, style: "normal", scale: 0.9, space: "\u200A" },
+  { id: "hand", name: "Handwritten", variable: "--font-cap-hand", weight: 700, style: "normal", scale: 1.22, space: "" },
+] as const;
+
+export type CaptionFont = (typeof CAPTION_FONTS)[number];
+export type CaptionFontId = CaptionFont["id"];
+
+export const captionFontOf = (id: string | undefined): CaptionFont => CAPTION_FONTS.find((font) => font.id === id) ?? CAPTION_FONTS[0];
+
+/** The text as drawn in `font`: word spaces widened where the face needs it. */
+export const spacedFor = (font: CaptionFont, text: string): string => (font.space ? text.replace(/ /g, ` ${font.space}`) : text);
 
 export interface CaptionLayout {
   /** Font size in pixels. */

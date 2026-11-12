@@ -60,11 +60,15 @@ export interface StickerVariant {
   /** Dot colour for the picker. */
   swatch: string;
   src: string;
+  /** A 400px copy for tiles and cards, when one exists. */
+  thumb?: string;
 }
 
 export interface StickerImage {
   /** The default file, e.g. `/packs/sheru/coffee.webp`. */
   src: string;
+  /** A 400px copy for tiles and cards, e.g. `/packs/sheru/thumbs/coffee.webp`. */
+  thumb?: string;
   /** Looks that have a file for this sticker, default first. Empty when there is only one. */
   variants: readonly StickerVariant[];
   /** True for GIFs: shown and downloaded as they are, never redrawn. */

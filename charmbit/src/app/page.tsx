@@ -4,12 +4,13 @@ import { FloatingCta } from "@/components/home/FloatingCta";
 import { Hero } from "@/components/home/Hero";
 import { LibraryChapter } from "@/components/home/LibraryChapter";
 import { Reveal } from "@/components/home/Reveal";
+import { ScrollScene } from "@/components/home/ScrollScene";
 import { Statement } from "@/components/home/Statement";
 import { Tilt } from "@/components/home/Tilt";
 import { SiteFooter } from "@/components/sections/SiteFooter";
 import { SiteHeader } from "@/components/sections/SiteHeader";
 import { CopyIsland } from "@/components/ui/CopyIsland";
-import { countStickers, isLive, type Collection } from "@/lib/universe";
+import { countStickers, isLive, readyCount, type Collection } from "@/lib/universe";
 import { getUniverse, iconAssets, packFiles } from "@/lib/universe/server";
 import { SITE } from "@/lib/site";
 
@@ -28,7 +29,7 @@ function structuredData(universe: readonly Collection[]) {
     url: `${SITE.url}/?c=${collection.id}`,
     description: collection.description,
     isPartOf: { "@type": "WebSite", name: SITE.name, url: `${SITE.url}/` },
-    mainEntity: { "@type": "ItemList", numberOfItems: collection.items.length },
+    mainEntity: { "@type": "ItemList", numberOfItems: readyCount(collection) },
   }));
   // Escape "<" so the JSON can never close the script tag.
   return JSON.stringify([website, ...collections]).replace(/</g, "\\u003c");
@@ -51,6 +52,7 @@ export default function HomePage() {
       <SiteFooter />
       <FloatingCta />
       <Reveal />
+      <ScrollScene />
       <Tilt />
       <CopyIsland scope="page" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData(universe) }} />

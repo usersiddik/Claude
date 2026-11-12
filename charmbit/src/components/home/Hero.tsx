@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { findItem, stickerSrc, stickerTitle, type LiveCollection, type StickerItem } from "@/lib/universe";
+import { findItem, stickerSrc, stickerThumb, stickerTitle, type LiveCollection, type StickerItem } from "@/lib/universe";
 import { libraryHref } from "@/lib/universe/paths";
 import { buildSearchIndex, popularSearches } from "@/lib/universe/search";
 import { HeroSearch } from "./HeroSearch";
@@ -7,7 +7,7 @@ import { HeroStage } from "./HeroStage";
 import styles from "./Hero.module.css";
 
 /** The portrait at the centre of the page, if its pack has it. */
-const FIGURE = { collection: "sheru", item: "boss-point" } as const;
+const FIGURE = { collection: "sheru", item: "crown" } as const;
 /** The small trading card in the corner: a different character. */
 const CARD = { collection: "lumi", item: "heart-hug" } as const;
 
@@ -53,11 +53,6 @@ export function Hero({ total, collections }: HeroProps) {
   return (
     <section className={`grain ${styles.hero}`} id="top" aria-labelledby="hero-title">
       <HeroStage className={styles.stage}>
-        {/* Giant lettering behind the figure: texture, not text. */}
-        <div className={styles.backdrop} aria-hidden="true">
-          <span>Kite</span>
-          <span>Muse</span>
-        </div>
 
         <a href={libraryHref(figure.collection.id, figure.item.id)} data-library="" className={styles.figure} aria-label={`${stickerTitle(figure.collection, figure.item)}: open in the studio`} draggable={false}>
           {/* eslint-disable-next-line @next/next/no-img-element -- sticker artwork */}
@@ -76,14 +71,14 @@ export function Hero({ total, collections }: HeroProps) {
             >
               <span className={styles.cardInner}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- sticker artwork */}
-                <img src={stickerSrc(card.collection, card.item)} alt="" width={240} height={240} decoding="async" draggable={false} />
+                <img src={stickerThumb(card.collection, card.item)} alt="" width={240} height={240} decoding="async" draggable={false} />
               </span>
             </a>
           ) : null}
           <h1 id="hero-title" className={`display ${styles.title}`}>
             Stickers for
             <br />
-            every feeling.
+            <em>every feeling.</em>
           </h1>
           <p className={styles.lede}>
             {total} original stickers. Find one you love, add your words and colours, then paste it into any chat.
@@ -91,10 +86,10 @@ export function Hero({ total, collections }: HeroProps) {
         </div>
 
         <div className={styles.right}>
-          <p className={`mono ${styles.meet}`}>Now showing</p>
-          <p className={styles.caption}>
-            <strong>{figure.collection.title}.</strong> {figure.collection.tagline}
+          <p className={`mono ${styles.meet}`}>
+            {figure.collection.title} · {figure.item.name}
           </p>
+          <p className={styles.caption}>{figure.collection.tagline} Forty moods, and every one takes your words.</p>
           <div className={styles.actions}>
             <a href="#collections" className={styles.cta}>
               Explore stickers

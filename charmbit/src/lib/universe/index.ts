@@ -45,6 +45,9 @@ export function buildUniverse(icons: readonly IconAsset[], files: PackFiles = {}
 /** Image URL for a sticker in its default look: the file for image stickers, the prerendered SVG otherwise. */
 export const stickerSrc = (collection: LiveCollection, item: StickerItem) => item.image?.src ?? `/stickers/${collection.id}/${item.id}.svg`;
 
+/** A small copy for tiles and cards: the 400px thumbnail of an image sticker, or the SVG itself. */
+export const stickerThumb = (collection: LiveCollection, item: StickerItem) => item.image?.thumb ?? stickerSrc(collection, item);
+
 export const isLive = (collection: Collection): collection is LiveCollection => collection.status === "live";
 
 export function findItem(collection: LiveCollection, id: string | null | undefined): StickerItem {
@@ -98,6 +101,13 @@ export function exportItem(collection: LiveCollection, item: StickerItem, values
   });
 }
 
+/** False for a placeholder whose artwork has not arrived yet. */
+export const isReady = (item: StickerItem): boolean => !item.image?.pending;
+
+/** Finished stickers in a collection; placeholders don't count. */
+export const readyCount = (collection: { items: readonly StickerItem[] }): number => collection.items.filter(isReady).length;
+
+/** Finished stickers across every live collection. */
 export function countStickers(collections: readonly Collection[]): number {
-  return collections.reduce((total, collection) => total + (isLive(collection) ? collection.items.length : 0), 0);
+  return collections.reduce((total, collection) => total + (isLive(collection) ? readyCount(collection) : 0), 0);
 }

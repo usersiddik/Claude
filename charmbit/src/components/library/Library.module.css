@@ -164,7 +164,6 @@
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 400;
   line-height: 1;
-  text-transform: uppercase;
 }
 
 .collectionText {
@@ -561,7 +560,6 @@
   font-size: 2.25rem;
   font-weight: 400;
   line-height: 1;
-  text-transform: uppercase;
 }
 
 .infoCaption {
@@ -1171,68 +1169,155 @@
   }
 }
 
-/* Sticker type tabs ---------------------------------------------------------------- */
+/* Sticker type: a segmented control with a sliding pill ------------------------------ */
 
 .tabs {
-  display: flex;
-  gap: var(--space-5);
-  margin-bottom: var(--space-4);
-  border-bottom: 1px solid var(--hairline);
-  overflow-x: auto;
-  scrollbar-width: none;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: var(--space-3);
+  padding: 4px;
+  border-radius: 980px;
+  background: var(--fill);
+  box-shadow: inset 0 0 0 1px var(--hairline);
 }
 
-.tabs::-webkit-scrollbar {
-  display: none;
+/* The pill slides under the chosen type; it hides while Saved or a search is showing. */
+.tabs::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / var(--count));
+  border-radius: 980px;
+  background: var(--ink);
+  box-shadow: 0 6px 16px -8px rgb(0 0 0 / 0.45);
+  opacity: 0;
+  translate: calc(var(--active) * 100%) 0;
+  transition:
+    translate 480ms var(--ease-spring),
+    opacity var(--fast) var(--ease);
+}
+
+.tabs[data-active]::before {
+  opacity: 1;
 }
 
 .tab {
-  flex: none;
+  position: relative;
+  z-index: 1;
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
-  min-height: 44px;
-  padding: 0 2px 10px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 14px;
   border: 0;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
+  border-radius: 980px;
   background: none;
   color: var(--text-2);
-  font-family: var(--font-display);
-  font-size: 1.375rem;
+  font-size: 0.9375rem;
   line-height: 1;
-  text-transform: uppercase;
   white-space: nowrap;
-  transition:
-    color var(--fast) var(--ease),
-    border-color var(--fast) var(--ease);
+  transition: color var(--fast) var(--ease);
 }
 
-.tab span {
-  font-family: var(--font);
-  font-size: 0.75rem;
+.tab b {
+  overflow: hidden;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+}
+
+.tabGlyph {
+  flex: none;
+  opacity: 0.85;
+}
+
+.tabCount {
+  flex: none;
+  padding: 3px 7px;
+  border-radius: 980px;
+  background: var(--fill-hover);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-  text-transform: none;
+  letter-spacing: 0.02em;
 }
 
-.tab:hover {
-  color: var(--text);
+.tabCount[data-soon] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.5625rem;
+}
+
+@media (hover: hover) {
+  .tab:hover {
+    color: var(--text);
+  }
 }
 
 .tab[aria-pressed="true"] {
-  border-bottom-color: var(--ink);
-  color: var(--text);
+  color: var(--on-ink);
 }
 
-@media (max-width: 479px) {
+.tab[aria-pressed="true"] .tabCount {
+  background: color-mix(in oklab, var(--on-ink) 18%, transparent);
+}
+
+.tab[aria-pressed="true"] .tabCount[data-soon] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--on-ink) 40%, transparent);
+}
+
+.tab:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Short names on screen; the full name stays for screen readers. */
+.tabFull {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+/* Narrow: no icons, so all three fit without scrolling. */
+@media (max-width: 639px) {
   .tabs {
-    gap: var(--space-4);
+    max-width: none;
   }
 
   .tab {
-    font-size: 1.125rem;
+    gap: 7px;
+    padding: 0 8px;
+    font-size: 0.875rem;
   }
+
+  .tabGlyph {
+    display: none;
+  }
+
+  /* Counts drop their chip so "WhatsApp 45" fits a third of a phone. */
+  .tabCount:not([data-soon]),
+  .tab[aria-pressed="true"] .tabCount:not([data-soon]) {
+    padding: 0;
+    background: none;
+    opacity: 0.72;
+  }
+}
+
+.soonCount {
+  color: var(--text-2);
 }
 
 /* GIFs fill their tile; they are not die-cut shapes. */
@@ -1252,29 +1337,6 @@
   background: var(--fill);
   font-size: 0.875rem;
   font-weight: 500;
-}
-
-.tab b {
-  font-weight: 400;
-}
-
-.tabShort {
-  display: none;
-}
-
-@media (max-width: 639px) {
-  .tabFull {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-  }
-
-  .tabShort {
-    display: inline;
-  }
 }
 
 /* Premium: locked tiles and the coming-soon note ----------------------------------- */
@@ -1360,7 +1422,6 @@
   font-size: 1.875rem;
   font-weight: 400;
   line-height: 1;
-  text-transform: uppercase;
 }
 
 .premiumText {
@@ -1469,7 +1530,60 @@
 }
 
 .tabBlurb {
-  margin: calc(var(--space-2) * -1) 0 var(--space-4);
+  max-width: 60ch;
+  margin: 0 0 var(--space-5);
   color: var(--text-2);
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
+}
+
+/* Lettering style picker: each option shows "Aa" in its own face. */
+.fontPicker {
+  clear: both;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: var(--space-3);
+}
+
+.fontOption {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 10px 4px 8px;
+  border-radius: var(--radius-control);
+  background: var(--fill);
+  cursor: pointer;
+  transition:
+    background-color var(--fast) var(--ease),
+    box-shadow var(--fast) var(--ease),
+    transform 300ms var(--ease-spring);
+}
+
+.fontOption:hover {
+  background: var(--fill-hover);
+}
+
+.fontOption:active {
+  transform: scale(0.96);
+}
+
+.fontOption:has(input:checked) {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+
+.fontOption:has(input:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.fontSample {
+  line-height: 1.1;
+}
+
+.fontName {
+  color: var(--text-2);
+  font-size: 0.6875rem;
+  font-weight: 500;
 }

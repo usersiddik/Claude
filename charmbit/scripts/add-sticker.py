@@ -207,6 +207,13 @@ def main() -> None:
     target = folder / (f"{sticker}.{look}.webp" if look else f"{sticker}.webp")
     image.save(target, "WEBP", quality=92, method=6)
     print(f"Saved {target.relative_to(folder.parent.parent.parent)} ({target.stat().st_size // 1024} KB)")
+    # The 400px copy that tiles and cards use (same as scripts/make-thumbs.py).
+    thumb = folder / "thumbs" / f"{target.stem}.webp"
+    thumb.parent.mkdir(exist_ok=True)
+    small = image.copy()
+    small.thumbnail((400, 400), Image.Resampling.LANCZOS)
+    small.save(thumb, "WEBP", quality=82, method=6)
+    print(f"Saved {thumb.relative_to(folder.parent.parent.parent)} ({thumb.stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":

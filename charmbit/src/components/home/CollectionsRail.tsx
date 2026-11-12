@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { brandKey } from "@/lib/brand";
 import type { CategoryId } from "@/lib/universe";
 import styles from "./Collections.module.css";
 
@@ -13,6 +14,8 @@ export interface CastCard {
   categoryName: string;
   count: number;
   src: string;
+  /** 400px copy; equal to `src` for drawn stickers. */
+  thumb: string;
   href: string;
 }
 
@@ -21,9 +24,31 @@ interface RailProps {
   filters: readonly { id: CategoryId; name: string; count: number }[];
 }
 
-/** A sideways rail of trading cards, with a category filter and arrow buttons. */
+type View = "slider" | "grid";
+const VIEW_KEY = brandKey("cast-view");
+
+/** Trading cards as a sideways slider or a grid, with a category filter. */
 export function CollectionsRail({ cards, filters }: RailProps) {
   const [filter, setFilter] = useState<CategoryId | "all">("all");
+  const [view, setView] = useState<View>("slider");
+  // The visitor's last choice, once the page is interactive.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(VIEW_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- read once from storage after hydration
+      if (saved === "grid" || saved === "slider") setView(saved);
+    } catch {
+      // Private mode: the slider it is.
+    }
+  }, []);
+  const choose = (next: View) => {
+    setView(next);
+    try {
+      localStorage.setItem(VIEW_KEY, next);
+    } catch {
+      // Not remembered; still applied.
+    }
+  };
   const rail = useRef<HTMLUListElement>(null);
   const visible = cards.filter((card) => filter === "all" || card.category === filter);
 
@@ -49,12 +74,28 @@ export function CollectionsRail({ cards, filters }: RailProps) {
           ))}
         </div>
         <div className={styles.arrows}>
-          <button type="button" className={styles.arrow} aria-label="Previous collections" onClick={() => step(-1)}>
+          <div className={styles.views} role="group" aria-label="Layout">
+            <button type="button" className={styles.view} aria-pressed={view === "slider"} aria-label="Slider" title="Slider" onClick={() => choose("slider")}>
+              <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round">
+                <rect x="5.5" y="4" width="9" height="12" rx="1.5" />
+                <path d="M2.5 6v8M17.5 6v8" strokeLinecap="round" />
+              </svg>
+            </button>
+            <button type="button" className={styles.view} aria-pressed={view === "grid"} aria-label="Grid" title="Grid" onClick={() => choose("grid")}>
+              <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round">
+                <rect x="3" y="3" width="6" height="6" rx="1.2" />
+                <rect x="11" y="3" width="6" height="6" rx="1.2" />
+                <rect x="3" y="11" width="6" height="6" rx="1.2" />
+                <rect x="11" y="11" width="6" height="6" rx="1.2" />
+              </svg>
+            </button>
+          </div>
+          <button type="button" className={styles.arrow} aria-label="Previous collections" onClick={() => step(-1)} hidden={view === "grid"}>
             <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M16 10H5M9 5l-5 5 5 5" />
             </svg>
           </button>
-          <button type="button" className={styles.arrow} aria-label="Next collections" onClick={() => step(1)}>
+          <button type="button" className={styles.arrow} aria-label="Next collections" onClick={() => step(1)} hidden={view === "grid"}>
             <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 10h11M11 5l5 5-5 5" />
             </svg>
@@ -62,13 +103,23 @@ export function CollectionsRail({ cards, filters }: RailProps) {
         </div>
       </div>
 
-      <ul ref={rail} role="list" className={styles.rail} key={filter} aria-label="Collections">
+      <ul ref={rail} role="list" className={styles.rail} data-view={view} key={`${filter}-${view}`} aria-label="Collections">
         {visible.map((card, index) => (
           <li key={card.id} className={styles.slot} style={{ "--i": index } as CSSProperties}>
-            <a href={card.href} data-library="" data-tilt="" className={styles.card} style={{ "--tint": card.tint } as CSSProperties} aria-label={`${card.title}: ${card.count} stickers. ${card.tagline}`}>
+            <a href={card.href} data-library="" data-tilt="" className={styles.card} style={{ "--tint": card.tint } as CSSProperties} aria-label={`${card.title}, ${card.categoryName}: ${card.count} stickers. ${card.tagline}`}>
               <span className={styles.cardFace}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- sticker artwork */}
-                <img src={card.src} alt="" width={320} height={320} loading="lazy" decoding="async" draggable={false} />
+                <img
+                  src={card.thumb}
+                  srcSet={card.thumb === card.src ? undefined : `${card.thumb} 400w, ${card.src} 1024w`}
+                  sizes="(max-width: 767px) 55vw, 250px"
+                  alt=""
+                  width={320}
+                  height={320}
+                  loading="lazy"
+                  decoding="async"
+                  draggable={false}
+                />
                 <span className={`mono ${styles.badge}`}>{card.categoryName}</span>
               </span>
             </a>

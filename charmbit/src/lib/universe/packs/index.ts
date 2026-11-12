@@ -9,7 +9,10 @@ export type { PackDefinition, PackLook, PackPromptStyle, PackSticker } from "./t
 /** Image packs, in display order. Add a character by adding its definition here. */
 export const PACKS: readonly PackDefinition[] = [sheru, lumi, gifs];
 
-/** File names found in each pack's folder, keyed by pack id. Plain data, safe to send to the browser. */
+/**
+ * File names found in each pack's folder, keyed by pack id; thumbnails are
+ * listed as `thumbs/<name>.webp`. Plain data, safe to send to the browser.
+ */
 export type PackFiles = Readonly<Record<string, readonly string[]>>;
 
 const EXTENSIONS = ["webp", "png"] as const;
@@ -18,6 +21,12 @@ const EXTENSIONS = ["webp", "png"] as const;
 export const PLACEHOLDER = "/packs/placeholder.svg";
 
 export const packPath = (packId: string, file: string) => `/packs/${packId}/${file}`;
+
+/** The thumbnail listed for a pack file, if there is one. */
+function thumbFor(files: ReadonlySet<string>, packId: string, file: string): string | undefined {
+  const name = `thumbs/${file.replace(/\.[a-z0-9]+$/, "")}.webp`;
+  return files.has(name) ? packPath(packId, name) : undefined;
+}
 
 /** The file for a sticker in a look, if present. The default look has no suffix. */
 function fileFor(files: ReadonlySet<string>, stickerId: string, look: PackLook, isDefault: boolean): string | undefined {
@@ -38,11 +47,11 @@ export function buildPack(definition: PackDefinition, fileNames: readonly string
   for (const sticker of definition.stickers) {
     const found = definition.looks.flatMap((look, index) => {
       const file = fileFor(files, sticker.id, look, index === 0);
-      return file ? [{ id: look.id, name: look.name, swatch: look.swatch, src: packPath(definition.id, file) } satisfies StickerVariant] : [];
+      return file ? [{ id: look.id, name: look.name, swatch: look.swatch, src: packPath(definition.id, file), thumb: thumbFor(files, definition.id, file) } satisfies StickerVariant] : [];
     });
     const main = found.find((variant) => variant.id === definition.looks[0]?.id);
     if (sticker.premium && definition.lockPremium) {
-      premium.push({ sticker, src: main?.src });
+      premium.push({ sticker, src: main?.thumb ?? main?.src });
       continue;
     }
     // No file yet: still listed, as a "Coming soon" tile, so the full set is visible.
@@ -54,7 +63,7 @@ export function buildPack(definition: PackDefinition, fileNames: readonly string
       tags: sticker.tags,
       uses: [],
       image: main
-        ? { src: main.src, variants: found.length > 1 ? found : [] }
+        ? { src: main.src, thumb: main.thumb, variants: found.length > 1 ? found : [] }
         : { src: PLACEHOLDER, variants: [], pending: true },
     });
   }
@@ -84,7 +93,7 @@ export function buildPack(definition: PackDefinition, fileNames: readonly string
       group: sticker.group,
       uses: [],
       locked: true,
-      image: { src: src ?? (ready[index % ready.length]?.image?.src ?? PLACEHOLDER), variants: [] },
+      image: { src: src ?? (ready[index % ready.length]?.image?.thumb ?? ready[index % ready.length]?.image?.src ?? PLACEHOLDER), variants: [] },
     })),
     // Image stickers are files; this wrapper exists only to satisfy code that expects SVG.
     render: (item) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><image href="${item.image?.src ?? ""}" width="512" height="512"/></svg>`,

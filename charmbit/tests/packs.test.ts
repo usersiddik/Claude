@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+import { existsSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { describe, it } from "node:test";
 import { loadAssets } from "../src/lib/assets/load.ts";
-import { buildArchive, buildUniverse, CATEGORIES, categoryOf, isLive, stickerSrc } from "../src/lib/universe/index.ts";
+import { buildArchive, buildUniverse, CATEGORIES, categoryOf, isLive, stickerSrc, stickerThumb } from "../src/lib/universe/index.ts";
 import { buildPack, PACKS, stickerPrompt } from "../src/lib/universe/packs/index.ts";
 import { buildSearchIndex, search } from "../src/lib/universe/search.ts";
 
@@ -21,6 +23,22 @@ describe("image packs", () => {
       }
       for (const id of pack.cover) assert.ok(ids.includes(id), `${pack.id}: cover ${id}`);
     }
+  });
+
+  it("every pack image has a 400px thumbnail, and stickers point at it", () => {
+    for (const pack of PACKS) {
+      const folder = join(process.cwd(), "public", "packs", pack.id);
+      if (!existsSync(folder)) continue;
+      const images = readdirSync(folder).filter((name) => /\.(webp|png)$/.test(name));
+      for (const name of images) assert.ok(existsSync(join(folder, "thumbs", name.replace(/\.[a-z]+$/, ".webp"))), `${pack.id}/${name} has no thumbnail: run scripts/make-thumbs.py`);
+    }
+    const built = buildPack(sheru, ["crown.webp", "thumbs/crown.webp", "salute.webp"])!;
+    const crown = built.items.find((item) => item.id === "crown")!;
+    const salute = built.items.find((item) => item.id === "salute")!;
+    assert.equal(stickerThumb(built, crown), "/packs/sheru/thumbs/crown.webp");
+    assert.equal(stickerSrc(built, crown), "/packs/sheru/crown.webp");
+    // No thumbnail listed: fall back to the full file.
+    assert.equal(stickerThumb(built, salute), "/packs/sheru/salute.webp");
   });
 
   it("Sheru has 40 distinct stickers: 20 free and 20 premium", () => {

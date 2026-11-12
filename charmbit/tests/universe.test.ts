@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { loadAssets } from "../src/lib/assets/load.ts";
 import { findSvgProblems } from "../src/lib/assets/svg.ts";
-import { buildUniverse, countStickers, defaultValues, exportItem, findItem, isLive, propertiesFor, renderItem, stickerSlug, stickerTitle, UPCOMING } from "../src/lib/universe/index.ts";
+import { buildUniverse, countStickers, defaultValues, exportItem, findItem, isLive, propertiesFor, readyCount, renderItem, stickerSlug, stickerTitle, UPCOMING } from "../src/lib/universe/index.ts";
 import { refsResolve } from "./art.test.ts";
 
 const universe = buildUniverse(loadAssets());
@@ -15,6 +15,13 @@ describe("collection registry", () => {
     assert.ok(live.length >= 8);
     assert.ok(countStickers(universe) >= 180);
     assert.equal(UPCOMING.length, 3);
+  });
+
+  it("counts only finished stickers, never placeholders", () => {
+    const ready = { items: [{ id: "a" }, { id: "b", image: { src: "/b.webp" } }, { id: "c", image: { src: "/packs/placeholder.svg", pending: true } }] } as unknown as Parameters<typeof readyCount>[0];
+    assert.equal(readyCount(ready), 2);
+    const sum = universe.filter(isLive).reduce((total, collection) => total + readyCount(collection), 0);
+    assert.equal(countStickers(universe), sum);
   });
 
   it("gives every live collection at least 15 unique stickers, and cats 40 or more", () => {
