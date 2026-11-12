@@ -3,6 +3,7 @@
 import { CheckIcon, CodeIcon, CopyIcon, DownloadIcon, ShareIcon } from "@/components/ui/icons";
 import { Popover } from "@/components/ui/Popover";
 import type { ExportFormat } from "@/lib/assets/types";
+import type { Caption } from "@/lib/caption";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useStickerActions } from "./useStickerActions";
 import styles from "./Library.module.css";
@@ -18,13 +19,15 @@ interface StickerActionsProps {
   code?: (format: ExportFormat) => string;
   /** Outline width as a share of the sticker size (0 = none). */
   stroke: number;
+  /** Text on the sticker, if any. */
+  caption?: Caption;
   /** Called after a successful copy, e.g. to play a little animation. */
   onCopied?: () => void;
 }
 
 /** Copy, download, code, and share for one sticker. Used by the library editor. */
-export function StickerActions({ svg, image, animated, title, slug, code, stroke, onCopied }: StickerActionsProps) {
-  const actions = useStickerActions({ svg, image, title, slug, code }, stroke, onCopied);
+export function StickerActions({ svg, image, animated, title, slug, code, stroke, caption, onCopied }: StickerActionsProps) {
+  const actions = useStickerActions({ svg, image, title, slug, code }, stroke, caption, onCopied);
   // Browsing and customising are open to all; taking a sticker away needs a sign-in.
   const { locked, requireSignIn } = useAuth();
   const gate =

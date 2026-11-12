@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { CloseIcon, HeartGlyph, LockIcon, SearchIcon } from "@/components/ui/icons";
+import { CloseIcon, HeartGlyph, LockIcon } from "@/components/ui/icons";
 import { buildUniverse, CATEGORIES, categoryOf, defaultValues, findItem, isLive, randomValues, renderItem, stickerSrc, stickerTitle, type IconAsset, type LiveCollection, type CategoryId, type StickerItem, type Value, type Values } from "@/lib/universe";
 import type { PackFiles } from "@/lib/universe/packs";
 import { svgDataUri } from "@/lib/universe/paths";
 import { buildSearchIndex, popularSearches, search } from "@/lib/universe/search";
 import { CopyIsland } from "@/components/ui/CopyIsland";
 import type { StrokeId } from "@/lib/sticker";
+import { CAPTION_COLORS, type Caption } from "@/lib/caption";
 import { BEFORE_SIGN_IN } from "@/components/auth/AuthProvider";
 import { brandKey } from "@/lib/brand";
 import { Editor } from "./Editor";
@@ -35,6 +36,7 @@ interface LibraryProps {
 interface Saved {
   edits: Record<string, Values>;
   stroke: StrokeId;
+  caption?: Caption;
   query: string;
 }
 
@@ -69,6 +71,8 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
 
   // The outline width carries across stickers and collections.
   const [stroke, setStroke] = useState<StrokeId>(() => (restore && takeSaved()?.stroke) || "none");
+  // Text on the sticker carries across stickers too, like the outline.
+  const [caption, setCaption] = useState<Caption>(() => (restore && takeSaved()?.caption) || { text: "", color: CAPTION_COLORS[0]!.hex });
 
   // Customisations are remembered per collection while you browse.
   const [edits, setEdits] = useState<Record<string, Values>>(() => (restore && takeSaved()?.edits) || {});
@@ -94,14 +98,14 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
   useEffect(() => {
     const save = () => {
       try {
-        sessionStorage.setItem(SAVED, JSON.stringify({ edits, stroke, query } satisfies Saved));
+        sessionStorage.setItem(SAVED, JSON.stringify({ edits, stroke, caption, query } satisfies Saved));
       } catch {
         // Private mode: they'll start fresh, which is fine.
       }
     };
     window.addEventListener(BEFORE_SIGN_IN, save);
     return () => window.removeEventListener(BEFORE_SIGN_IN, save);
-  }, [edits, stroke, query]);
+  }, [edits, stroke, caption, query]);
 
   // A new search shows its best match in the editor.
   const first = results?.[0];
@@ -131,21 +135,6 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
     [favourites.list, universe],
   );
   const [sort, setSort] = useState<"default" | "az">("default");
-
-  // "/" jumps to search from anywhere on the page.
-  const searchField = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      const typing = target?.closest("input, textarea, select, [contenteditable]");
-      if (event.key !== "/" || typing || event.metaKey || event.ctrlKey || event.altKey || document.querySelector("dialog[open]")) return;
-      event.preventDefault();
-      searchField.current?.focus();
-      searchField.current?.scrollIntoView({ block: "center", behavior: "auto" });
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
 
   // Group filter resets when the collection changes.
   const [groupFor, setGroupFor] = useState({ collection: collection.id, group: "all" });
@@ -244,38 +233,12 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
     changed,
     stroke,
     onStroke: setStroke,
+    caption,
+    onCaption: setCaption,
   };
 
   return (
     <div className={styles.library} style={{ "--accent": collection.accent } as CSSProperties}>
-      <form className={styles.search} role="search" onSubmit={(event) => event.preventDefault()}>
-        <SearchIcon size={18} className={styles.searchIcon} />
-        <label htmlFor="library-search" className="sr-only">
-          Search all stickers
-        </label>
-        <input
-          id="library-search"
-          ref={searchField}
-          type="search"
-          className={styles.searchField}
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={`Search all ${universe.reduce((total, entry) => total + entry.items.length, 0)} stickers: ${suggestions.slice(0, 3).join(", ")}…`}
-          maxLength={60}
-          autoComplete="off"
-          enterKeyHint="search"
-        />
-        {query ? (
-          <button type="button" className={styles.searchClear} aria-label="Clear search" onClick={() => setQuery("")}>
-            <CloseIcon size={16} />
-          </button>
-        ) : (
-          <kbd className={styles.searchKey} aria-hidden="true">
-            /
-          </kbd>
-        )}
-      </form>
-
       <div className={styles.tabs} role="group" aria-label="Sticker type">
         {CATEGORIES.map((entry) => {
           const count = inCategory(entry.id).reduce((total, candidate) => total + candidate.items.length, 0);
@@ -288,6 +251,8 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
           );
         })}
       </div>
+
+      <p className={styles.tabBlurb}>{CATEGORIES.find((entry) => entry.id === category)!.blurb}</p>
 
       <div ref={rail} className={styles.rail} role="group" aria-label="Collections">
         <button type="button" className={`${styles.pill} ${styles.savedPill}`} aria-pressed={mode === "saved"} onClick={openSaved}>
@@ -310,7 +275,13 @@ export function Library({ icons, packs, selection, onSelect, initialQuery = "", 
           {results ? (
             <div className={styles.browserHead} aria-live="polite">
               <div>
-                <h3 className={styles.collectionTitle}>“{query.trim()}”</h3>
+                <h3 className={styles.collectionTitle}>
+                  “{query.trim()}”
+                  <button type="button" className={styles.clearSearch} onClick={() => setQuery("")}>
+                    <CloseIcon size={14} />
+                    Clear
+                  </button>
+                </h3>
                 <p className={styles.collectionText}>
                   {results.length === 0
                     ? "No stickers match that yet. Try one of these:"

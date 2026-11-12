@@ -24,7 +24,7 @@ export function LibraryChapter({ icons, packs, total }: { icons: readonly IconAs
                 <span>01</span>Search, or pick a collection
               </li>
               <li>
-                <span>02</span>Tap a sticker, change its colours
+                <span>02</span>Tap a sticker: colours, text, outline
               </li>
               <li>
                 <span>03</span>Copy, then paste into any chat

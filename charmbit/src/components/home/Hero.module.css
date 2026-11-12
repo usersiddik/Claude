@@ -545,3 +545,11 @@
   }
 }
 
+
+.chipsLabel {
+  align-self: center;
+  margin-right: 4px;
+  color: var(--text-2);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}

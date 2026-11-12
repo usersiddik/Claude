@@ -5,6 +5,8 @@
  * shares it. Browser-only.
  */
 
+import { captionEdge, fitCaption, type Caption, type Measure } from "./caption.ts";
+
 export interface StickerOptions {
   size?: number;
   /** White die-cut outline width as a share of the sticker size (0 = none). */
@@ -18,9 +20,14 @@ export interface StickerOptions {
   quality?: number;
   /** Optional SVG used only for the die-cut edge (e.g. without whiskers). */
   silhouette?: string;
+  /** Text along the bottom, sized to fit. */
+  caption?: Caption;
 }
 
 export const STICKER_SIZE = 512;
+
+/** Share of the sticker height kept for a caption; the art moves up to make room. */
+const CAPTION_BAND = 0.2;
 
 /** Outline presets, as a share of the sticker size (2.2% is the classic die-cut). */
 export const STROKES = [
@@ -79,11 +86,16 @@ export async function renderSticker(source: Art, options: StickerOptions = {}): 
   const image = await loadImage(typeof source === "string" ? toUrl(source) : source.url);
   const shape = options.silhouette ? await loadImage(toUrl(options.silhouette)) : image;
   // Image files keep their own proportions, centred in the art area.
-  const scale = Math.min(art / (image.naturalWidth || art), art / (image.naturalHeight || art));
-  const width = typeof source === "string" ? art : Math.round((image.naturalWidth || art) * scale);
-  const height = typeof source === "string" ? art : Math.round((image.naturalHeight || art) * scale);
+  const caption = options.caption?.text.trim() ? options.caption : undefined;
+  // With a caption, the art keeps its shape but gives up the bottom of the frame.
+  const artHeight = caption ? Math.round(art * (1 - CAPTION_BAND)) : art;
+  const naturalWidth = typeof source === "string" ? art : image.naturalWidth || art;
+  const naturalHeight = typeof source === "string" ? art : image.naturalHeight || art;
+  const scale = Math.min(art / naturalWidth, artHeight / naturalHeight);
+  const width = Math.round(naturalWidth * scale);
+  const height = Math.round(naturalHeight * scale);
   const left = Math.round((size - width) / 2);
-  const top = Math.round((size - height) / 2);
+  const top = Math.round(padding + (artHeight - height) / 2);
 
   const canvas = document.createElement("canvas");
   canvas.width = size;
@@ -130,7 +142,42 @@ export async function renderSticker(source: Art, options: StickerOptions = {}): 
   }
 
   context.drawImage(image, left, top, width, height);
+  if (caption) drawCaption(context, caption, size, padding, border);
   return toBlob(canvas, options.type ?? "image/png", options.quality);
+}
+
+/** The site's text face, so the sticker matches what the editor showed. */
+function captionFont(): string {
+  const family = typeof document === "undefined" ? "" : getComputedStyle(document.body).fontFamily;
+  return family || "Inter, Arial, sans-serif";
+}
+
+/** Bold text along the bottom with a contrasting edge, sized to fit the width. */
+function drawCaption(context: CanvasRenderingContext2D, caption: Caption, size: number, padding: number, outlined: boolean): void {
+  const family = captionFont();
+  const maxWidth = size - padding * 2 - size * 0.04;
+  const measure: Measure = (text, fontSize) => {
+    context.font = `800 ${fontSize}px ${family}`;
+    return context.measureText(text).width;
+  };
+  const layout = fitCaption(measure, caption.text, maxWidth, size * 0.13, size * 0.065);
+  if (layout.lines.length === 0) return;
+  const lineHeight = layout.size * 1.08;
+  // The block sits in the band below the art; outlined stickers keep clear of their edge.
+  const bottom = size - padding - (outlined ? size * 0.01 : size * 0.02);
+  const edge = captionEdge(caption.color);
+  context.font = `800 ${layout.size}px ${family}`;
+  context.textAlign = "center";
+  context.textBaseline = "alphabetic";
+  context.lineJoin = "round";
+  context.lineWidth = Math.max(2, layout.size * 0.2);
+  context.strokeStyle = edge;
+  context.fillStyle = caption.color;
+  layout.lines.forEach((line, index) => {
+    const y = bottom - (layout.lines.length - 1 - index) * lineHeight - layout.size * 0.22;
+    context.strokeText(line, size / 2, y);
+    context.fillText(line, size / 2, y);
+  });
 }
 
 /** True when this browser can put an image on the clipboard. */

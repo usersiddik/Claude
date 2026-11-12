@@ -2,6 +2,7 @@
 
 import { useState, useSyncExternalStore } from "react";
 import type { ExportFormat } from "@/lib/assets/types";
+import type { Caption } from "@/lib/caption";
 import { silhouetteOf } from "@/lib/art/kit";
 import { copyText } from "@/lib/clipboard";
 import { announceCopy } from "@/lib/copy-events";
@@ -23,12 +24,12 @@ interface Sticker {
 export type CopyState = "idle" | "done" | "error";
 
 /** Copy, download, share, and code export for one sticker, with feedback. */
-export function useStickerActions({ svg, image, title, slug, code }: Sticker, stroke: number, onCopied?: () => void) {
+export function useStickerActions({ svg, image, title, slug, code }: Sticker, stroke: number, caption: Caption | undefined, onCopied?: () => void) {
   const [state, setState] = useState<CopyState>("idle");
   const [pulse, setPulse] = useState(0);
   const shareable = useSyncExternalStore(subscribeNothing, canShareFiles, () => false);
   const art: Art = image ? { url: image } : svg;
-  const options = image ? { stroke } : { stroke, silhouette: silhouetteOf(svg) };
+  const options = image ? { stroke, caption } : { stroke, caption, silhouette: silhouetteOf(svg) };
   const notify = (format: string, ok: boolean, verb?: "Copied" | "Saved") => announceCopy({ title, format, svg, image, ink: null, ok, verb });
   const flash = (next: CopyState) => {
     setState(next);

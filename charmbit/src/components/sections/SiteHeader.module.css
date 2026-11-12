@@ -17,9 +17,172 @@
 
 .brand {
   display: inline-flex;
-  margin-right: auto;
+  flex: none;
   border-radius: 8px;
   text-decoration: none;
+}
+
+/* Search ------------------------------------------------------------------------- */
+
+.searchWrap {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.searchToggle {
+  display: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.searchToggle:hover {
+  background: var(--fill);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(100%, 420px);
+  height: 36px;
+  padding: 0 10px 0 12px;
+  border-radius: 980px;
+  background: var(--fill);
+  transition:
+    background-color var(--fast) var(--ease),
+    box-shadow var(--fast) var(--ease);
+}
+
+.search:hover {
+  background: var(--fill-hover);
+}
+
+.search:focus-within {
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 1px var(--ink),
+    0 8px 24px -14px rgb(20 19 18 / 0.4);
+}
+
+.searchIcon {
+  flex: none;
+  color: var(--text-2);
+}
+
+.searchField {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  font-size: 0.9375rem;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.searchField::placeholder {
+  color: var(--text-2);
+}
+
+.searchField::-webkit-search-cancel-button {
+  display: none;
+}
+
+.searchField:focus {
+  outline: none;
+}
+
+.searchKey {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  color: var(--text-2);
+  font-family: var(--font);
+  font-size: 0.75rem;
+}
+
+.search:focus-within .searchKey {
+  display: none;
+}
+
+.searchClear {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--fill);
+  color: var(--text-2);
+}
+
+/* Phones and small tablets: an icon that opens a full-width field under the bar. */
+@media (max-width: 899px) {
+  .inner {
+    position: relative;
+  }
+
+  .searchWrap {
+    flex: none;
+    margin-left: auto;
+  }
+
+  .searchToggle {
+    display: grid;
+  }
+
+  .search {
+    display: none;
+    position: absolute;
+    left: var(--gutter);
+    right: var(--gutter);
+    top: calc(100% - 6px);
+    width: auto;
+    height: 44px;
+    background: var(--surface);
+    box-shadow:
+      inset 0 0 0 1px var(--hairline-strong),
+      var(--shadow-float);
+    animation: search-in var(--fast) var(--ease);
+  }
+
+  .searchWrap[data-open] .search {
+    display: flex;
+  }
+
+  .searchKey {
+    display: none;
+  }
+}
+
+@keyframes search-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (min-width: 900px) {
+  .searchWrap {
+    justify-content: center;
+    padding: 0 8px;
+  }
+
+  .nav {
+    margin-left: auto;
+  }
 }
 
 .nav {
@@ -112,7 +275,7 @@
   }
 }
 
-@media (min-width: 640px) {
+@media (min-width: 900px) {
   .nav {
     display: block;
   }

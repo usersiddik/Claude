@@ -14,8 +14,6 @@ interface CreatureConfig {
   accent: string;
   colorLabel: string;
   swatches: readonly Swatch[];
-  /** Label for the glass toggle, or false to hide it. */
-  glass: string | false;
   /** Label for the pattern toggle, or false to hide it. */
   pattern: string | false;
   whiskers: boolean;
@@ -36,7 +34,7 @@ const itemId = (reaction: ReactionId, stance: Stance) => (stance === "stand" ? `
 export function creatureCollection(config: CreatureConfig): LiveCollection {
   // Cats and bunnies stand as well as sit, and come in couples.
   const cat = config.species === "cat" || config.species === "rabbit";
-  const toggles = ["blush", ...(config.pattern ? ["pattern"] : []), ...(config.whiskers ? ["whiskers"] : []), ...(config.glass ? ["glass"] : [])];
+  const toggles = ["blush", ...(config.pattern ? ["pattern"] : []), ...(config.whiskers ? ["whiskers"] : [])];
   const usesFor = (reaction: Reaction) => [
     "fur",
     "eyes",
@@ -83,7 +81,6 @@ export function creatureCollection(config: CreatureConfig): LiveCollection {
     { id: "blush", kind: "toggle", label: "Blush", default: true },
     ...(config.pattern ? [{ id: "pattern", kind: "toggle", label: config.pattern, default: true } as const] : []),
     ...(config.whiskers ? [{ id: "whiskers", kind: "toggle", label: "Whiskers", default: true } as const] : []),
-    ...(config.glass ? [{ id: "glass", kind: "toggle", label: config.glass, default: false } as const] : []),
   ];
 
   return {
@@ -110,7 +107,7 @@ export function creatureCollection(config: CreatureConfig): LiveCollection {
         partner: { fur: colorOf(values, "partner", DEFAULT_CREATURE.partner.fur), eyes: config.species === "rabbit" ? colorOf(values, "eyes", look.eyes) : DEFAULT_CREATURE.partner.eyes },
         outfit: colorOf(values, "outfit", DEFAULT_CREATURE.outfit),
         heart: colorOf(values, "heart", "#E4183F"),
-        glass: flagOf(values, "glass", false),
+        glass: false,
         blush: flagOf(values, "blush", true),
         pattern: config.pattern ? flagOf(values, "pattern", true) : false,
         whiskers: flagOf(values, "whiskers", true),
@@ -130,7 +127,6 @@ export const cats = creatureCollection({
   accent: "#FFE7CF",
   colorLabel: "Fur",
   swatches: CAT_FUR,
-  glass: "Glass ears",
   pattern: "Stripes",
   whiskers: true,
   cover: ["hi", "smitten-standing", "cool"],
@@ -142,11 +138,10 @@ export const ghosts = creatureCollection({
   title: "Ghosts",
   noun: "Ghost",
   tagline: "Soft, sheepish, a little spooky.",
-  description: "A gentle sheet ghost that floats through every feeling, with an optional glass body.",
+  description: "A gentle sheet ghost that floats through every feeling.",
   accent: "#E8E5F4",
   colorLabel: "Body",
   swatches: GHOST_BODY,
-  glass: "Glass body",
   pattern: false,
   whiskers: false,
   cover: ["boo", "love", "night"],
@@ -162,7 +157,6 @@ export const frogs = creatureCollection({
   accent: "#E0F1D6",
   colorLabel: "Skin",
   swatches: FROG_SKIN,
-  glass: false,
   pattern: "Spots",
   whiskers: false,
   cover: ["yay", "smitten", "cool"],
@@ -172,14 +166,13 @@ export const frogs = creatureCollection({
 export const lumiColour = creatureCollection({
   id: "lumi-colour",
   species: "rabbit",
-  title: "Lumi",
+  title: "Lumi in colour",
   noun: "Bunny",
-  tagline: "Soft, shy, and any colour you like.",
+  tagline: "The bunny, in any colour you like.",
   description: "Lumi the baby white bunny, sitting and standing through every mood, plus hugs with her partner Mimi.",
   accent: "#FBE3E6",
   colorLabel: "Fur",
   swatches: RABBIT_FUR,
-  glass: "Glass ears",
   pattern: false,
   whiskers: true,
   cover: ["shy-standing", "love", "hi"],
@@ -195,7 +188,6 @@ export const giraffes = creatureCollection({
   accent: "#FFEFC4",
   colorLabel: "Coat",
   swatches: GIRAFFE_COAT,
-  glass: false,
   pattern: "Spots",
   whiskers: false,
   cover: ["smile", "yay", "huh"],

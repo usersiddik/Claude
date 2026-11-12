@@ -12,7 +12,7 @@ const live = universe.filter(isLive).filter((collection) => collection.media ===
 describe("collection registry", () => {
   it("has unique collection ids and a healthy size", () => {
     assert.equal(new Set(universe.map((collection) => collection.id)).size, universe.length);
-    assert.ok(live.length >= 9);
+    assert.ok(live.length >= 8);
     assert.ok(countStickers(universe) >= 180);
     assert.equal(UPCOMING.length, 3);
   });

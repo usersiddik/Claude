@@ -2,6 +2,7 @@
 
 import { useState, type CSSProperties } from "react";
 import { normalizeHex } from "@/lib/art/color";
+import { CAPTION_COLORS, CAPTION_MAX_LENGTH, type Caption } from "@/lib/caption";
 import { STROKES, type StrokeId } from "@/lib/sticker";
 import type { ColorProperty, Swatch, ToggleProperty } from "@/lib/universe";
 import styles from "./Library.module.css";
@@ -79,6 +80,58 @@ function HexInput({ label, value, onChange }: { label: string; value: string | n
       aria-label={`${label} hex colour`}
       aria-invalid={invalid || undefined}
     />
+  );
+}
+
+/** Text along the bottom of the sticker, with a colour. Long text shrinks, then wraps. */
+export function CaptionField({ name, value, onChange }: { name: string; value: Caption; onChange: (value: Caption) => void }) {
+  const current = CAPTION_COLORS.find((color) => color.hex.toUpperCase() === value.color.toUpperCase());
+  return (
+    <fieldset className={styles.field}>
+      <legend className={styles.fieldLabel}>
+        Text
+        <span>{value.text.trim() ? `${value.text.trim().length} / ${CAPTION_MAX_LENGTH}` : "None"}</span>
+      </legend>
+      <div className={styles.captionRow}>
+        <input
+          type="text"
+          className={styles.captionInput}
+          value={value.text}
+          onChange={(event) => onChange({ ...value, text: event.target.value.slice(0, CAPTION_MAX_LENGTH) })}
+          placeholder="Add your own words"
+          maxLength={CAPTION_MAX_LENGTH}
+          autoComplete="off"
+          aria-label="Text on the sticker"
+        />
+        {value.text ? (
+          <button type="button" className={styles.captionClear} aria-label="Remove text" onClick={() => onChange({ ...value, text: "" })}>
+            ×
+          </button>
+        ) : null}
+      </div>
+      {value.text.trim() ? (
+        <div className={styles.swatches} role="radiogroup" aria-label="Text colour">
+          {CAPTION_COLORS.map((color) => (
+            <label key={color.id} className={styles.swatch} style={{ "--swatch": color.hex } as CSSProperties} title={color.name}>
+              <input type="radio" name={`${name}-color`} checked={current?.id === color.id} onChange={() => onChange({ ...value, color: color.hex })} className={styles.radio} />
+              <span className="sr-only">{color.name}</span>
+            </label>
+          ))}
+          <label className={`${styles.swatch} ${styles.customSwatch}`} data-active={current ? undefined : ""} style={{ "--swatch": value.color } as CSSProperties} title="Any colour">
+            <input
+              type="color"
+              value={value.color.toLowerCase()}
+              onChange={(event) => {
+                const hex = normalizeHex(event.target.value);
+                if (hex) onChange({ ...value, color: hex });
+              }}
+              className={styles.radio}
+              aria-label="Custom text colour"
+            />
+          </label>
+        </div>
+      ) : null}
+    </fieldset>
   );
 }
 

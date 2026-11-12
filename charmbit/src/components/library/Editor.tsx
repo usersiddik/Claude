@@ -6,7 +6,8 @@ import { silhouetteOf } from "@/lib/art/kit";
 import { paddingFor, renderSticker, strokeWidth, type StrokeId } from "@/lib/sticker";
 import { svgDataUri } from "@/lib/universe/paths";
 import { exportItem, propertiesFor, renderItem, stickerSlug, stickerTitle, type LiveCollection, type StickerItem, type Value, type Values } from "@/lib/universe";
-import { ColorField, StrokeField, ToggleField } from "./Fields";
+import { CaptionField, ColorField, StrokeField, ToggleField } from "./Fields";
+import type { Caption } from "@/lib/caption";
 import { StickerActions } from "./StickerActions";
 import styles from "./Library.module.css";
 
@@ -31,6 +32,8 @@ interface EditorProps {
   changed: boolean;
   stroke: StrokeId;
   onStroke: (stroke: StrokeId) => void;
+  caption: Caption;
+  onCaption: (caption: Caption) => void;
 }
 
 const CANVASES: readonly { id: Canvas; label: string }[] = [
@@ -39,7 +42,7 @@ const CANVASES: readonly { id: Canvas; label: string }[] = [
   { id: "grid", label: "Transparent background" },
 ];
 
-export function Editor({ collection, item, values, position, onChange, onReset, onRandom, saved, onToggleSaved, onStep, variant, onClose, changed, stroke, onStroke }: EditorProps) {
+export function Editor({ collection, item, values, position, onChange, onReset, onRandom, saved, onToggleSaved, onStep, variant, onClose, changed, stroke, onStroke, caption, onCaption }: EditorProps) {
   const [canvas, setCanvas] = useState<Canvas>("light");
   const [pulse, setPulse] = useState(0);
   // Image stickers are files; the chosen look (e.g. an outfit) picks which one.
@@ -52,27 +55,29 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
   // GIFs are sent as they are: no outline, no redrawing.
   const animated = Boolean(item.image?.animated);
   const width = animated ? 0 : strokeWidth(stroke);
+  const text = animated ? undefined : caption.text.trim() ? caption : undefined;
 
   // With an outline on, preview the exact bitmap that will be copied.
   const [rendered, setRendered] = useState<{ key: string; url: string } | null>(null);
-  const renderKey = `${width}:${file ?? svg}`;
+  const captionKey = text ? `${text.text}|${text.color}` : "";
+  const renderKey = `${width}:${captionKey}:${file ?? svg}`;
   useEffect(() => {
-    if (width === 0) return;
+    if (width === 0 && !text) return;
     let live = true;
     let url = "";
-    renderSticker(file ? { url: file } : svg, file ? { stroke: width, size: 768 } : { stroke: width, silhouette: silhouetteOf(svg), size: 768 })
+    renderSticker(file ? { url: file } : svg, file ? { stroke: width, caption: text, size: 768 } : { stroke: width, caption: text, silhouette: silhouetteOf(svg), size: 768 })
       .then((blob) => {
         if (!live) return;
         url = URL.createObjectURL(blob);
-        setRendered({ key: `${width}:${file ?? svg}`, url });
+        setRendered({ key: `${width}:${captionKey}:${file ?? svg}`, url });
       })
       .catch(() => {});
     return () => {
       live = false;
       if (url) URL.revokeObjectURL(url);
     };
-  }, [svg, file, width]);
-  const outlined = width > 0 && rendered?.key === renderKey ? rendered.url : null;
+  }, [svg, file, width, text, captionKey]);
+  const outlined = (width > 0 || text) && rendered?.key === renderKey ? rendered.url : null;
   // The bitmap has margins for the outline; scale it so the art stays the same size.
   const scale = outlined ? 1 / (1 - 2 * paddingFor(width)) : 1;
 
@@ -152,6 +157,7 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
             </div>
           </fieldset>
         ) : null}
+        {animated ? null : <CaptionField name={`${prefix}-caption`} value={caption} onChange={onCaption} />}
         {animated ? null : <StrokeField name={`${variant}-stroke`} value={stroke} onChange={onStroke} />}
         {properties.length > 0 ? (
           <div className={styles.fieldActions}>
@@ -171,7 +177,7 @@ export function Editor({ collection, item, values, position, onChange, onReset, 
       {item.image?.pending ? (
         <p className={styles.hint}>Artwork coming soon. You can copy and download it once it is added.</p>
       ) : (
-        <StickerActions stroke={width} svg={svg} image={file} animated={animated} title={title} slug={stickerSlug(collection, item)} code={item.image ? undefined : (format) => exportItem(collection, item, values, format)} onCopied={() => setPulse((value) => value + 1)} />
+        <StickerActions stroke={width} caption={text} svg={svg} image={file} animated={animated} title={title} slug={stickerSlug(collection, item)} code={item.image ? undefined : (format) => exportItem(collection, item, values, format)} onCopied={() => setPulse((value) => value + 1)} />
       )}
     </div>
   );
