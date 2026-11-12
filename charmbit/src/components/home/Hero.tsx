@@ -1,24 +1,23 @@
 import type { CSSProperties } from "react";
 import { SITE } from "@/lib/site";
-import { defaultValues, findItem, renderItem, stickerSrc, stickerTitle, type ColorProperty, type LiveCollection } from "@/lib/universe";
-import { libraryHref, svgDataUri } from "@/lib/universe/paths";
+import { findItem, stickerSrc, stickerTitle, type LiveCollection, type StickerItem } from "@/lib/universe";
+import { libraryHref } from "@/lib/universe/paths";
 import { buildSearchIndex, popularSearches } from "@/lib/universe/search";
 import { HeroSearch } from "./HeroSearch";
-import { HeroSheet, type SheetSticker, type SheetVariant } from "./HeroSheet";
+import { HeroStage } from "./HeroStage";
 import styles from "./Hero.module.css";
 
-const LINES = [["Stickers"], ["for", "every"], ["feeling."]] as const;
+const LINES = ["Stickers", "for every", "feeling."] as const;
 
-/** Drawn collections: the sticker that shows off recolouring, and the others on the sheet. */
-const FEATURED = { collection: "cats", item: "hi", property: "fur", colours: 6 } as const;
-const SHEET = [
-  ["love", "glossy-heart"],
-  ["diwali", "diya-girl"],
-  ["frogs", "yay"],
-  ["everyday", "lol"],
-  ["ghosts", "boo"],
+/** The sticker that stands through the headline, if its pack has it. */
+const FIGURE = { collection: "sheru", item: "boss-point" } as const;
+
+/** Small stickers drifting around the headline: [x%, y%, size vw, tilt, depth]. */
+const ORBITS = [
+  [85, 9, 10, 9, 0.6],
+  [91, 38, 8, -7, 1.1],
+  [82, 68, 8.5, 6, 0.85],
 ] as const;
-const TILTS = [8, -5, 6, -7, 5] as const;
 
 interface HeroProps {
   total: number;
@@ -26,79 +25,105 @@ interface HeroProps {
   collections: readonly LiveCollection[];
 }
 
-/** Letters rise one by one, like type being set. */
-function Headline() {
-  let index = 0;
-  return (
-    <h1 id="hero-title" className={`display ${styles.title}`}>
-      <span className="sr-only">Stickers for every feeling.</span>
-      {LINES.map((words, line) => (
-        <span key={line} className={styles.line} aria-hidden="true">
-          {words.map((word, w) => (
-            <span key={w} className={styles.word}>
-              {[...word].map((char, c) => (
-                <span key={c} className={styles.char} style={{ "--i": index++ } as CSSProperties}>
-                  {char}
-                </span>
-              ))}
-            </span>
-          ))}
-        </span>
-      ))}
-    </h1>
-  );
+interface Pick {
+  collection: LiveCollection;
+  item: StickerItem;
 }
 
-/** Everything the sheet shows comes from the collections visitors can see. */
-function sheetData(collections: readonly LiveCollection[]) {
-  // A pack leads the sheet once it has enough stickers to fill it.
-  const pack = collections.find((collection) => collection.media === "image" && collection.items.filter((item) => !item.image?.pending).length >= 6);
-  if (pack) {
-    // An image pack leads: its first sticker is featured, with its outfits as the colour dots.
-    const [first, ...rest] = pack.items.filter((item) => !item.image?.pending);
-    const variants: SheetVariant[] = (first!.image?.variants.length ? first!.image.variants : [{ name: pack.title, swatch: pack.accent, src: first!.image!.src }]).map((variant) => ({ name: variant.name, hex: variant.swatch, src: variant.src }));
-    const stickers: SheetSticker[] = rest.slice(0, 5).map((item, index) => ({ href: libraryHref(pack.id, item.id), src: stickerSrc(pack, item), name: stickerTitle(pack, item), rotate: TILTS[index] ?? 0 }));
-    return { featured: { name: stickerTitle(pack, first!), href: libraryHref(pack.id, first!.id), label: "Outfit" }, variants, stickers };
+const ready = (item: StickerItem) => !item.image?.pending;
+
+/** Casting: the figure, the orbiting stickers and the ticker, all from real artwork. */
+function cast(collections: readonly LiveCollection[]) {
+  const packs = collections.filter((collection) => collection.media === "image");
+  const figurePack = packs.find((collection) => collection.id === FIGURE.collection && collection.items.some((item) => item.id === FIGURE.item && ready(item))) ?? packs.find((collection) => collection.items.some(ready));
+  const figure: Pick = figurePack
+    ? { collection: figurePack, item: figurePack.items.find((item) => item.id === FIGURE.item && ready(item)) ?? figurePack.items.find(ready)! }
+    : { collection: collections[0]!, item: findItem(collections[0]!, "hi") };
+
+  // Alternate characters so neither the orbit nor the ticker is a row of one face.
+  const lanes: Pick[][] = [
+    ...packs.map((collection) => collection.items.filter((item) => ready(item) && item.id !== figure.item.id).map((item) => ({ collection, item }))),
+    collections.filter((collection) => collection.media !== "image").map((collection) => ({ collection, item: findItem(collection, collection.cover[0]) })),
+  ].filter((lane) => lane.length > 0);
+  const mixed: Pick[] = [];
+  for (let index = 0; mixed.length < 40 && lanes.some((lane) => index < lane.length); index += 1) {
+    for (const lane of lanes) if (lane[index]) mixed.push(lane[index]!);
   }
-  const find = (id: string) => collections.find((collection) => collection.id === id);
-  const collection = find(FEATURED.collection) ?? collections[0]!;
-  const item = findItem(collection, FEATURED.item);
-  const property = collection.properties.find((candidate): candidate is ColorProperty => candidate.id === FEATURED.property && candidate.kind === "color");
-  const defaults = defaultValues(collection);
-  const variants: SheetVariant[] = property
-    ? property.swatches
-        .filter((swatch): swatch is typeof swatch & { hex: string } => typeof swatch.hex === "string")
-        .slice(0, FEATURED.colours)
-        .map((swatch) => ({ name: swatch.name, hex: swatch.hex, src: svgDataUri(renderItem(collection, item, { ...defaults, [property.id]: swatch.hex }, true)) }))
-    : [{ name: collection.title, hex: collection.accent, src: stickerSrc(collection, item) }];
-  const stickers: SheetSticker[] = SHEET.flatMap(([collectionId, itemId], index) => {
-    const owner = find(collectionId);
-    return owner ? [{ href: libraryHref(collectionId, itemId), src: stickerSrc(owner, findItem(owner, itemId)), name: stickerTitle(owner, findItem(owner, itemId)), rotate: TILTS[index] ?? 0 }] : [];
-  });
-  return { featured: { name: stickerTitle(collection, item), href: libraryHref(collection.id, item.id), label: property?.label ?? "Colour" }, variants, stickers };
+  // The orbit shows the other characters first.
+  const orbit = [...mixed.filter((pick) => pick.collection.id !== figure.collection.id), ...mixed].slice(0, ORBITS.length);
+  const ticker = mixed.slice(0, 28);
+  return { figure, orbit, ticker };
 }
 
 export function Hero({ total, collections }: HeroProps) {
-  const sheet = sheetData(collections);
-  const live = collections.length;
+  const { figure, orbit, ticker } = cast(collections);
+  const figureSrc = stickerSrc(figure.collection, figure.item);
+  const figureName = stickerTitle(figure.collection, figure.item);
+  // One row of chips keeps the whole hero on one screen.
+  const suggestions = popularSearches(buildSearchIndex(collections), 6);
+
   return (
     <section className={styles.hero} id="top" aria-labelledby="hero-title">
-      <div className={`container ${styles.inner}`}>
-        <div className={styles.copy}>
-          <p className={styles.kicker}>
-            <span className={styles.kickerMark} aria-hidden="true" />
-            {SITE.tagline}
-          </p>
-          <Headline />
+      <HeroStage className={styles.stage}>
+        <div className={`eyebrow ${styles.meta}`} aria-hidden="true">
+          <span>Chapter 01 — The universe</span>
+          <span>
+            {total} stickers · {collections.length} collections
+          </span>
+        </div>
+
+        {/* Small stickers in orbit. */}
+        {orbit.map(({ collection, item }, index) => {
+          const [x, y, size, tilt, depth] = ORBITS[index]!;
+          return (
+            <a
+              key={`${collection.id}/${item.id}`}
+              href={libraryHref(collection.id, item.id)}
+              data-library=""
+              className={styles.orbit}
+              style={{ "--x": `${x}%`, "--y": `${y}%`, "--size": size, "--r": `${tilt}deg`, "--depth": depth, "--i": index } as CSSProperties}
+              aria-label={`${stickerTitle(collection, item)}: open in the library`}
+              draggable={false}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- sticker artwork */}
+              <img src={stickerSrc(collection, item)} alt="" width={160} height={160} loading="lazy" decoding="async" draggable={false} />
+            </a>
+          );
+        })}
+
+        {/* The figure stands behind the headline... */}
+        <a href={libraryHref(figure.collection.id, figure.item.id)} data-library="" className={styles.figure} aria-label={`${figureName}: open in the studio`} draggable={false}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- sticker artwork */}
+          <img src={figureSrc} alt="" width={1024} height={1024} loading="eager" fetchPriority="high" decoding="async" draggable={false} />
+        </a>
+
+        <div className={`container ${styles.head}`}>
+          <h1 id="hero-title" className={`display ${styles.title}`}>
+            <span className="sr-only">Stickers for every feeling.</span>
+            {LINES.map((line, index) => (
+              <span key={line} className={styles.line} aria-hidden="true" style={{ "--i": index } as CSSProperties}>
+                <span className={styles.lineText}>{line}</span>
+              </span>
+            ))}
+          </h1>
+        </div>
+
+        {/* ...and his head comes forward through it: the same image, clipped to the top. */}
+        <span className={`${styles.figure} ${styles.figureFront}`} aria-hidden="true">
+          {/* eslint-disable-next-line @next/next/no-img-element -- sticker artwork */}
+          <img src={figureSrc} alt="" width={1024} height={1024} loading="eager" decoding="async" draggable={false} />
+        </span>
+
+        <div className={`container ${styles.deck}`}>
           <p className={styles.lede}>
-            {total} original stickers{live > 1 ? ` across ${live} collections` : ""}. Find one you love, make it yours, use it anywhere.
+            {SITE.tagline} {total} original stickers. Find one you love, make it yours, use it anywhere.
           </p>
-          <HeroSearch suggestions={popularSearches(buildSearchIndex(collections))} />
+          <HeroSearch suggestions={suggestions} />
           <div className={styles.actions}>
             <a href="#collections" className={styles.cta}>
               Explore stickers
             </a>
-            <a href={sheet.featured.href} className={`${styles.cta} ${styles.ctaQuiet}`} data-library="">
+            <a href={libraryHref(figure.collection.id, figure.item.id)} className={`${styles.cta} ${styles.ctaQuiet}`} data-library="">
               Open studio
               <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 10h11M11 5l5 5-5 5" />
@@ -106,8 +131,24 @@ export function Hero({ total, collections }: HeroProps) {
             </a>
           </div>
         </div>
+      </HeroStage>
 
-        <HeroSheet {...sheet} total={total} />
+      {/* A ticker of real stickers along the bottom edge; each one opens in the library. */}
+      <div className={styles.ticker} aria-label="A few of the stickers">
+        <div className={styles.tickerTrack}>
+          {[0, 1].map((copy) => (
+            <ul key={copy} role="list" className={styles.tickerList} aria-hidden={copy === 1 ? "true" : undefined}>
+              {ticker.map(({ collection, item }) => (
+                <li key={`${copy}-${collection.id}/${item.id}`}>
+                  <a href={libraryHref(collection.id, item.id)} data-library="" className={styles.tickerItem} tabIndex={copy === 1 ? -1 : undefined} aria-label={copy === 0 ? stickerTitle(collection, item) : undefined}>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- sticker artwork */}
+                    <img src={stickerSrc(collection, item)} alt="" width={96} height={96} loading="lazy" decoding="async" draggable={false} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ))}
+        </div>
       </div>
     </section>
   );
